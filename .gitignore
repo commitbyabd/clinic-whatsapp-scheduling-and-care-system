@@ -1,23 +1,50 @@
-# Secrets - never commit these files to version control
+# Repo root. Patterns without a leading slash match at any depth, so these
+# cover backend/ and frontend/ too — there is no second .gitignore.
+
+# ---------------------------------------------------------------------------
+# Secrets — never commit these
+# ---------------------------------------------------------------------------
 .env
+.env.local
+.env.*.local
+# .env.example is committed on purpose — it is the template. Listed explicitly
+# so nobody "tidies up" with a broader .env* rule and silently drops it.
+!.env.example
 
-# Virtual environment
+# ---------------------------------------------------------------------------
+# Virtual environments
+# ---------------------------------------------------------------------------
 .venv/
+venv/
+env/
 
-# Python compiled files
+# ---------------------------------------------------------------------------
+# Python caches
+# ---------------------------------------------------------------------------
 __pycache__/
 *.pyc
-
-# Type checker cache
+*.py[cod]
 .mypy_cache/
+.pytest_cache/
+.ruff_cache/
 
-# Editor settings
+# ---------------------------------------------------------------------------
+# Editors
+# ---------------------------------------------------------------------------
 .idea/
 .vscode/
 
+# ---------------------------------------------------------------------------
 # Node / frontend
+# ---------------------------------------------------------------------------
 node_modules/
 dist/
 .vite/
 *.local
 npm-debug.log*
+
+# ---------------------------------------------------------------------------
+# OS junk
+# ---------------------------------------------------------------------------
+Thumbs.db
+.DS_Store

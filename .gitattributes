@@ -1,0 +1,14 @@
+# Normalise line endings in the repository so diffs stay clean across machines.
+# Files are stored with LF and checked out native, which stops Windows/WSL
+# round-trips from showing every line as changed.
+* text=auto
+
+# Always LF — these are read by tooling that dislikes CRLF.
+*.py   text eol=lf
+*.md   text eol=lf
+*.json text eol=lf
+*.yml  text eol=lf
+
+# Always CRLF — Windows shells need it.
+*.bat  text eol=crlf
+*.ps1  text eol=crlf

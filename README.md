@@ -12,7 +12,6 @@ and doctors, and the WhatsApp channel itself via Twilio.
 ```
 backend/     FastAPI + MongoDB — the API, and the chatbot
 frontend/    React + Vite — public site and dashboard
-docs/        structure and integration notes
 ```
 
 ## Running it
@@ -57,11 +56,55 @@ why the system runs today with neither external component connected.
 Two rules the code enforces and tests assert: **the bot never diagnoses**, and
 **the bot never confirms a booking** — a receptionist does.
 
+`chatbot/` deliberately sits beside `app/` rather than inside `app/features/`.
+Features have URLs; the chatbot has none — a message string goes in, a reply
+comes out, and it knows nothing about HTTP, FastAPI, Twilio, or Mongo. That is
+what lets it be tested without a network. Filing it under `features/` would
+couple it to the transport and lose that. The reasoning is kept next to the code
+in `backend/chatbot/__init__.py`.
+
 ## Status
 
 Built and tested: the rule engine, the decision chain, the scripted question
-flow. Waiting on the Twilio account and the outsourced ML classifier. See
-[docs/STRUCTURE.md](docs/STRUCTURE.md) for setup steps and known gaps.
+flow — 38 tests.
+
+Waiting on other people: the Twilio account, and the outsourced ML classifier.
+The seam for the classifier is built and tested against fakes; wiring it up is
+one `register()` call.
+
+Known gaps, none blocked on anyone:
+
+- **The OpenAI fallback has never actually run.** The key in `.env` is a
+  placeholder, so the real call and its response parsing are unverified. Needs
+  only a key.
+- **The symptom extraction step does not exist.** It is the OpenAI call that
+  turns a patient's free-text description into symptom terms. Without it the
+  classifier never receives input.
+- **Conversation state is in memory** and is lost on restart, which on Render's
+  free tier means patients lose their place mid-booking. A Mongo-backed store
+  means implementing three methods — `get`, `save`, `clear`.
+- **Two components are missing from the Phase 2 SDS** — the ML classifier and
+  the scripted question flow. Section 3.1 still describes the orchestrator as
+  "predefined match → OpenAI".
+
+## When the Twilio account arrives
+
+The webhook belongs in `backend/app/features/whatsapp/`, alongside the other
+features. It is thin, because the logic is already done — read `Body` and
+`From`, call `handle_message`, return TwiML:
+
+```python
+reply = handle_message(Body, phone=From)
+```
+
+Three things it needs that are not written yet: signature validation via
+`twilio.request_validator.RequestValidator` (without it, anyone who finds the
+URL can post fake patient messages), a TwiML rather than JSON response, and a
+public URL into localhost for development. `python-multipart` is already pinned
+— Twilio posts form-encoded, and FastAPI's `Form(...)` raises without it.
+
+`reply.collected` is populated when a booking flow finishes, carrying the
+patient's answers for the Appointment Engine to turn into a `pending` record.
 
 ## Configuration
 

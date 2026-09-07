@@ -49,8 +49,11 @@ jiter==0.16.0
 sniffio==1.3.1
 truststore==0.10.4
 
-# NOT currently in your requirements, and the Twilio webhook will not work
-# without it: Twilio posts the WhatsApp payload as form-encoded data, and
-# FastAPI's Form(...) raises at import time if this is missing. Worth
-# installing before the account arrives rather than debugging it live.
+# Twilio posts the WhatsApp payload as form-encoded data, and FastAPI's
+# Form(...) raises at import time without this.
 python-multipart==0.0.32
+
+# The WhatsApp webhook (ENG-1653). Only RequestValidator is used — verifying
+# that an incoming request genuinely came from Twilio. Replies go back as TwiML
+# in the HTTP response, so no outbound Twilio API calls are made.
+twilio==9.11.0

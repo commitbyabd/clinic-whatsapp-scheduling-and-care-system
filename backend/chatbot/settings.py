@@ -177,3 +177,51 @@ classifier_settings = ClassifierSettings(
     # model's real precision/recall numbers are known — not before.
     min_confidence=_env_float("CLASSIFIER_MIN_CONFIDENCE", 0.6),
 )
+
+
+@dataclass(frozen=True)
+class TwilioSettings:
+    """Settings for the WhatsApp webhook (ENG-1653).
+
+    Unlike the two above, this one is NOT fail-soft. The others guard optional
+    features, so an unconfigured key just disables them. This guards a security
+    control: without the auth token the endpoint cannot tell a real Twilio
+    request from anybody who found the URL. An unconfigured webhook therefore
+    refuses requests rather than accepting them — see `skip_signature_check`.
+    """
+
+    auth_token: str
+    # Escape hatch for local curl testing before the token arrives. Must be set
+    # deliberately; it is never the default, so a deploy that forgets the token
+    # fails closed instead of silently serving an open endpoint.
+    skip_signature_check: bool
+    # Twilio signs the exact public URL it called. Behind ngrok or Render the
+    # app sees an internal URL instead, and the signatures will not match. Set
+    # this to the full public webhook URL when that happens; leave it empty to
+    # reconstruct from the request's forwarded headers.
+    webhook_url: str
+
+    @property
+    def is_configured(self) -> bool:
+        return bool(self.auth_token) and not _placeholder(self.auth_token)
+
+    def explain(self) -> str:
+        if self.skip_signature_check:
+            return (
+                "Twilio webhook: SIGNATURE CHECKING DISABLED — local testing "
+                "only. Never run this way anywhere reachable from the internet."
+            )
+        if not self.is_configured:
+            return (
+                "Twilio webhook: INACTIVE — TWILIO_AUTH_TOKEN is unset or still "
+                "the placeholder, so requests cannot be verified and will be "
+                "refused. Set the token from the Twilio console."
+            )
+        return "Twilio webhook: active, signature checking on"
+
+
+twilio_settings = TwilioSettings(
+    auth_token=_env_str("TWILIO_AUTH_TOKEN", ""),
+    skip_signature_check=_env_bool("TWILIO_SKIP_SIGNATURE_CHECK", False),
+    webhook_url=_env_str("TWILIO_WEBHOOK_URL", ""),
+)

@@ -1,27 +1,8 @@
-"""
-LLM fallback for messages the rule engine cannot answer (ENG-1659).
+"""OpenAI fallback for messages the rule engine could not answer (ENG-1659).
 
-Where this sits in the pipeline:
-
-    patient message
-        -> predefined-responses/response.py  (rules, first match wins)
-        -> if that returns None, this module
-        -> if this also returns None, a safe canned reply
-
-The rule engine stays in front for three reasons: it is free, it is instant,
-and it is *predictable* — the emergency rule is guaranteed to fire before
-anything reaches a model. Only genuinely unanticipated messages get here, which
-also keeps the API bill proportional to how well rules.py is tuned. Every None
-returned by the rule engine is both a fallback call and a signal that a keyword
-is missing from rules.py.
-
-Scope is deliberately narrow, per ENG-1659: general wellness guidance only, and
-no diagnosis language. The system prompt enforces that, and it is the most
-important part of this file — read it before changing anything here.
-
-Failure policy: this function never raises. A clinic bot that 500s because
-OpenAI is rate-limited is worse than one that says "let me connect you to
-staff". Every error path logs and returns None.
+Only reached when rules miss, so the bill is proportional to how well rules.py
+is tuned. Never raises; every failure path returns None and the caller sends a
+canned reply.
 """
 
 from __future__ import annotations
@@ -36,9 +17,8 @@ from chatbot.predefined_responses import clinic
 
 logger = logging.getLogger(__name__)
 
-# Built once and reused. Constructing an OpenAI() per request rebuilds the
-# underlying HTTP connection pool every time, which is pure added latency on a
-# path where a patient is already waiting.
+# built once. A new client per request rebuilds the connection pool, which is
+# pure added latency on a path where a patient is waiting.
 _client: OpenAI | None = None
 
 
@@ -48,22 +28,15 @@ def _get_client() -> OpenAI:
         _client = OpenAI(
             api_key=openai_settings.api_key,
             timeout=openai_settings.timeout_seconds,
-            # The SDK retries connection errors and 429s on its own. Two is
-            # enough here: a WhatsApp reply that takes 30s to arrive has
-            # already failed as far as the patient is concerned.
             max_retries=2,
         )
     return _client
 
 
 def _system_prompt() -> str:
-    """The guardrails. This is the safety boundary, not decoration.
-
-    Clinic facts are pulled from clinic.py at call time so the model is told the
-    same address and hours the rule engine would give — and told not to invent
-    the ones it wasn't given, which is the failure mode that actually hurts:
-    a confidently wrong price or opening time sounds exactly like a right one.
-    """
+    """The guardrails. This is the safety boundary, not decoration."""
+    # clinic facts are injected so the model states the same address and hours
+    # the rule engine would, and is told not to invent the ones it lacks
     return (
         f"You are the WhatsApp assistant for {clinic.NAME}. You are not a "
         "doctor and you never speak as one.\n\n"
@@ -101,18 +74,13 @@ def _system_prompt() -> str:
 
 
 def generate_fallback_reply(message: str) -> str | None:
-    """Ask the model for a reply. Returns None if unavailable — never raises.
-
-    None means "the caller should send its own safe canned reply", and covers
-    both "not configured" and "the call failed". The caller should not care
-    which.
-    """
+    """Ask the model for a reply, or None if unavailable. Never raises."""
     if not message.strip():
         return None
 
     if not openai_settings.is_configured:
-        # Debug, not warning: with a placeholder key this fires on every
-        # unmatched message, and a warning per message would bury real errors.
+        # debug, not warning: with a placeholder key this fires on every
+        # unmatched message and would bury real errors
         logger.debug("LLM fallback skipped: %s", openai_settings.explain())
         return None
 
@@ -126,36 +94,34 @@ def generate_fallback_reply(message: str) -> str | None:
             ],
         )
     except openai.AuthenticationError:
-        # Configuration error, not a transient one — surface it loudly, but
-        # still without the key itself.
+        # configuration error rather than a transient one, so log it loudly
         logger.error(
-            "OpenAI rejected the API key (%s). Check OPENAI_API_KEY in .env.",
+            "OpenAI rejected the API key (%s). Check OPENAI_API_KEY.",
             openai_settings.masked_key,
         )
         return None
     except openai.RateLimitError:
-        logger.warning("OpenAI rate limit or quota exhausted; using canned reply.")
+        logger.warning("OpenAI rate limit or quota exhausted, using canned reply")
         return None
     except openai.APITimeoutError:
         logger.warning(
-            "OpenAI timed out after %ss; using canned reply.",
+            "OpenAI timed out after %ss, using canned reply",
             openai_settings.timeout_seconds,
         )
         return None
     except openai.APIConnectionError:
-        logger.warning("Could not reach OpenAI; using canned reply.")
+        logger.warning("Could not reach OpenAI, using canned reply")
         return None
     except openai.APIStatusError as exc:
         logger.error("OpenAI returned %s: %s", exc.status_code, exc.message)
         return None
     except openai.OpenAIError:
-        # Backstop for anything the SDK raises that is not covered above.
-        # Broad on purpose — this function's contract is that it never raises.
-        logger.exception("Unexpected OpenAI error; using canned reply.")
+        # backstop, so this function's never-raises contract holds
+        logger.exception("Unexpected OpenAI error, using canned reply")
         return None
 
     if not response.choices:
-        logger.warning("OpenAI returned no choices; using canned reply.")
+        logger.warning("OpenAI returned no choices, using canned reply")
         return None
 
     text = (response.choices[0].message.content or "").strip()

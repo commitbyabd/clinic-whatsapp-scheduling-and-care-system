@@ -1,20 +1,9 @@
-"""
-The intent table: what patients type, and what we say back.
+"""The intent table: what patients type, and what we say back.
 
-This is the file you edit when you learn something new about how patients
-phrase things. It holds no matching logic — response.py owns that — so adding
-an intent here never risks breaking the engine.
-
-ORDER IS LOAD-BEARING. Rules are evaluated top to bottom and the first match
-wins, so a more specific intent must sit above a more generic one: "cancel my
-appointment" contains the word "appointment", so appointment_cancel has to be
-checked before the generic appointment rule. Every deliberate ordering choice
-below carries a comment explaining why. If you reorder this dict, run
-tests/test_response.py — it exists specifically to catch ordering regressions.
-
-Clinic-specific facts (address, phone, hours) come from clinic.py rather than
-being written into the response strings, so a clinic can move without this
-file changing.
+Order is load-bearing. Rules are evaluated top to bottom and the first match
+wins, so specific intents must sit above generic ones: "cancel my appointment"
+contains "appointment", so appointment_cancel goes first. If you reorder this
+dict, run tests/test_response.py, which exists to catch exactly that.
 """
 
 from typing import TypedDict

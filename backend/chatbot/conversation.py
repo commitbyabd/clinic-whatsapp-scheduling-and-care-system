@@ -1,44 +1,7 @@
-"""
-The scripted question flow: numbered menus and the state that makes them work.
+"""Scripted question flow: numbered menus and the per-patient state behind them.
 
-THE PROBLEM THIS SOLVES
------------------------
-A patient replies "1". On its own that means nothing — it is only an answer if
-you remember what you asked. So every incoming message is interpreted against
-the patient's *current step*, and each answer moves them to the next one. That
-is a finite state machine, keyed by phone number.
-
-    ask_returning ──yes──> ask_reason ──> ask_datetime ──> done
-                  ──no───> ask_name ────> ask_reason ──> ...
-
-WHY THE MENU IS RENDERED FROM THE OPTIONS
------------------------------------------
-`Step.render()` builds the numbered list from the same Option objects that
-`Step.match()` accepts. Writing the question text and the accepted answers
-separately is the classic bug here: someone reorders the menu, forgets to update
-the parser, and "2" silently means the wrong thing. Here they cannot drift —
-there is one source of truth.
-
-WHAT COUNTS AS AN ANSWER
-------------------------
-Real patients do not reply "1". They reply "1.", "Yes", "yes please", "haan",
-"y", or a digit emoji. `Option.aliases` carries those, and matching is done on
-normalised text. An unrecognised reply re-asks rather than guessing — but only
-MAX_REPROMPTS times, so a confused patient reaches a human instead of a loop.
-
-THE ESCAPE HATCH THAT MATTERS MOST
-----------------------------------
-Being mid-flow must never suppress an emergency. A patient halfway through
-booking who types "chest pain" needs the emergency reply, not "please reply 1 or
-2". The orchestrator checks the rules layer *before* consulting this module, so
-that path stays open at every step. Do not "optimise" that ordering away.
-
-STORAGE
--------
-`InMemoryStore` is fine for development and the demo, and loses everything on
-restart. Phase 3 swaps in a Mongo-backed store implementing the same three
-methods — nothing else changes. State also expires (STATE_TTL), so a patient
-returning next week starts fresh instead of resuming a forgotten conversation.
+A reply like "1" only means something if you remember what was asked, so each
+phone number gets a state machine tracking which step it is on.
 """
 
 from __future__ import annotations
@@ -51,14 +14,11 @@ from typing import Callable, Protocol
 
 logger = logging.getLogger(__name__)
 
-# After this many unrecognised replies at one step, hand off to staff rather
-# than asking again. A patient stuck in a menu loop is a patient we have lost.
+# after this many unrecognised replies, hand off rather than loop forever
 MAX_REPROMPTS = 2
 
-# A flow older than this is abandoned, not resumed.
 STATE_TTL = timedelta(hours=24)
 
-# Words that always exit the flow, whatever step the patient is on.
 CANCEL_WORDS = frozenset(
     {"cancel", "stop", "exit", "quit", "menu", "start over", "restart", "back"}
 )
@@ -72,13 +32,8 @@ def _normalize(text: str) -> str:
 
 @dataclass(frozen=True)
 class Option:
-    """One menu choice.
-
-    `key` is what the code stores and branches on; `label` is what the patient
-    reads. Keeping them separate means you can reword a menu without breaking
-    the branching logic that depends on the answer.
-    """
-
+    # key is what the code branches on, label is what the patient reads, so a
+    # menu can be reworded without breaking the branching
     key: str
     label: str
     aliases: tuple[str, ...] = ()
@@ -88,28 +43,19 @@ class Option:
 class Step:
     id: str
     question: str
-    # Empty options = a free-text answer (a name, a preferred date).
-    options: tuple[Option, ...] = ()
-    # Where the answer is stored in state.data.
-    field: str = ""
-    # Next step id, or a callable taking the answer and returning one.
-    # None ends the flow.
+    options: tuple[Option, ...] = ()  # empty means a free-text answer
+    field: str = ""  # where the answer goes in state.data
     next: str | Callable[[str], str | None] | None = None
 
     def render(self) -> str:
-        """The question as the patient sees it, menu included."""
         if not self.options:
             return self.question
         lines = [f"{i}. {opt.label}" for i, opt in enumerate(self.options, 1)]
         return self.question + "\n\n" + "\n".join(lines)
 
     def match(self, reply: str) -> str | None:
-        """Interpret a reply as one of this step's options.
-
-        Accepts the position number ("2"), the label ("No"), or any alias.
-        Returns the Option.key, or None if nothing matched. Free-text steps
-        accept anything non-empty.
-        """
+        # built from the same options render() uses, so the menu and the parser
+        # cannot drift apart
         text = _normalize(reply)
         if not text:
             return None
@@ -155,7 +101,7 @@ class StateStore(Protocol):
 
 
 class InMemoryStore:
-    """Development store. Phase 3 replaces this with Mongo, same interface."""
+    """Development store. Lost on restart; Phase 3 replaces it with Mongo."""
 
     def __init__(self) -> None:
         self._states: dict[str, ConversationState] = {}
@@ -165,7 +111,7 @@ class InMemoryStore:
         if state is None:
             return None
         if state.is_expired():
-            logger.info("conversation state expired for %s", phone)
+            logger.info("conversation state expired")
             del self._states[phone]
             return None
         return state
@@ -178,9 +124,7 @@ class InMemoryStore:
         self._states.pop(phone, None)
 
 
-# --- the appointment flow ------------------------------------------------
-# An illustration of the shape, not the final script. Add steps here; the
-# engine does not change.
+# --- the appointment flow. Add steps here; the engine does not change. ---
 
 YES_NO = (
     Option("yes", "Yes", ("y", "yeah", "yep", "haan", "han", "ji", "ji haan")),
@@ -193,7 +137,6 @@ APPOINTMENT_FLOW: dict[str, Step] = {
         question="Happy to help you book an appointment. Have you visited us before?",
         options=YES_NO,
         field="returning_patient",
-        # First-time patients need a name on file; returning ones we look up.
         next=lambda answer: "ask_name" if answer == "no" else "ask_reason",
     ),
     "ask_name": Step(
@@ -211,12 +154,11 @@ APPOINTMENT_FLOW: dict[str, Step] = {
             Option("followup", "Follow-up visit"),
         ),
         field="reason",
-        # "symptoms" is the branch that will collect free text and hand it to
-        # the OpenAI extraction step, then the classifier (ENG-1660).
         next=lambda answer: "ask_symptoms" if answer == "symptoms" else "ask_datetime",
     ),
     "ask_symptoms": Step(
         id="ask_symptoms",
+        # free text here feeds the OpenAI extraction step, then the classifier
         question="Please describe what you're feeling, in your own words.",
         field="symptom_text",
         next="ask_datetime",
@@ -233,8 +175,7 @@ FLOWS: dict[str, dict[str, Step]] = {"appointment": APPOINTMENT_FLOW}
 
 FLOW_ENTRY_STEP = {"appointment": "ask_returning"}
 
-# Sent when the flow completes. Says a request was submitted, never that an
-# appointment is booked — a receptionist confirms every booking.
+# says a request was submitted, never that an appointment is booked
 COMPLETION_MESSAGE = (
     "Thank you. We've passed your request to our staff, and they'll message "
     "you shortly to confirm your appointment."
@@ -253,8 +194,6 @@ HANDOFF_MESSAGE = (
 
 @dataclass(frozen=True)
 class FlowResult:
-    """What the flow wants said, and whether the patient is still in it."""
-
     text: str
     step: str | None
     finished: bool = False
@@ -269,16 +208,15 @@ class ConversationEngine:
         return self.store.get(phone) is not None
 
     def start(self, phone: str, flow: str) -> FlowResult:
-        """Begin a flow and return its first question."""
         entry = FLOW_ENTRY_STEP[flow]
         state = ConversationState(phone=phone, flow=flow, step=entry)
         self.store.save(state)
         return FlowResult(text=FLOWS[flow][entry].render(), step=entry)
 
     def advance(self, phone: str, reply: str) -> FlowResult | None:
-        """Interpret a reply against the patient's current step.
+        """Read a reply as an answer to the current step.
 
-        Returns None when the patient is not in a flow, so the caller can fall
+        Returns None when the patient is not in a flow, so the caller falls
         through to its normal handling.
         """
         state = self.store.get(phone)
@@ -295,7 +233,7 @@ class ConversationEngine:
         if answer is None:
             state.reprompts += 1
             if state.reprompts > MAX_REPROMPTS:
-                logger.info("handing %s to staff after repeated no-match", phone)
+                logger.info("handing off to staff after repeated no-match")
                 self.store.clear(phone)
                 return FlowResult(text=HANDOFF_MESSAGE, step=None, finished=True)
             self.store.save(state)

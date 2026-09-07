@@ -1,23 +1,9 @@
-"""
-The matching engine for our predefined responses.
+"""Decides which rule a message hits. The table itself lives in rules.py.
 
-The intent table itself lives in rules.py and the clinic's own facts live in
-clinic.py; this module only decides which rule a message hits.
-
-Matching runs in three passes, and the first match wins:
-
-  1. Emergency — always checked first, so a safety-critical message can never
-     be answered with a booking prompt.
-  2. Standalone small talk — messages that are *only* a greeting or a
-     thank-you ("hi", "thanks a lot", "hello doctor"). Checked early so a bare
-     greeting is never swallowed by an intent rule.
-  3. The rules.py table, top to bottom — specific intents first, with greeting
-     and farewell deliberately last so they only catch messages that carry no
-     other intent.
-
-Incoming text is normalised first (lower-cased, punctuation and emoji
-flattened to spaces) and every keyword is matched on word boundaries, so "hi"
-cannot match inside "which" and "ill" cannot match inside "will".
+Three passes, first match wins: emergency, then messages that are only a
+greeting or thank-you, then the rules.py table top to bottom. Text is
+lower-cased and punctuation flattened first, and keywords match on word
+boundaries so "hi" cannot match inside "which".
 """
 
 import re

@@ -1,83 +1,28 @@
-"""
-Seam for the outsourced ML symptom classifier (ENG-1660, Phase 2).
+"""Seam for the outsourced ML symptom classifier (ENG-1660).
 
-The model is built elsewhere. This module is the boundary it plugs into, so the
-rest of the system can be finished and demoed before the model exists, and so
-nothing about the model's internals leaks into the orchestrator.
+Pipeline, note the OpenAI step comes BEFORE this and is a different call from
+the wellness fallback in llm_fallback.py:
 
-Today `classify()` returns None and the system behaves as if this layer were
-absent. When the model arrives, one adapter is registered at startup.
+    patient free text -> OpenAI extraction -> ["chest_pain", ...] -> this model
 
-
-WHERE THIS SITS — note the OpenAI step BEFORE it, not after
------------------------------------------------------------
-    patient describes symptoms in free text, inside the scripted question flow
-        -> OpenAI extraction  ->  ["chest_pain", "breathlessness", ...]
-        -> THIS MODEL         ->  "Cardiologist"
-        -> route the appointment request to that specialization
-
-This is the opposite order from the general wellness fallback in
-llm_fallback.py, which is a *different* OpenAI call for a different purpose.
-Do not confuse the two: extraction turns prose into symptom terms; the fallback
-answers general questions. Only extraction feeds this model.
-
-Consequence for the input type: this model does NOT receive raw WhatsApp text.
-It receives already-extracted symptom terms. An earlier version of this file had
-that backwards.
-
-
-CONTRACT FOR THE OUTSOURCED MODEL
----------------------------------
-Deliver anything you like internally — sklearn pipeline, pickle, ONNX, a local
-HTTP service. We require exactly one callable:
+Contract the delivered model must satisfy:
 
     def predict(symptoms: list[str]) -> Classification | None
 
-  symptoms        extracted symptom terms, already cleaned by the OpenAI step.
-                  Roughly aligned to the Kaggle 132-symptom vocabulary, but
-                  NOT guaranteed to match it exactly — the extraction step is
-                  an LLM and is not deterministic. Expect synonyms
-                  ("shortness of breath" vs "breathlessness"), spacing and
-                  underscore variation, and occasional terms outside the
-                  vocabulary. Match fuzzily; do not require exact strings.
-                  May be empty — return None if so.
+    symptoms        extracted terms, roughly aligned to the Kaggle 132-symptom
+                    vocabulary but not guaranteed to match it exactly, since
+                    the extraction step is an LLM. Match fuzzily.
+    returns         None when the symptoms do not support one confident
+                    specialization. A valid answer, not a failure.
+    specialization  one of SPECIALIZATIONS below. Never a disease name.
+    confidence      0.0-1.0, honest.
 
-  returns         a Classification, or None when the symptoms do not support a
-                  confident single specialization. None is a valid answer, not
-                  a failure — it routes the patient to General Physician via
-                  the normal booking flow rather than guessing a department.
+    Must not raise. Should be fast, a patient is waiting.
 
-  specialization  exactly one of SPECIALIZATIONS below. Anything else is
-                  logged and discarded — a patient must never be sent to a
-                  department the clinic does not have.
-  confidence      0.0-1.0, honest. Below CLASSIFIER_MIN_CONFIDENCE is
-                  discarded, which is the right outcome for a guess.
-
-  must not raise  wrap your own errors and return None.
-  should be fast  a patient is waiting on a WhatsApp reply.
-
-If the delivered model does not match this signature, write an adapter that
-converts its output into a Classification and register *that*. Do not change
-this contract to fit the model — the adapter is where the mismatch belongs, so
-a v2 model cannot ripple through the codebase.
-
-Note: the model is trained on 41 diseases mapped down to these 12
-specializations, but it must return the SPECIALIZATION, never the disease. The
-disease name must not reach a patient — naming a condition is a diagnosis, and
-this system does not make them.
-
-
-WIRING IT UP
-------------
-At startup, once the model exists:
-
-    import classifier
-    from their_package import predict as their_predict
+If the model does not match this signature, write an adapter and register that
+rather than changing the contract, so a v2 model cannot ripple through the code.
 
     classifier.register(lambda symptoms: adapt(their_predict(symptoms)))
-
-`register()` is a runtime call, not an import, so a missing or broken model
-package can never stop the service from booting.
 """
 
 from __future__ import annotations
@@ -90,7 +35,6 @@ from chatbot.settings import classifier_settings
 
 logger = logging.getLogger(__name__)
 
-# The clinic's 12 departments. The model may return nothing else.
 SPECIALIZATIONS = (
     "General Physician",
     "Dermatologist",
@@ -106,8 +50,7 @@ SPECIALIZATIONS = (
     "Endocrinologist",
 )
 
-# Where an unusable prediction lands. Chosen because a General Physician can
-# triage anything — an unsure model should widen the net, never narrow it.
+# an unsure model should widen the net, not narrow it
 DEFAULT_SPECIALIZATION = "General Physician"
 
 
@@ -117,13 +60,8 @@ class Classification:
     confidence: float
 
     def is_valid(self) -> bool:
-        """Reject malformed output rather than trusting an external model.
-
-        A model returning a disease name, a department the clinic lacks, or
-        `confidence=87` (percent, not a fraction) must degrade to the normal
-        booking flow — not crash the service and not send a patient to a
-        department that does not exist.
-        """
+        # rejects a disease name, a department the clinic does not have, and
+        # confidence given as a percentage
         return (
             self.specialization in SPECIALIZATIONS
             and isinstance(self.confidence, (int, float))
@@ -149,11 +87,10 @@ def is_registered() -> bool:
 
 
 def classify(symptoms: Sequence[str]) -> Classification | None:
-    """Predict a specialization. Returns None when unavailable — never raises.
+    """Predict a specialization, or None if unavailable. Never raises.
 
-    None means "the caller should fall back to the normal booking flow", and
-    covers not-registered, disabled, empty input, low-confidence, malformed,
-    and crashed alike. The caller does not need to know which.
+    None covers not-registered, disabled, empty input, low-confidence,
+    malformed and crashed alike; the caller does not need to know which.
     """
     if not classifier_settings.enabled or _classifier is None:
         return None
@@ -165,9 +102,8 @@ def classify(symptoms: Sequence[str]) -> Classification | None:
     try:
         result = _classifier(cleaned)
     except Exception:
-        # Broad by design: an outsourced model must never take the clinic bot
-        # down. Logged with a traceback so the failure stays visible.
-        logger.exception("symptom classifier raised; falling back to booking flow")
+        # broad on purpose: an outsourced model must not take the bot down
+        logger.exception("symptom classifier raised, falling back")
         return None
 
     if result is None:
@@ -178,11 +114,11 @@ def classify(symptoms: Sequence[str]) -> Classification | None:
         return None
 
     if result.confidence < classifier_settings.min_confidence:
+        # symptoms are health data, so log the score and not the terms
         logger.info(
-            "classification below threshold (%.2f < %.2f) for %r",
+            "classification below threshold (%.2f < %.2f)",
             result.confidence,
             classifier_settings.min_confidence,
-            cleaned,
         )
         return None
 

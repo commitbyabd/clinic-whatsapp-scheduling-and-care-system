@@ -1,27 +1,20 @@
-"""
-The WhatsApp chatbot brain: rules, scripted flow, ML classifier seam, LLM fallback.
+"""The WhatsApp chatbot: rules, scripted flow, ML classifier seam, LLM fallback.
 
-Deliberately a sibling of `app/`, not a feature inside it. Everything in here is
-transport-agnostic — it takes a message string and returns a reply, and knows
-nothing about HTTP, FastAPI, Twilio, or Mongo. `app/features/whatsapp/` is where
-the Twilio webhook will live; it calls into this package and does the HTTP work.
-
-That separation is why the whole decision chain could be built and tested before
-the Twilio account or the ML model existed, and it is what keeps these tests
-free of network calls.
+A sibling of app/ rather than a feature inside it, because it has no URL. It
+takes a message string and returns a reply, knowing nothing about HTTP,
+FastAPI, Twilio or Mongo, which is why its tests need no network. The Twilio
+webhook lives in app/features/whatsapp/ and calls into here.
 
     from chatbot.orchestrator import handle_message
 
     reply = handle_message(body, phone=from_number)
     reply.text     # what to send back
-    reply.source   # which layer answered: a rule name, "flow",
-                   # "classifier", "llm", "canned", or "emergency"
+    reply.source   # which layer answered
 
-Layout:
-    orchestrator.py         the decision chain — start reading here
-    conversation.py         scripted question flow, menus, per-patient state
-    classifier.py           seam + contract for the outsourced ML model
+    orchestrator.py         the decision chain, start here
+    conversation.py         scripted question flow and per-patient state
+    classifier.py           seam for the outsourced ML model
     llm_fallback.py         the OpenAI call and its safety prompt
-    settings.py             chatbot config, read from the environment
+    settings.py             config from the environment
     predefined_responses/   the rule engine
 """

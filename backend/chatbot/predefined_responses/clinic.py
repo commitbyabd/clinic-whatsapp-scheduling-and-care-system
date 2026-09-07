@@ -1,21 +1,11 @@
-"""
-Per-deployment clinic facts.
+"""Per-deployment clinic facts, kept out of the response text in rules.py.
 
-These are the values that differ between clinics, or change without any code
-logic changing — an address, a phone number, opening hours. They live here so
-that moving the clinic or onboarding a second one is a config edit, not a
-rewrite of the response text in rules.py.
+Every value is interpolated into a sentence, so it should read naturally there.
 
-Every value is a plain string that gets interpolated into a response, so the
-defaults below are written to read naturally in a sentence. If you later want
-these to come from environment variables, a settings file, or a per-tenant
-database row, this module is the single place to change.
-
-NOTE: PHONE and EMAIL are still placeholders — fill them in before going live.
+TODO: PHONE and EMAIL are still placeholders, fill them in before going live.
 """
 
-# Used as "Welcome to {NAME}." — keep it lower-case unless it is a proper name,
-# so the sentence reads correctly.
+# used as "Welcome to {NAME}", so lower-case unless it is a proper name
 NAME = "the clinic"
 
 ADDRESS = "123 Health St., Wellness City"

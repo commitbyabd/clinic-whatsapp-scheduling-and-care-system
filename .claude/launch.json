@@ -1,0 +1,17 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "website",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["--prefix", "frontend/website", "run", "dev", "--", "--port", "3001", "--strictPort"],
+      "port": 3001
+    },
+    {
+      "name": "portal",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["--prefix", "frontend/portal", "run", "dev", "--", "--port", "3000", "--strictPort"],
+      "port": 3000
+    }
+  ]
+}

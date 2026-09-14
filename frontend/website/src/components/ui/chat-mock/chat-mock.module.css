@@ -1,0 +1,113 @@
+.mock {
+  display: flex;
+  flex-direction: column;
+}
+
+.bubble {
+  max-width: 82%;
+}
+
+/* ---- Header row (card variant only) ---- */
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 2px 4px var(--space-2xs);
+}
+
+.avatar {
+  width: 26px;
+  height: 26px;
+  border-radius: var(--radius-circle);
+  background: var(--sage);
+  flex-shrink: 0;
+}
+
+.title {
+  font-size: 12.5px;
+  font-weight: var(--weight-semibold);
+  line-height: var(--leading-none);
+  color: var(--ink);
+}
+
+.status {
+  margin-left: auto;
+  font-size: var(--font-3xs);
+  line-height: var(--leading-none);
+  color: var(--ink-meta);
+}
+
+/* ---- Tray: the bubble tray on the Innovations booking card ---- */
+
+.tray {
+  background: var(--cream-base);
+  border-radius: var(--radius-md);
+  padding: 20px 22px;
+  gap: 10px;
+}
+
+.tray .bubble {
+  padding: var(--space-xs) var(--space-sm);
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.tray .patient {
+  align-self: flex-end;
+  max-width: 78%;
+  background: var(--sage);
+  color: var(--cream-ink);
+  border-radius: 16px 16px 4px 16px;
+}
+
+.tray .assistant {
+  align-self: flex-start;
+  background: var(--cream-card);
+  border: 1px solid var(--border-soft);
+  border-radius: 16px 16px 16px 4px;
+  color: var(--ink-90);
+}
+
+/* ---- Card: the assistant window on the Contact page ---- */
+
+.card {
+  width: 270px;
+  background: var(--cream-card);
+  border-radius: var(--radius-xl);
+  padding: var(--space-sm);
+  gap: var(--space-2xs);
+  box-shadow: var(--shadow-float-strong);
+}
+
+.card .bubble {
+  padding: 11px 14px;
+  font-size: var(--font-xs);
+  line-height: 1.45;
+}
+
+.card .patient {
+  align-self: flex-end;
+  max-width: 80%;
+  background: var(--sage);
+  color: var(--cream-ink);
+  border-radius: 14px 14px 4px 14px;
+}
+
+.card .assistant {
+  align-self: flex-start;
+  max-width: 88%;
+  background: var(--cream-bubble);
+  border-radius: 14px 14px 14px 4px;
+  color: var(--ink);
+}
+
+@media screen and (max-width: 767px) {
+  .tray {
+    padding: var(--space-sm);
+  }
+
+  .card {
+    width: 100%;
+  }
+}

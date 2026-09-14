@@ -1,0 +1,88 @@
+.section {
+  padding-bottom: var(--space-4xl);
+}
+
+.block {
+  background: var(--sand);
+  border-radius: var(--radius-3xl);
+  padding: 60px;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 60px;
+  align-items: center;
+}
+
+/* The loudest element on the site. */
+.value {
+  font-family: var(--font-family-heading);
+  font-size: var(--stat-xl);
+  font-weight: var(--weight-regular);
+  line-height: 0.9;
+  letter-spacing: -0.04em;
+  color: var(--sage);
+}
+
+/* Fixed-width digits so the figure does not jitter sideways as it counts. */
+.number {
+  font-variant-numeric: tabular-nums;
+}
+
+.label {
+  margin-top: 14px;
+  font-size: 20px;
+  font-weight: var(--weight-medium);
+  line-height: 1.4;
+  color: var(--ink-75);
+}
+
+.aside {
+  max-width: 330px;
+  padding-left: 60px;
+  border-left: 1px solid var(--border-sand);
+}
+
+.description {
+  font-size: 17px;
+  font-weight: var(--weight-light);
+  line-height: 1.65;
+  color: var(--ink-body);
+}
+
+@media screen and (max-width: 1023px) {
+  .section {
+    padding-bottom: var(--section-y-md);
+  }
+
+  .block {
+    grid-template-columns: 1fr;
+    gap: var(--space-lg);
+    padding: var(--space-xl);
+  }
+
+  .aside {
+    max-width: none;
+    padding-left: 0;
+    padding-top: var(--space-md);
+    border-left: 0;
+    border-top: 1px solid var(--border-sand);
+  }
+}
+
+@media screen and (max-width: 767px) {
+  .section {
+    padding-bottom: var(--section-y-sm);
+  }
+
+  .block {
+    border-radius: var(--radius-block-sm);
+    padding: var(--space-md) 22px var(--space-lg);
+  }
+
+  .label {
+    font-size: var(--font-lg);
+  }
+
+  .description {
+    font-size: var(--content-size-sm);
+  }
+}

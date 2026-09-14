@@ -1,0 +1,238 @@
+.hero {
+  position: relative;
+  overflow: hidden;
+  padding-block: 96px 110px;
+}
+
+.circle {
+  top: -180px;
+  right: -140px;
+  width: 620px;
+  height: 620px;
+  background: var(--sand);
+}
+
+.grid {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1.05fr 0.95fr;
+  gap: 70px;
+  align-items: center;
+}
+
+/* ---- Copy column ---- */
+
+.heading {
+  margin-top: 22px;
+  font-size: var(--heading-3xl);
+  line-height: var(--leading-hero);
+  letter-spacing: var(--tracking-display);
+  color: var(--ink);
+}
+
+/* The second line carries the whole warmth of the page. */
+.emphasis {
+  display: block;
+  font-style: italic;
+  color: var(--sage);
+}
+
+.lead {
+  margin-top: 26px;
+  max-width: 465px;
+  font-size: var(--font-xl);
+  font-weight: var(--weight-light);
+  line-height: var(--leading-body);
+  color: var(--ink-body);
+}
+
+.leadMobile {
+  display: none;
+}
+
+.actions {
+  margin-top: 36px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.secondaryMobile {
+  display: none;
+}
+
+/* ---- Trust row ---- */
+
+/* Charcoal pill. inline-flex so it hugs its content rather than stretching
+   to the column width. */
+.trust {
+  margin-top: var(--space-xl);
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+  padding: 10px 26px 10px 10px;
+  background: var(--ink);
+  border-radius: var(--radius-pill);
+}
+
+.avatars {
+  display: flex;
+}
+
+/* The ring is the pill's own background, so the overlap still reads as a
+   gap between faces instead of a visible cream outline. */
+.avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: var(--radius-circle);
+  border: 2px solid var(--ink);
+}
+
+.avatar + .avatar {
+  margin-left: -12px;
+}
+
+.trustCopy {
+  font-size: var(--font-sm);
+  line-height: var(--leading-normal);
+  color: var(--on-dark-body);
+}
+
+/* ---- Media column ---- */
+
+.media {
+  position: relative;
+}
+
+.image {
+  height: 540px;
+  border-radius: var(--radius-arch);
+  box-shadow: var(--shadow-hero);
+}
+
+.reviews {
+  position: absolute;
+  bottom: 26px;
+  left: -34px;
+  padding: 20px var(--space-md);
+  background: var(--cream-card);
+  border-radius: 20px;
+  box-shadow: var(--shadow-float);
+}
+
+.score {
+  font-family: var(--font-family-heading);
+  font-size: var(--stat-sm);
+  font-weight: var(--weight-regular);
+  line-height: var(--leading-none);
+  color: var(--sage);
+}
+
+.outOf {
+  font-size: 17px;
+  color: var(--ink-eyebrow);
+}
+
+.reviewsLabel {
+  margin-top: 5px;
+  font-size: 12.5px;
+  line-height: 1.4;
+  color: var(--ink-soft);
+}
+
+/* ---- Responsive ---- */
+
+@media screen and (max-width: 1023px) {
+  .hero {
+    padding-block: var(--space-2xl) var(--space-3xl);
+  }
+
+  .grid {
+    grid-template-columns: 1fr;
+    gap: var(--space-2xl);
+  }
+
+  .heading {
+    font-size: var(--heading-2xl);
+  }
+
+  .image {
+    height: 420px;
+  }
+
+  .reviews {
+    left: var(--space-md);
+  }
+}
+
+@media screen and (max-width: 767px) {
+  .hero {
+    padding-block: 30px 34px;
+  }
+
+  .circle {
+    width: 320px;
+    height: 320px;
+    top: -120px;
+    right: -110px;
+  }
+
+  .grid {
+    gap: var(--space-lg);
+  }
+
+  .heading {
+    margin-top: var(--space-sm);
+    font-size: 42px;
+    line-height: 1.04;
+  }
+
+  .emphasis {
+    display: inline;
+  }
+
+  .lead {
+    margin-top: 14px;
+    font-size: 16px;
+    line-height: var(--leading-body);
+  }
+
+  .leadDesktop {
+    display: none;
+  }
+
+  .leadMobile {
+    display: block;
+  }
+
+  .actions {
+    margin-top: var(--space-md);
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--space-2xs);
+  }
+
+  .secondaryDesktop {
+    display: none;
+  }
+
+  .secondaryMobile {
+    display: inline-flex;
+  }
+
+  .trust {
+    margin-top: var(--space-md);
+    padding: 8px 18px 8px 8px;
+    gap: 10px;
+  }
+
+  .image {
+    height: 290px;
+  }
+
+  .reviews {
+    bottom: var(--space-sm);
+    left: var(--space-sm);
+    padding: var(--space-sm) 18px;
+  }
+}

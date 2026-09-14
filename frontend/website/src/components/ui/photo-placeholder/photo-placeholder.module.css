@@ -1,0 +1,40 @@
+.placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background: repeating-linear-gradient(
+    135deg,
+    var(--stripe-from) 0 var(--stripe-band),
+    var(--stripe-to) var(--stripe-band) calc(var(--stripe-band) * 2)
+  );
+}
+
+.caption {
+  padding: 0 var(--space-sm);
+  font-family: var(--font-family-mono);
+  font-size: 10.5px;
+  font-weight: var(--weight-medium);
+  line-height: 1.7;
+  letter-spacing: 0.12em;
+  text-align: center;
+  color: var(--stripe-caption);
+}
+
+.neutral {
+  --stripe-from: var(--stripe-a);
+  --stripe-to: var(--stripe-b);
+  --stripe-caption: var(--stripe-ink);
+}
+
+.sage {
+  --stripe-from: var(--sage-stripe-a);
+  --stripe-to: var(--sage-stripe-b);
+  --stripe-caption: var(--sage-stripe-ink);
+}
+
+.rose {
+  --stripe-from: var(--rose-stripe-a);
+  --stripe-to: var(--rose-stripe-c);
+  --stripe-caption: var(--rose-stripe-ink);
+}

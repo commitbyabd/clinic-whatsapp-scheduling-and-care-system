@@ -1,0 +1,41 @@
+{
+  "updatedAt": "2026-09-12T16:45:00+01:00",
+  "cells": [
+    {
+      "id": "emergency-wait",
+      "label": "Emergency wait",
+      "shortLabel": "ER wait",
+      "value": "24",
+      "unit": "min",
+      "caption": "Moderate · 6 people waiting",
+      "state": "busy"
+    },
+    {
+      "id": "beds-available",
+      "label": "Beds available",
+      "shortLabel": "Beds free",
+      "value": "17",
+      "unit": "/ 120",
+      "caption": "Across four wards, incl. 2 NICU cots",
+      "state": "normal"
+    },
+    {
+      "id": "next-free-slot",
+      "label": "Next free slot",
+      "shortLabel": "Next slot",
+      "value": "Today",
+      "unit": "4:20pm",
+      "caption": "General Medicine, Dr. Grace Lim",
+      "state": "normal"
+    },
+    {
+      "id": "pharmacy-queue",
+      "label": "Pharmacy queue",
+      "shortLabel": "Pharmacy",
+      "value": "5",
+      "unit": "min",
+      "caption": "Open until 9pm, seven days",
+      "state": "normal"
+    }
+  ]
+}

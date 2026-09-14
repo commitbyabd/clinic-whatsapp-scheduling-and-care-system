@@ -1,0 +1,30 @@
+.card {
+  background: var(--overlay-light-94);
+  border-radius: var(--radius-lg);
+  padding: 26px 22px;
+}
+
+.value {
+  font-family: var(--font-family-heading);
+  font-size: var(--stat-md);
+  font-weight: var(--weight-regular);
+  line-height: var(--leading-none);
+  color: var(--terracotta-deep);
+}
+
+.label {
+  margin-top: var(--space-2xs);
+  font-size: var(--font-sm);
+  line-height: 1.45;
+  color: var(--rose-on-card);
+}
+
+@media screen and (max-width: 767px) {
+  .card {
+    padding: 18px;
+  }
+
+  .value {
+    font-size: var(--heading-sm);
+  }
+}

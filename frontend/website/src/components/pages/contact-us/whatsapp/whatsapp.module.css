@@ -1,0 +1,86 @@
+.section {
+  padding-bottom: 30px;
+}
+
+/* The one place a sage block casts a sage-tinted shadow. */
+.block {
+  background: var(--sage);
+  border-radius: var(--radius-3xl);
+  padding: var(--space-2xl) 52px;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: var(--space-2xl);
+  align-items: center;
+  box-shadow: var(--shadow-sage);
+}
+
+.heading {
+  margin-top: 18px;
+  font-size: 42px;
+  line-height: var(--leading-tight);
+  letter-spacing: -0.025em;
+  color: var(--cream-ink);
+}
+
+.description {
+  margin-top: 14px;
+  max-width: 470px;
+  font-size: 17.5px;
+  font-weight: var(--weight-light);
+  line-height: var(--leading-body);
+  color: var(--sage-on-copy);
+}
+
+.actions {
+  margin-top: 28px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.phone {
+  font-size: 16px;
+  font-weight: var(--weight-medium);
+  line-height: 1.4;
+  color: var(--cream-ink);
+}
+
+@media screen and (max-width: 1023px) {
+  .block {
+    grid-template-columns: 1fr;
+    gap: var(--space-lg);
+    padding: var(--space-xl);
+  }
+
+  .heading {
+    font-size: var(--heading-lg);
+  }
+}
+
+@media screen and (max-width: 767px) {
+  .section {
+    padding-bottom: var(--space-sm);
+  }
+
+  .block {
+    border-radius: var(--radius-block-sm);
+    padding: var(--space-lg) var(--space-md);
+  }
+
+  .heading {
+    font-size: var(--heading-sm);
+  }
+
+  .description {
+    font-size: var(--content-size-sm);
+  }
+
+  .actions {
+    margin-top: var(--space-md);
+  }
+
+  .actions > a {
+    width: 100%;
+  }
+}

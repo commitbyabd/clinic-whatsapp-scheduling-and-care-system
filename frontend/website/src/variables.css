@@ -1,0 +1,525 @@
+/* ============================================================
+   MARIGOLD HEALTH — COLOR TOKENS
+   Reference sheet for the 5-page clinic mockup.
+   Nothing here changes the design; it documents every color
+   already used, and where each one appears.
+   ============================================================ */
+
+:root {
+  /* ----------------------------------------------------------
+     1. BASE / SURFACES
+     The cream family. Everything sits on these.
+     ---------------------------------------------------------- */
+
+  /* Page background on every page, desktop and mobile.
+     Also: form input fills, the chat-bubble tray behind the
+     AI booking conversation on Innovations. */
+  --cream-base: #f6f1e9;
+
+  /* Card surface — one step lighter than the page so cards
+     lift off the background without a hard edge.
+     Used on: facility cards (About), doctor cards (Our Team),
+     innovation cards 01 and 04, all contact info cards,
+     the contact form panel, the WhatsApp phone mock-up,
+     the "4.9/5 reviews" floating badge on the Home hero. */
+  --cream-card: #fffcf6;
+
+  /* Warm sand — the "quiet highlight" surface.
+     Used on: the 2.4-million-patients stat block (About),
+     innovation card 03 (patient portal), the blurred circle
+     behind the Home hero, active nav pill background,
+     hover fill on the secondary hero button. */
+  --sand: #efe7d8;
+
+  /* Sand, slightly cooler — light text on dark charcoal,
+     e.g. footer logotype and the dark CTA headline. */
+  --cream-light: #efe7da;
+
+  /* Off-white used for text/icons sitting ON a colored block
+     (sage, terracotta, gold, charcoal). Never a background
+     except for the white pill buttons inside those blocks. */
+  --cream-ink: #fff9ef;
+
+  /* Neutral bubble fill inside the WhatsApp assistant mock
+     on the Contact page (the assistant's messages). */
+  --cream-bubble: #f1ede4;
+
+  /* ----------------------------------------------------------
+     2. BORDERS & HAIRLINES
+     ---------------------------------------------------------- */
+
+  /* Default card border — facility cards, doctor cards,
+     contact cards, form fields, innovation cards 01 & 04.
+     Also the header bottom border. */
+  --border-soft: #ede1cf;
+
+  /* Slightly cooler hairline — section dividers, the sticky
+     header rule, form input borders. */
+  --border-rule: #e7dccb;
+
+  /* Stronger hairline — outline buttons ("Why families choose
+     us"), card hover border, the divider inside the 2.4M stat
+     block, the short rule under the mission quote. */
+  --border-strong: #d6c9b4;
+
+  /* Divider inside the sand-colored stat block on About. */
+  --border-sand: #dbceb8;
+
+  /* ----------------------------------------------------------
+     3. TEXT / INK
+     Warm charcoal family — never pure black.
+     ---------------------------------------------------------- */
+
+  /* Primary text: all headings, nav labels, body emphasis.
+     ALSO used as a background: the dark closing-CTA block on
+     Home, innovation card 02 (research), the footer, the
+     mockup toolbar, and the phone bezel. */
+  --ink: #2e2a26;
+
+  /* Headline ink on light-colored blocks (nurse tribute quote,
+     testimonial attribution). */
+  --ink-90: #3e3a33;
+
+  /* Body copy on the sage/sand blocks. */
+  --ink-80: #4e4a41;
+  --ink-75: #4a443c;
+
+  /* Default body paragraph color on cream — the main reading
+     gray. Intros, card descriptions, section copy. */
+  --ink-body: #5b5349;
+
+  /* Secondary body copy inside small cards (facility and
+     nurse descriptions). */
+  --ink-muted: #6c6459;
+
+  /* Tertiary copy — hero sub-line, section lead-ins,
+     "Median time to a confirmed slot" style footnotes. */
+  --ink-soft: #7a7064;
+
+  /* Metadata: doctor card notes, card footnotes,
+     table right-hand values, form helper text. */
+  --ink-meta: #8a8073;
+
+  /* EYEBROW LABELS — the uppercase letterspaced kickers above
+     every section heading ("WHO WE ARE", "ABOUT US",
+     "OUR TEAM", "INNOVATIONS", "CONTACT US", field labels).
+     Also the small monospace index numbers 01–04. */
+  --ink-eyebrow: #a2947f;
+
+  /* Faintest ink — placeholder captions inside image
+     placeholders, fine print under the contact form. */
+  --ink-faint: #9a8e7f;
+
+  /* Ink on the dark charcoal blocks */
+  --on-dark-body: #c4bcaf; /* footer body, dark-CTA paragraph */
+  --on-dark-muted: #bdb4a7; /* research card paragraph */
+  --on-dark-meta: #9c9386; /* footer descriptions, stat captions */
+  --on-dark-label: #8b8175; /* footer column headings, index numerals */
+  --on-dark-dim: #b7a891; /* mockup toolbar label */
+
+  /* ----------------------------------------------------------
+     4. SAGE GREEN — PRIMARY ACCENT
+     The clinic's identity color. Trust, calm, clinical-but-warm.
+     ---------------------------------------------------------- */
+
+  /* The main sage. Used as a BLOCK background on:
+     the Home stats strip (120 / 20 / 8 / 32),
+     the WhatsApp lead-contact block (Contact),
+     the logo mark in header + footer + mobile,
+     the patient's own chat bubbles in both chat mocks.
+     Used as TEXT on: the italic "your name." in the Home
+     hero headline, the 4.9 review score, the 2.4 million
+     figure on About, doctor specializations, "Always open"
+     in the hours table, and link hover color. */
+  --sage: #6e8672;
+
+  /* Pale sage — the nurse tribute section background (Team),
+     "Accepting new patients" badge, the "Live" status chip
+     on innovation card 01. */
+  --sage-pale: #e4eae1;
+
+  /* Sage text on pale-sage grounds (badge labels, eyebrow on
+     the nurse section). */
+  --sage-deep: #5c7360;
+
+  /* Text color on the white pill button inside the sage
+     WhatsApp block ("Open WhatsApp chat"). */
+  --sage-darkest: #3e5442;
+
+  /* Body copy on the sage blocks — stat captions, the
+     WhatsApp paragraph. */
+  --sage-on-body: #d6e0d3;
+  --sage-on-copy: #dde5da;
+
+  /* Sage-tinted stripes used in the [ photo ] placeholders
+     for theatre, telemedicine, map, and some nurse portraits.
+     Replace these with real imagery. */
+  --sage-stripe-a: #e6e9e1;
+  --sage-stripe-b: #d6ddd1;
+  --sage-stripe-c: #d3dbcd;
+  --sage-stripe-ink: #7e8c7b; /* caption text inside them */
+  --sage-stripe-ink2: #8b9488;
+
+  /* ----------------------------------------------------------
+     5. TERRACOTTA / DUSTY ROSE — THE MARIGOLD FUND
+     Reserved almost entirely for the free-treatment program,
+     so the Fund reads as its own emotional territory.
+     ---------------------------------------------------------- */
+
+  /* The Fund block background on About (the "heart of the
+     page" curved section) and on mobile. Also the Fund CTA
+     button on the Home teaser card. */
+  --terracotta: #c4837a;
+
+  /* Darker terracotta — button hover, and the numerals
+     (1,860 / 214 / 2 days) inside the white stat cards
+     on the Fund block; "Expanding" chip text. */
+  --terracotta-deep: #a2564c;
+
+  /* Fund eyebrow label on cream ("THE MARIGOLD FUND"
+     on the Home teaser). */
+  --terracotta-label: #b0776e;
+
+  /* Light rose chip background — the "Expanding" status chip
+     on innovation card 04 (telemedicine). */
+  --rose-chip: #f3e3df;
+
+  /* Copy sitting on the terracotta block */
+  --rose-on-eyebrow: #fbe7e2; /* uppercase kicker */
+  --rose-on-body: #fbeae6; /* paragraphs, attribution */
+  --rose-on-card: #6c5b57; /* captions inside white stat cards */
+
+  /* Rose-tinted placeholder stripes — Fund imagery,
+     NICU card, some nurse portraits. */
+  --rose-stripe-a: #f1e2de;
+  --rose-stripe-b: #e5cfc8;
+  --rose-stripe-c: #e3cfc9;
+  --rose-stripe-d: #f3e3df;
+  --rose-stripe-e: #e7d0c9;
+  --rose-stripe-ink: #a98c86; /* caption text inside them */
+
+  /* ----------------------------------------------------------
+     6. WARM GOLD — CTA & RECOGNITION
+     Used sparingly: the booking action, and long-service
+     recognition for nurses. Nothing else.
+     ---------------------------------------------------------- */
+
+  /* "Book an Appointment" in the header, the primary CTA on
+     the dark closing block, "Send message" on the contact
+     form, and the years-of-service badges on the nurse
+     tribute section. */
+  --gold: #c08a3e;
+
+  /* Gold hover (header CTA, form submit). */
+  --gold-deep: #a9762f;
+
+  /* Gold hover on DARK backgrounds — lightens instead of
+     darkening (closing CTA on Home). */
+  --gold-light: #d69c4a;
+
+  /* Gold on charcoal — the research card's stat numerals
+     (11 / 3 / 40+), the "Published" chip text, and the
+     "Answers 24/7" pulse dot on the Contact WhatsApp block. */
+  --gold-on-dark: #ddb273;
+
+  /* Gold used as a status dot in the patient-portal list
+     (the "Review" row on innovation card 03). */
+  --gold-status: #c08a3e;
+
+  /* Default link color across the site (a:link). */
+  --link: #8a6a3b;
+
+  /* Text selection highlight. */
+  --selection: #dcc9a8;
+
+  /* ----------------------------------------------------------
+     7. NEUTRAL PLACEHOLDER STRIPES
+     The cream-toned diagonal fills standing in for photos:
+     hero image, doctor portraits, MRI and lab cards, avatars.
+     These disappear once real photography is dropped in.
+     ---------------------------------------------------------- */
+
+  --stripe-a: #efe6d9;
+  --stripe-b: #e4d7c4;
+  --stripe-c: #e1d4c1;
+  --stripe-ink: #9a8e7f; /* the "[ photo ]" caption text */
+
+  /* ----------------------------------------------------------
+     8. TRANSPARENT OVERLAYS
+     Soft washes layered over solid blocks — these create the
+     organic blurred circles and the glassy sticky header.
+     ---------------------------------------------------------- */
+
+  --overlay-header: rgba(246, 241, 233, 0.93); /* sticky header, desktop */
+  --overlay-header-m: rgba(246, 241, 233, 0.95); /* sticky header, mobile */
+  --overlay-light-14: rgba(255, 249, 239, 0.14); /* big circle on Fund block */
+  --overlay-light-18: rgba(255, 249, 239, 0.18); /* "Answers 24/7" badge fill */
+  --overlay-light-30: rgba(246, 241, 233, 0.3); /* outline button on dark CTA */
+  --overlay-light-50: rgba(
+    255,
+    249,
+    239,
+    0.5
+  ); /* outline button on Fund block */
+  --overlay-light-94: rgba(
+    255,
+    249,
+    239,
+    0.94
+  ); /* white stat cards on Fund block */
+  --overlay-rule-dark: rgba(246, 241, 233, 0.14); /* footer bottom rule */
+  --overlay-rule-dark-2: rgba(
+    246,
+    241,
+    233,
+    0.16
+  ); /* divider in research card */
+  --overlay-rule-dark-3: rgba(
+    255,
+    255,
+    255,
+    0.22
+  ); /* dividers in sage stats strip */
+  --overlay-rule-light: rgba(
+    46,
+    42,
+    38,
+    0.12
+  ); /* rule in nurse tribute section */
+  --overlay-ink-09: rgba(46, 42, 38, 0.09); /* shadow circle on Fund block */
+  --overlay-ink-10: rgba(46, 42, 38, 0.1); /* "Live" chip on sand card */
+  --overlay-ink-14: rgba(46, 42, 38, 0.14); /* testimonial card on Fund block */
+  --overlay-sage-16: rgba(110, 134, 114, 0.16); /* circle on nurse section */
+  --overlay-sage-30: rgba(
+    110,
+    134,
+    114,
+    0.3
+  ); /* circle on the dark hiring card */
+  --overlay-sage-35: rgba(110, 134, 114, 0.35); /* circle on dark closing CTA */
+  --overlay-gold-22: rgba(
+    192,
+    138,
+    62,
+    0.22
+  ); /* circle on CTA; "Published" chip */
+
+  /* ----------------------------------------------------------
+     9. SHADOWS
+     All shadows are warm charcoal at low opacity — never
+     neutral gray, never pure black.
+     ---------------------------------------------------------- */
+
+  /* Header CTA button */
+  --shadow-gold: 0 6px 16px rgba(192, 138, 62, 0.28);
+
+  /* Home hero image */
+  --shadow-hero: 0 30px 70px -30px rgba(46, 42, 38, 0.32);
+
+  /* Floating review badge, WhatsApp phone mock */
+  --shadow-float: 0 18px 40px -18px rgba(46, 42, 38, 0.3);
+  --shadow-float-strong: 0 18px 40px -18px rgba(46, 42, 38, 0.35);
+
+  /* Fund teaser card on Home */
+  --shadow-card: 0 24px 60px -34px rgba(46, 42, 38, 0.28);
+
+  /* The sage WhatsApp block on Contact (tinted shadow) */
+  --shadow-sage: 0 26px 60px -34px rgba(110, 134, 114, 0.7);
+
+  /* Phone bezel in mobile view */
+  --shadow-device: 0 34px 80px -30px rgba(46, 42, 38, 0.5);
+
+  /* ----------------------------------------------------------
+     9b. INTERACTION COLORS
+     Hover states the handoff specifies in "Interactions &
+     Behavior" that the original token sheet did not name.
+     ---------------------------------------------------------- */
+
+  /* Marigold Fund CTA hover (terracotta pill on the Home teaser). */
+  --terracotta-hover: #ae6e65;
+
+  /* Outlined-button hover fill on the dark closing CTA block. */
+  --overlay-light-10: rgba(246, 241, 233, 0.1);
+
+  /* ----------------------------------------------------------
+     10. TYPOGRAPHY — FAMILIES
+     Frank Ruhl Libre carries every heading, numeral and quote.
+     Quicksand carries all body copy and UI. The monospace face
+     appears only in the 01-04 index numerals on Innovations.
+     ---------------------------------------------------------- */
+
+  --font-family-primary: "Quicksand", ui-sans-serif, system-ui, sans-serif;
+  --font-family-heading: "Frank Ruhl Libre", Georgia, "Times New Roman", serif;
+  --font-family-mono: ui-monospace, Menlo, Monaco, "Courier New", monospace;
+
+  /* Running-text defaults consumed by .description in Global.css */
+  --content-font: var(--font-family-primary);
+  --content-size: 16.5px;
+  --content-size-md: 16px; /* <= 992px */
+  --content-size-sm: 15px; /* <= 576px — never go below this */
+  --content-weight: 300;
+
+  /* ----------------------------------------------------------
+     11. TYPOGRAPHY — SCALE
+     ---------------------------------------------------------- */
+
+  /* Heading scale (h1-h6 map to these in Global.css) */
+  --heading-3xl: 76px; /* Home hero H1 */
+  --heading-2xl: 58px; /* page H1 */
+  --heading-xl: 46px; /* mission quote, large section H2 */
+  --heading-lg: 40px; /* section H2 */
+  --heading: 32px; /* card H3 */
+  --heading-sm: 25px; /* small headings, mobile card H3 */
+
+  /* UI / body sizes */
+  --font-3xs: 10.5px; /* eyebrow labels, long-service badges */
+  --font-2xs: 11px; /* doctor specialization */
+  --font-xs: 13px; /* footnotes */
+  --font-sm: 13.5px; /* metadata, nav items, small buttons */
+  --font-md: 15px; /* card body, buttons, form inputs */
+  --font-base: 16.5px; /* body paragraph */
+  --font-lg: 18.5px; /* large body paragraph */
+  --font-xl: 19.5px; /* lead paragraph, small card titles */
+  --font-2xl: 21px; /* pull quotes */
+
+  /* Large numerals — Newsreader-role display figures */
+  --stat-sm: 34px; /* 4.9/5 review score */
+  --stat-md: 40px; /* Fund stat cards */
+  --stat-lg: 58px; /* sage stats strip */
+  --stat-xl: clamp(80px, 9vw, 130px); /* 2.4 million on About */
+
+  /* Weights */
+  --weight-light: 300;
+  --weight-regular: 400;
+  --weight-medium: 500;
+  --weight-semibold: 600;
+  --weight-bold: 700;
+
+  /* Line heights */
+  --leading-none: 1;
+  --leading-hero: 1.02;
+  --leading-snug: 1.06;
+  --leading-tight: 1.1;
+  --leading-heading: 1.16;
+  --leading-quote: 1.28;
+  --leading-normal: 1.5;
+  --leading-body: 1.62;
+  --leading-relaxed: 1.68;
+
+  /* Letter spacing */
+  --tracking-display: -0.03em; /* hero + page H1 */
+  --tracking-heading: -0.02em; /* section H2, card H3 */
+  --tracking-title: -0.01em; /* small card titles */
+  --tracking-badge: 0.11em; /* long-service badges */
+  --tracking-chip: 0.13em; /* status and availability chips */
+  --tracking-label: 0.14em; /* doctor specializations */
+  --tracking-mono: 0.16em; /* 01-04 index numerals */
+  --tracking-eyebrow: 0.18em; /* uppercase section kickers */
+  --tracking-lockup: 0.2em; /* CLINIC & MEDICAL CENTRE */
+
+  /* ----------------------------------------------------------
+     12. LAYOUT & SPACING
+     Observed scale rounded to a 4px base.
+     ---------------------------------------------------------- */
+
+  --container-width: 1200px; /* standard content width */
+  --container-wide: 1360px; /* full-bleed colored blocks */
+  --container-inner: 1160px; /* inner content of those blocks */
+  --container-pad: 40px;
+  --container-pad-md: 32px; /* 1024-1279px */
+  --container-pad-sm: 20px; /* < 768px */
+
+  --nav-height: 72px;
+
+  --space-3xs: 4px;
+  --space-2xs: 8px;
+  --space-xs: 12px;
+  --space-sm: 16px;
+  --space-md: 24px;
+  --space-lg: 32px;
+  --space-xl: 40px;
+  --space-2xl: 56px;
+  --space-3xl: 72px;
+  --space-4xl: 96px;
+
+  /* Section vertical rhythm */
+  --section-y: 100px;
+  --section-y-md: 72px;
+  --section-y-sm: 40px;
+
+  /* ----------------------------------------------------------
+     13. RADII
+     A system, not arbitrary values. The three organic shapes
+     at the bottom are the personality of the design — the
+     arch, the leaf, and the two nurse teardrops.
+     ---------------------------------------------------------- */
+
+  --radius-xs: 14px; /* form fields, chat bubbles */
+  --radius-sm: 16px;
+  --radius-md: 22px; /* inset panels */
+  --radius-lg: 24px; /* standard cards */
+  --radius-xl: 28px;
+  --radius-2xl: 34px; /* large cards */
+  --radius-3xl: 40px; /* major section blocks */
+  --radius-4xl: 56px; /* full-bleed hero blocks */
+  --radius-block-sm: 36px; /* the same blocks on mobile */
+  --radius-pill: 999px; /* every button and chip */
+  --radius-circle: 50%;
+
+  --radius-arch: 230px 230px 28px 230px; /* Home hero image */
+  --radius-leaf: 60% 60% 60% 14px; /* logo mark */
+  --radius-drop-bl: 50% 50% 50% 18px; /* nurse portrait, variant 2 */
+  --radius-drop-tl: 28px 50% 50% 50%; /* nurse portrait, variant 3 */
+
+  /* ----------------------------------------------------------
+     14. ICONS, MOTION, FOCUS & CURSOR
+     Motion is deliberately minimal — the calm of the design
+     depends on it. One fade-up on section entry, nothing more.
+     ---------------------------------------------------------- */
+
+  --icon-size: 18px;
+  --icon-color: currentColor;
+  --icon-stroke: 1.6;
+
+  --transition-fast: 150ms ease; /* every documented hover state */
+  --transition-base: 250ms ease;
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --reveal-duration: 0.4s; /* the single section-entry fade-up */
+  --reveal-distance: 18px;
+
+  --focus-ring-width: 2px;
+  --focus-ring-color: var(--sage);
+  --focus-ring-offset: 2px;
+
+  --cursor: default;
+  --hover-cursor: pointer;
+
+  /* ----------------------------------------------------------
+     15. ALIASES
+     Semantic names used by Global.css and shared components.
+     ---------------------------------------------------------- */
+
+  --color-light: var(--cream-base);
+  --color-dark: var(--ink);
+  --color-surface: var(--cream-card);
+  --color-text: var(--ink);
+  --color-text-body: var(--ink-body);
+  --color-accent: var(--sage);
+}
+
+/* ============================================================
+   QUICK REFERENCE — WHICH COLOR OWNS WHICH MOMENT
+
+   Page background ................ --cream-base   #F6F1E9
+   Cards .......................... --cream-card   #FFFCF6
+   All headings ................... --ink          #2E2A26
+   Body copy ...................... --ink-body     #5B5349
+   Uppercase eyebrows ............. --ink-eyebrow  #A2947F
+   Primary accent / stats strip ... --sage         #6E8672
+   The Marigold Fund .............. --terracotta   #C4837A
+   Book an Appointment / CTAs ..... --gold         #C08A3E
+   Dark blocks & footer ........... --ink          #2E2A26
+
+   RULE OF THUMB: sage is the institution, terracotta is the
+   Fund, gold is the ask. Never swap their jobs.
+   ============================================================ */

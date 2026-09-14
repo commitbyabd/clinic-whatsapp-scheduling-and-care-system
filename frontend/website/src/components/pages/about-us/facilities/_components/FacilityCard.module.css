@@ -1,0 +1,60 @@
+.card {
+  background: var(--cream-card);
+  border: 1px solid var(--border-soft);
+  border-radius: 26px;
+  overflow: hidden;
+}
+
+.media {
+  height: 150px;
+}
+
+.body {
+  padding: var(--space-md) var(--space-md) var(--space-xl);
+}
+
+.title {
+  font-size: 19px;
+  font-weight: var(--weight-medium);
+  line-height: 1.25;
+  letter-spacing: var(--tracking-title);
+  color: var(--ink);
+}
+
+.description {
+  margin-top: 10px;
+  font-size: 14.5px;
+  font-weight: var(--weight-light);
+  line-height: var(--leading-normal);
+  color: var(--ink-muted);
+}
+
+/* On phones these become horizontal list rows rather than cards. */
+@media screen and (max-width: 767px) {
+  .card {
+    display: grid;
+    grid-template-columns: 76px 1fr;
+    align-items: center;
+    gap: var(--space-sm);
+    border-radius: var(--radius-lg);
+    padding: var(--space-xs);
+  }
+
+  .media {
+    height: 76px;
+    border-radius: var(--radius-sm);
+  }
+
+  .body {
+    padding: 0 var(--space-2xs) 0 0;
+  }
+
+  .title {
+    font-size: 16px;
+  }
+
+  .description {
+    margin-top: 6px;
+    font-size: var(--font-xs);
+  }
+}

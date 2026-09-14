@@ -1,0 +1,81 @@
+.card {
+  background: var(--cream-card);
+  border: 1px solid var(--border-soft);
+  border-radius: 26px;
+  padding: 28px 26px 30px;
+}
+
+.title {
+  font-family: var(--font-family-heading);
+  font-size: 17px;
+  font-weight: var(--weight-medium);
+  line-height: 1.3;
+  color: var(--ink);
+}
+
+.price {
+  margin-top: 14px;
+  font-family: var(--font-family-heading);
+  font-size: var(--stat-sm);
+  font-weight: var(--weight-regular);
+  line-height: var(--leading-none);
+  letter-spacing: var(--tracking-heading);
+  color: var(--sage);
+}
+
+.note {
+  margin-top: 10px;
+  font-size: 14px;
+  font-weight: var(--weight-light);
+  line-height: 1.55;
+  color: var(--ink-muted);
+}
+
+/* The $0 Fund card — the hinge into the Fund teaser below. */
+.emphasis {
+  background: var(--ink);
+  border-color: transparent;
+}
+
+.emphasis .title {
+  color: var(--cream-base);
+}
+
+.emphasis .price {
+  color: var(--gold-on-dark);
+}
+
+.emphasis .note {
+  color: var(--on-dark-muted);
+}
+
+/* On phones the cards become full-width rows, price right-aligned —
+   card 4 keeps its charcoal treatment. */
+@media screen and (max-width: 767px) {
+  .card {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    column-gap: var(--space-sm);
+    border-radius: var(--radius-lg);
+    padding: 18px 20px;
+  }
+
+  .title {
+    font-size: 16px;
+  }
+
+  .price {
+    grid-column: 2;
+    grid-row: 1 / span 2;
+    margin-top: 0;
+    font-size: 28px;
+    text-align: right;
+  }
+
+  .note {
+    grid-column: 1;
+    margin-top: 4px;
+    font-size: var(--font-xs);
+  }
+}

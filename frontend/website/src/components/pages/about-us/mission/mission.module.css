@@ -1,0 +1,72 @@
+.section {
+  padding-block: 88px 76px;
+}
+
+.inner {
+  max-width: 980px;
+  text-align: center;
+}
+
+.eyebrow {
+  font-size: 11px;
+  font-weight: var(--weight-semibold);
+  line-height: var(--leading-none);
+  letter-spacing: var(--tracking-lockup);
+  text-transform: uppercase;
+  color: var(--ink-eyebrow);
+}
+
+/* Deliberately not a heading — this is the clinic speaking, not a label. */
+.quote {
+  margin-top: 26px;
+  font-family: var(--font-family-heading);
+  font-size: var(--heading-xl);
+  font-weight: var(--weight-regular);
+  line-height: var(--leading-quote);
+  letter-spacing: var(--tracking-heading);
+  color: var(--ink);
+}
+
+.rule {
+  display: block;
+  margin: 30px auto 0;
+  width: 56px;
+  height: 1px;
+  background: var(--border-strong);
+}
+
+.attribution {
+  margin-top: 22px;
+  font-size: 14px;
+  line-height: var(--leading-normal);
+  color: var(--ink-meta);
+}
+
+@media screen and (max-width: 1023px) {
+  .section {
+    padding-block: var(--space-3xl) var(--space-2xl);
+  }
+
+  .quote {
+    font-size: var(--heading-lg);
+  }
+}
+
+@media screen and (max-width: 767px) {
+  .section {
+    padding-block: var(--space-xl) var(--space-lg);
+  }
+
+  .quote {
+    margin-top: 18px;
+    font-size: var(--heading-sm);
+  }
+
+  .rule {
+    margin-top: 22px;
+  }
+
+  .attribution {
+    margin-top: var(--space-sm);
+  }
+}

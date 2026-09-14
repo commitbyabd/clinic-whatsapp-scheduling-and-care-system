@@ -1,0 +1,139 @@
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2xs);
+  border: 1px solid transparent;
+  border-radius: var(--radius-pill);
+  font-family: var(--font-family-primary);
+  font-weight: var(--weight-semibold);
+  line-height: var(--leading-none);
+  text-align: center;
+  text-decoration: none;
+  white-space: nowrap;
+  transition:
+    background-color var(--transition-fast),
+    border-color var(--transition-fast),
+    color var(--transition-fast);
+}
+
+/* ---- Sizes ---- */
+
+.lg {
+  padding: 17px 30px;
+  font-size: var(--font-md);
+}
+
+.sm {
+  padding: 12px 22px;
+  font-size: var(--font-sm);
+}
+
+/* ---- Variants ---- */
+
+/* Hero primary: charcoal that warms to sage on hover. */
+.primary {
+  background: var(--ink);
+  color: var(--cream-base);
+}
+.primary:hover {
+  background: var(--sage);
+  color: var(--cream-base);
+}
+
+/* Hero secondary: outlined on cream. */
+.outline {
+  background: transparent;
+  border-color: var(--border-strong);
+  color: var(--ink);
+}
+.outline:hover {
+  background: var(--sand);
+  color: var(--ink);
+}
+
+/* The ask — header CTA and the contact form's submit. */
+.gold {
+  background: var(--gold);
+  color: var(--cream-ink);
+  box-shadow: var(--shadow-gold);
+}
+.gold:hover {
+  background: var(--gold-deep);
+  color: var(--cream-ink);
+}
+
+/* The ask, on a dark block — lightens instead of darkening. */
+.goldOnDark {
+  background: var(--gold);
+  color: var(--cream-ink);
+}
+.goldOnDark:hover {
+  background: var(--gold-light);
+  color: var(--ink);
+}
+
+/* Outlined on a dark block. */
+.outlineOnDark {
+  background: transparent;
+  border-color: var(--overlay-light-30);
+  color: var(--cream-base);
+}
+.outlineOnDark:hover {
+  background: var(--overlay-light-10);
+  color: var(--cream-base);
+}
+
+/* The Fund, and only the Fund. */
+.terracotta {
+  background: var(--terracotta);
+  color: var(--cream-ink);
+}
+.terracotta:hover {
+  background: var(--terracotta-hover);
+  color: var(--cream-ink);
+}
+
+/* White pill sitting on the terracotta Fund block — inverts on hover. */
+.white {
+  background: var(--cream-ink);
+  color: var(--terracotta-deep);
+}
+.white:hover {
+  background: var(--ink);
+  color: var(--cream-ink);
+}
+
+/* White pill sitting on the sage WhatsApp block — inverts on hover. */
+.whiteOnSage {
+  background: var(--cream-ink);
+  color: var(--sage-darkest);
+}
+.whiteOnSage:hover {
+  background: var(--ink);
+  color: var(--cream-ink);
+}
+
+/* Outlined on the terracotta Fund block. */
+.outlineOnFund {
+  background: transparent;
+  border-color: var(--overlay-light-50);
+  color: var(--cream-ink);
+}
+.outlineOnFund:hover {
+  background: var(--overlay-light-14);
+  color: var(--cream-ink);
+}
+
+/* ---- Modifiers ---- */
+
+.full {
+  width: 100%;
+}
+
+@media screen and (max-width: 767px) {
+  .lg,
+  .sm {
+    min-height: 46px;
+  }
+}

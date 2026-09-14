@@ -1,0 +1,90 @@
+.card {
+  width: var(--nurse-width);
+}
+
+/* Visual offset only — the DOM order stays readable for screen readers. */
+.offset {
+  margin-top: 34px;
+}
+
+.photo {
+  width: var(--nurse-width);
+  height: var(--nurse-width);
+}
+
+/* The three shapes cycle by index. Do not normalize them. */
+.circle {
+  border-radius: var(--radius-circle);
+}
+
+.dropBl {
+  border-radius: var(--radius-drop-bl);
+}
+
+.dropTl {
+  border-radius: var(--radius-drop-tl);
+}
+
+.name {
+  margin-top: 14px;
+  font-size: 19px;
+  font-weight: var(--weight-medium);
+  line-height: 1.25;
+  letter-spacing: var(--tracking-title);
+  color: var(--ink);
+}
+
+.role {
+  margin-top: 5px;
+  font-size: var(--font-sm);
+  line-height: 1.45;
+  color: var(--ink-muted);
+}
+
+.badge {
+  margin-top: var(--space-xs);
+  padding: 7px 13px 7px 10px;
+}
+
+.badgeShort {
+  display: none;
+}
+
+@media screen and (max-width: 767px) {
+  .card {
+    width: var(--nurse-width-mobile);
+  }
+
+  .photo {
+    width: var(--nurse-width-mobile);
+    height: var(--nurse-width-mobile);
+  }
+
+  .offset {
+    margin-top: 18px;
+  }
+
+  .name {
+    margin-top: 10px;
+    font-size: 16px;
+  }
+
+  .role {
+    font-size: var(--font-xs);
+  }
+
+  .badge {
+    margin-top: var(--space-2xs);
+    padding: 5px 10px;
+    font-size: 9px;
+    letter-spacing: 0.1em;
+  }
+
+  .badgeLong {
+    display: none;
+  }
+
+  .badgeShort {
+    display: inline;
+  }
+}

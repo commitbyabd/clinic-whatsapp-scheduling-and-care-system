@@ -1,0 +1,129 @@
+.card {
+  border: 1px solid transparent;
+  border-radius: var(--radius-2xl);
+  padding: var(--space-xl) 42px 42px;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ---- Themes ----
+   Card 02 carries the charcoal treatment on purpose: it is what keeps the
+   AI booking card from dominating a set of four equal initiatives. */
+
+.cream {
+  background: var(--cream-card);
+  border-color: var(--border-soft);
+}
+
+.sand {
+  background: var(--sand);
+}
+
+.dark {
+  background: var(--ink);
+}
+
+.dark .title {
+  color: var(--cream-base);
+}
+
+.dark .description {
+  color: var(--on-dark-muted);
+}
+
+.dark .index,
+.dark .footnote {
+  color: var(--on-dark-label);
+}
+
+.dark .footnote {
+  color: var(--on-dark-meta);
+}
+
+/* ---- Head row ---- */
+
+.head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.index {
+  font-family: var(--font-family-mono);
+  font-size: 12px;
+  font-weight: var(--weight-medium);
+  line-height: var(--leading-none);
+  letter-spacing: var(--tracking-mono);
+  color: var(--ink-eyebrow);
+}
+
+/* ---- Body ---- */
+
+.title {
+  margin-top: 22px;
+  font-size: var(--heading);
+  line-height: var(--leading-heading);
+  color: var(--ink);
+}
+
+.description {
+  margin-top: 14px;
+  font-size: var(--font-base);
+  font-weight: var(--weight-light);
+  line-height: var(--leading-body);
+  color: var(--ink-body);
+}
+
+.media {
+  margin-top: 26px;
+}
+
+.image {
+  height: 132px;
+  border-radius: var(--radius-md);
+}
+
+.footnote {
+  margin-top: 20px;
+  font-size: var(--font-xs);
+  line-height: var(--leading-normal);
+  color: var(--ink-meta);
+}
+
+/* Pin the footnote to the bottom so cards of unequal copy still align. */
+.media + .footnote {
+  margin-top: auto;
+  padding-top: 20px;
+}
+
+@media screen and (max-width: 767px) {
+  .card {
+    border-radius: var(--radius-xl);
+    padding: var(--space-md) 22px var(--space-lg);
+  }
+
+  .title {
+    margin-top: 18px;
+    font-size: var(--heading-sm);
+  }
+
+  .description {
+    margin-top: var(--space-xs);
+    font-size: var(--content-size-sm);
+  }
+
+  .media {
+    margin-top: 18px;
+  }
+
+  /* The portal list and the telemedicine photo drop on phones; the booking
+     chat is kept, because it carries the idea. */
+  .mediaHiddenOnMobile .media {
+    display: none;
+  }
+
+  .footnote {
+    margin-top: 18px;
+    padding-top: 0;
+  }
+}

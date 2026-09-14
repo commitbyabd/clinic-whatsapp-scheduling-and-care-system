@@ -1,0 +1,185 @@
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 60;
+  background: var(--overlay-header);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border-rule);
+}
+
+.bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 14px 36px;
+  padding-block: var(--space-sm);
+}
+
+/* ---- Brand lockup ---- */
+
+.lockup {
+  display: flex;
+  align-items: center;
+  flex: none;
+  color: inherit;
+}
+
+.lockup:hover {
+  color: inherit;
+}
+
+/* logo.avif is the whole lockup — mark, name and tagline in one file. */
+.logo {
+  height: 42px;
+  width: auto;
+}
+
+/* ---- Desktop nav pills ---- */
+
+.nav {
+  margin-left: auto;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 2px;
+}
+
+.pill {
+  padding: 10px 15px;
+  border-radius: var(--radius-pill);
+  font-size: var(--font-sm);
+  font-weight: var(--weight-medium);
+  line-height: 1.3;
+  white-space: nowrap;
+  color: var(--ink-soft);
+  transition:
+    background-color var(--transition-fast),
+    color var(--transition-fast);
+}
+
+.pill:hover {
+  color: var(--ink);
+}
+
+/* Fixed-label CTA: never wraps, never shrinks. */
+.cta {
+  white-space: nowrap;
+  flex: none;
+}
+
+.pillActive {
+  background: var(--sand);
+  font-weight: var(--weight-semibold);
+  color: var(--ink);
+}
+
+/* ---- Hamburger ---- */
+
+.burger {
+  display: none;
+  margin-left: auto;
+  flex-direction: column;
+  gap: var(--space-3xs);
+  padding: 8px 6px;
+}
+
+.burgerBar {
+  display: block;
+  width: 18px;
+  height: 1.5px;
+  background: var(--ink);
+}
+
+/* ---- Mobile drawer ---- */
+
+.drawer {
+  display: none;
+}
+
+@media screen and (max-width: 1279px) {
+  .pill {
+    padding: 10px 13px;
+  }
+}
+
+/* Between roughly 768px and 1199px the nav takes its own line beneath the
+   logo, with the CTA staying up on the first row. Left to plain wrapping it
+   is the CTA that drops instead; and squeezing the pills to hold one row is
+   what produced the touching, mismatched labels in the first place. */
+@media screen and (min-width: 768px) and (max-width: 1199px) {
+  .nav {
+    order: 3;
+    flex-basis: 100%;
+    margin-left: 0;
+  }
+
+  .cta {
+    order: 2;
+    margin-left: auto;
+  }
+}
+
+@media screen and (max-width: 767px) {
+  .bar {
+    gap: var(--space-2xs);
+    padding-block: 14px;
+  }
+
+  .logo {
+    height: 32px;
+  }
+
+  .nav,
+  .cta {
+    display: none;
+  }
+
+  .burger {
+    display: flex;
+  }
+
+  /* An author `display` beats the UA stylesheet's [hidden] rule, so the
+     closed state has to be stated explicitly. */
+  .drawer[hidden] {
+    display: none;
+  }
+
+  .drawer {
+    position: fixed;
+    inset: var(--nav-height) 0 0;
+    z-index: 90;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+    padding: var(--space-xl) var(--container-pad-sm) var(--space-2xl);
+    background: var(--cream-base);
+    overflow-y: auto;
+  }
+
+  .drawerNav {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2xs);
+  }
+
+  .drawerLink {
+    padding: var(--space-xs) 0;
+    font-family: var(--font-family-heading);
+    font-size: 24px;
+    font-weight: var(--weight-regular);
+    letter-spacing: var(--tracking-heading);
+    color: var(--ink);
+    border-bottom: 1px solid var(--border-rule);
+  }
+
+  .drawerLinkActive {
+    color: var(--sage);
+  }
+
+  .drawerCta {
+    margin-top: auto;
+    width: 100%;
+  }
+}

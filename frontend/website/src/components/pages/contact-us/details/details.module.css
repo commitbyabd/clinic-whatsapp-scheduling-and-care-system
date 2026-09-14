@@ -1,0 +1,61 @@
+.section {
+  padding-block: 26px var(--space-4xl);
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: 0.95fr 1.05fr;
+  gap: var(--space-md);
+  align-items: start;
+}
+
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-sm);
+}
+
+.map {
+  height: 230px;
+  border-radius: 26px;
+}
+
+@media screen and (max-width: 1023px) {
+  .section {
+    padding-bottom: var(--section-y-md);
+  }
+
+  .layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media screen and (max-width: 767px) {
+  .section {
+    padding-block: var(--space-sm) var(--section-y-sm);
+  }
+
+  .layout,
+  .stack {
+    gap: var(--space-sm);
+  }
+
+  .cards {
+    gap: var(--space-xs);
+  }
+
+  /* Hours spans both columns on phones. */
+  .cards > *:last-child {
+    grid-column: span 2;
+  }
+
+  .map {
+    height: 160px;
+  }
+}

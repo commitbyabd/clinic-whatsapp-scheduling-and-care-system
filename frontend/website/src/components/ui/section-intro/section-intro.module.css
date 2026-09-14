@@ -1,0 +1,87 @@
+.intro {
+  display: flex;
+  flex-direction: column;
+}
+
+.eyebrow {
+  font-family: var(--font-family-primary);
+  font-size: 11px;
+  font-weight: var(--weight-semibold);
+  line-height: var(--leading-none);
+  letter-spacing: var(--tracking-lockup);
+  text-transform: uppercase;
+  color: var(--eyebrow-color, var(--ink-eyebrow));
+}
+
+.heading {
+  margin-top: var(--space-sm);
+  color: var(--heading-color, var(--ink));
+}
+
+.description {
+  margin-top: var(--space-md);
+  font-family: var(--content-font);
+  font-size: var(--font-xl);
+  font-weight: var(--content-weight);
+  line-height: var(--leading-relaxed);
+  color: var(--intro-body-color, var(--ink-body));
+}
+
+/* ---- Alignment ---- */
+
+.left {
+  align-items: flex-start;
+}
+
+.center {
+  align-items: center;
+  text-align: center;
+}
+
+.center .heading,
+.center .description {
+  margin-inline: auto;
+}
+
+/* ---- Tones ---- */
+
+.default {
+  --eyebrow-color: var(--ink-eyebrow);
+}
+
+/* The Marigold Fund teaser, sitting on cream. */
+.terracotta {
+  --eyebrow-color: var(--terracotta-label);
+}
+
+/* Inside the terracotta Fund block. */
+.fund {
+  --eyebrow-color: var(--rose-on-eyebrow);
+  --heading-color: var(--cream-ink);
+  --intro-body-color: var(--rose-on-body);
+}
+
+/* Inside the pale-sage nurse tribute. */
+.sage {
+  --eyebrow-color: var(--sage-deep);
+  --heading-color: var(--ink-90);
+  --intro-body-color: var(--ink-80);
+}
+
+/* On charcoal blocks. */
+.dark {
+  --eyebrow-color: var(--on-dark-label);
+  --heading-color: var(--cream-base);
+  --intro-body-color: var(--on-dark-body);
+}
+
+@media screen and (max-width: 767px) {
+  .description {
+    font-size: var(--content-size-sm);
+    margin-top: var(--space-sm);
+  }
+
+  .heading {
+    margin-top: var(--space-xs);
+  }
+}

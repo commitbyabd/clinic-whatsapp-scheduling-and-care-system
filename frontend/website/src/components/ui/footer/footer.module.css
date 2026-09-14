@@ -1,0 +1,122 @@
+.footer {
+  background: var(--ink);
+  color: var(--on-dark-body);
+  padding-block: 66px 34px;
+}
+
+.columns {
+  display: grid;
+  grid-template-columns: 1.3fr 0.8fr 0.8fr 1fr;
+  gap: 50px;
+}
+
+/* ---- Brand column ---- */
+
+.lockup {
+  display: inline-flex;
+  align-items: center;
+}
+
+/* Same lockup as the header, with its lettering turned light for the
+   charcoal ground. */
+.logo {
+  height: 44px;
+  width: auto;
+}
+
+.brandCopy {
+  margin-top: 18px;
+  max-width: 290px;
+  font-size: 14.5px;
+  font-weight: var(--weight-light);
+  line-height: 1.65;
+  color: var(--on-dark-meta);
+}
+
+/* ---- Link columns ---- */
+
+.columnHeading {
+  font-family: var(--font-family-primary);
+  font-size: var(--font-3xs);
+  font-weight: var(--weight-semibold);
+  line-height: var(--leading-none);
+  letter-spacing: 0.17em;
+  text-transform: uppercase;
+  color: var(--on-dark-label);
+}
+
+.columnLinks {
+  margin-top: var(--space-sm);
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  font-size: 14.5px;
+  font-style: normal;
+  line-height: 1.5;
+}
+
+.link {
+  color: var(--on-dark-body);
+  width: fit-content;
+}
+
+.link:hover {
+  color: var(--cream-base);
+}
+
+.linkText {
+  color: var(--on-dark-body);
+}
+
+/* ---- Bottom bar ---- */
+
+.legal {
+  margin-top: 52px;
+  padding-top: var(--space-md);
+  border-top: 1px solid var(--overlay-rule-dark);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  justify-content: space-between;
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--on-dark-label);
+}
+
+.legalItems {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 22px;
+}
+
+@media screen and (max-width: 1023px) {
+  .columns {
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-xl);
+  }
+
+  .brand {
+    grid-column: 1 / -1;
+  }
+}
+
+@media screen and (max-width: 767px) {
+  .footer {
+    padding-block: var(--space-2xl) var(--space-lg);
+  }
+
+  .columns {
+    grid-template-columns: 1fr;
+    gap: var(--space-lg);
+  }
+
+  .columnLinks {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: var(--space-xs) 18px;
+  }
+
+  .legal {
+    margin-top: var(--space-lg);
+  }
+}

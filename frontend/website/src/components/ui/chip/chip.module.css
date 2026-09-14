@@ -1,0 +1,88 @@
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2xs);
+  border-radius: var(--radius-pill);
+  font-family: var(--font-family-primary);
+  font-weight: var(--weight-semibold);
+  line-height: var(--leading-none);
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.dot {
+  width: 7px;
+  height: 7px;
+  border-radius: var(--radius-circle);
+  background: var(--chip-dot, currentColor);
+  flex-shrink: 0;
+}
+
+/* ---- Sizes ---- */
+
+.sm {
+  padding: 5px 11px;
+  font-size: 9.5px;
+  letter-spacing: var(--tracking-badge);
+}
+
+.md {
+  padding: 6px 13px;
+  font-size: var(--font-3xs);
+  letter-spacing: 0.12em;
+}
+
+.lg {
+  padding: 7px 15px 7px 11px;
+  font-size: 11px;
+  letter-spacing: var(--tracking-chip);
+}
+
+/* A chip with a dot needs a shorter leading edge. */
+.sm:has(.dot) {
+  padding-left: 8px;
+}
+.md:has(.dot) {
+  padding-left: 10px;
+}
+
+/* ---- Variants ---- */
+
+/* Institution: "Accepting new patients", "Live". */
+.sage {
+  background: var(--sage-pale);
+  color: var(--sage-deep);
+  --chip-dot: var(--sage);
+}
+
+/* "Live" where the card is already sand-colored. */
+.neutral {
+  background: var(--overlay-ink-10);
+  color: var(--ink-body);
+}
+
+/* "Published", on the charcoal research card. */
+.goldOnDark {
+  background: var(--overlay-gold-22);
+  color: var(--gold-on-dark);
+}
+
+/* "Expanding", on the telemedicine card. */
+.rose {
+  background: var(--rose-chip);
+  color: var(--terracotta-deep);
+}
+
+/* Long-service recognition for nurses — gold, and nothing else. */
+.gold {
+  background: var(--gold);
+  color: var(--cream-ink);
+  --chip-dot: var(--cream-ink);
+}
+
+/* "Answers 24/7", on the sage WhatsApp block. */
+.translucent {
+  background: var(--overlay-light-18);
+  color: var(--cream-ink);
+  --chip-dot: var(--gold);
+}

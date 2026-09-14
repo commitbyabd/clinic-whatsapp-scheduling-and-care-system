@@ -1,0 +1,53 @@
+.panel {
+  background: var(--cream-card);
+  border-radius: var(--radius-md);
+  padding: var(--space-2xs);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px var(--space-sm);
+  border-radius: var(--radius-sm);
+}
+
+.highlighted {
+  background: var(--cream-base);
+}
+
+.dot {
+  width: var(--space-2xs);
+  height: var(--space-2xs);
+  border-radius: var(--radius-circle);
+  flex-shrink: 0;
+}
+
+.sage {
+  background: var(--sage);
+}
+
+.gold {
+  background: var(--gold-status);
+}
+
+.terracotta {
+  background: var(--terracotta);
+}
+
+.label {
+  font-size: 14px;
+  font-weight: var(--weight-medium);
+  line-height: var(--leading-none);
+  color: var(--ink);
+}
+
+.state {
+  margin-left: auto;
+  font-size: var(--font-xs);
+  line-height: var(--leading-none);
+  color: var(--ink-meta);
+}

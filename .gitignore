@@ -1,5 +1,6 @@
 # Repo root. Patterns without a leading slash match at any depth, so these
-# cover backend/ and frontend/ too — there is no second .gitignore.
+# also cover backend/ and both frontend apps. Each frontend app keeps the
+# .gitignore Vite generated for it as well.
 
 # ---------------------------------------------------------------------------
 # Secrets — never commit these

@@ -1,0 +1,68 @@
+.card {
+  background: var(--cream-card);
+  border: 1px solid var(--border-soft);
+  border-radius: 26px;
+  overflow: hidden;
+  transition: border-color var(--transition-fast);
+}
+
+.card:hover {
+  border-color: var(--border-strong);
+}
+
+.media {
+  height: 230px;
+}
+
+.body {
+  padding: 20px 22px var(--space-md);
+}
+
+.name {
+  font-size: 19.5px;
+  font-weight: var(--weight-medium);
+  line-height: 1.25;
+  letter-spacing: var(--tracking-title);
+  color: var(--ink);
+}
+
+/* Sage, because the specialization is the institution speaking. */
+.specialization {
+  margin-top: 7px;
+  font-size: 11px;
+  font-weight: var(--weight-semibold);
+  line-height: var(--leading-none);
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  color: var(--sage);
+}
+
+.note {
+  margin-top: var(--space-xs);
+  font-size: var(--font-sm);
+  line-height: var(--leading-normal);
+  color: var(--ink-meta);
+}
+
+@media screen and (max-width: 767px) {
+  .card {
+    border-radius: var(--radius-lg);
+  }
+
+  .media {
+    height: 130px;
+  }
+
+  .body {
+    padding: 14px var(--space-sm) 18px;
+  }
+
+  .name {
+    font-size: 16.5px;
+  }
+
+  /* The note is dropped on phones — the grid is already two-up and tight. */
+  .note {
+    display: none;
+  }
+}

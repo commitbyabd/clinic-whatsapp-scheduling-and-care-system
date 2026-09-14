@@ -1,0 +1,58 @@
+.index {
+  font-family: var(--font-family-mono);
+  font-size: 12px;
+  font-weight: var(--weight-medium);
+  line-height: var(--leading-none);
+  letter-spacing: var(--tracking-mono);
+  color: var(--ink-eyebrow);
+}
+
+/* The rule sits under the numeral rather than around the block — that is
+   what keeps this from reading as another card grid. */
+.title {
+  margin-top: 14px;
+  padding-top: var(--space-sm);
+  border-top: 1px solid var(--border-sand);
+  font-size: 20px;
+  font-weight: var(--weight-medium);
+  line-height: 1.25;
+  letter-spacing: var(--tracking-title);
+  color: var(--ink);
+}
+
+.body {
+  margin-top: 10px;
+  font-size: var(--font-md);
+  font-weight: var(--weight-light);
+  line-height: var(--leading-body);
+  color: var(--ink-body);
+}
+
+.bodyMobile {
+  display: none;
+}
+
+@media screen and (max-width: 767px) {
+  .index {
+    font-size: 11px;
+  }
+
+  .title {
+    margin-top: 10px;
+    padding-top: var(--space-xs);
+    font-size: 18px;
+  }
+
+  .body {
+    margin-top: var(--space-2xs);
+    font-size: 14.5px;
+  }
+
+  .bodyDesktop {
+    display: none;
+  }
+
+  .bodyMobile {
+    display: block;
+  }
+}

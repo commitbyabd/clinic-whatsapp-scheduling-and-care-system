@@ -1,0 +1,131 @@
+.panel {
+  background: var(--cream-card);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-2xl);
+  padding: var(--space-xl) 42px 44px;
+}
+
+.heading {
+  font-size: var(--heading);
+  line-height: var(--leading-heading);
+}
+
+.helper {
+  margin-top: 10px;
+  font-size: 15.5px;
+  font-weight: var(--weight-light);
+  line-height: var(--leading-body);
+  color: var(--ink-soft);
+}
+
+.grid {
+  margin-top: var(--space-xl);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-sm);
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2xs);
+}
+
+.wide {
+  grid-column: span 2;
+}
+
+.label {
+  font-size: 11px;
+  font-weight: var(--weight-semibold);
+  line-height: var(--leading-none);
+  letter-spacing: var(--tracking-chip);
+  text-transform: uppercase;
+  color: var(--ink-eyebrow);
+}
+
+.input {
+  padding: 14px var(--space-sm);
+  background: var(--cream-base);
+  border: 1px solid var(--border-rule);
+  border-radius: var(--radius-xs);
+  font-family: var(--font-family-primary);
+  font-size: var(--font-md);
+  line-height: 1.2;
+  color: var(--ink);
+  outline: none;
+  transition:
+    border-color var(--transition-fast),
+    background-color var(--transition-fast);
+}
+
+.input::placeholder {
+  color: var(--ink-faint);
+}
+
+.input:focus {
+  border-color: var(--sage);
+  background: var(--cream-card);
+}
+
+/* The global focus ring still applies for keyboard users. */
+.input:focus-visible {
+  outline: var(--focus-ring-width) solid var(--focus-ring-color);
+  outline-offset: 1px;
+}
+
+.textarea {
+  line-height: var(--leading-normal);
+  resize: vertical;
+}
+
+.error {
+  font-size: 12.5px;
+  line-height: 1.4;
+  color: var(--terracotta-deep);
+}
+
+.submit {
+  margin-top: 26px;
+  width: 100%;
+  padding: 17px var(--space-md);
+}
+
+.finePrint {
+  margin-top: var(--space-sm);
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: var(--ink-faint);
+}
+
+.success {
+  padding-block: var(--space-2xl);
+}
+
+@media screen and (max-width: 767px) {
+  .panel {
+    border-radius: var(--radius-xl);
+    padding: var(--space-md) 22px var(--space-lg);
+  }
+
+  .heading {
+    font-size: var(--heading-sm);
+  }
+
+  .helper {
+    font-size: var(--content-size-sm);
+  }
+
+  .grid {
+    margin-top: var(--space-md);
+    grid-template-columns: 1fr;
+  }
+
+  .wide {
+    grid-column: span 1;
+  }
+
+  .success {
+    padding-block: var(--space-lg);
+  }
+}

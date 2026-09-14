@@ -10,9 +10,14 @@ Three parts: a public clinic website, a role-based dashboard for receptionists
 and doctors, and the WhatsApp channel itself via Twilio.
 
 ```
-backend/     FastAPI + MongoDB — the API, and the chatbot
-frontend/    React + Vite — public site and dashboard
+backend/            FastAPI + MongoDB — the API, and the chatbot
+frontend/website/   React + Vite, CSS Modules — the public clinic website
+frontend/portal/    React + Vite, Tailwind — the staff dashboard
 ```
+
+The website and portal are separate apps on purpose. They share no styles, so
+keeping them apart means a change to one can never break the other, and each
+can be deployed on its own.
 
 ## Running it
 
@@ -23,9 +28,20 @@ cd backend
 ```
 
 ```
-cd frontend
+cd frontend/portal
+npm install
 npm run dev
 ```
+
+```
+cd frontend/website
+npm install
+npm run dev -- --port 3001
+```
+
+Both apps default to port 3000. Keep the portal there: the backend's
+`CORS_ORIGINS` allows it on 3000, so if the website takes 3000 first the portal
+moves to 3001 and signing in fails.
 
 Tests — no network calls, no API key needed:
 
@@ -34,6 +50,13 @@ cd backend
 .\.venv\Scripts\python.exe tests\chatbot\test_response.py
 .\.venv\Scripts\python.exe tests\chatbot\test_orchestrator.py
 .\.venv\Scripts\python.exe tests\chatbot\test_conversation.py
+.\.venv\Scripts\python.exe tests\chatbot\test_webhook.py
+.\.venv\Scripts\python.exe tests\chatbot\test_ml_classifier.py
+```
+
+```
+cd frontend/portal
+npm test
 ```
 
 ## The chatbot
@@ -51,7 +74,7 @@ cd backend
 
 Layers 3 and 4 return `None` to mean "not mine, try the next one", so a model
 that is absent, disabled, unsure, or failing all behave identically — which is
-why the system runs today with neither external component connected.
+why the system still runs without an OpenAI key.
 
 Two rules the code enforces and tests assert: **the bot never diagnoses**, and
 **the bot never confirms a booking** — a receptionist does.
@@ -65,43 +88,47 @@ in `backend/chatbot/__init__.py`.
 
 ## Status
 
-Built and tested: the rule engine, the decision chain, the scripted question
-flow — 38 tests.
+Built and tested:
 
-Waiting on other people: the Twilio account, and the outsourced ML classifier.
-The seam for the classifier is built and tested against fakes; wiring it up is
-one `register()` call.
+- the chatbot: rules, the scripted booking flow, and the decision chain
+- the Twilio WhatsApp webhook, with signature checking
+- the outsourced symptom classifier, wired in with emergency detection
+- the staff portal: admin sign-in and staff management
+- the public website
+
+66 backend tests, 23 portal tests.
+
+Waiting on other people: the backend runs on the office server but is only
+reachable inside the office network. Real WhatsApp messages need port
+forwarding to that server, and the Twilio Auth Token.
 
 Known gaps, none blocked on anyone:
 
 - **The OpenAI fallback has never actually run.** The key in `.env` is a
   placeholder, so the real call and its response parsing are unverified. Needs
   only a key.
-- **The symptom extraction step does not exist.** It is the OpenAI call that
-  turns a patient's free-text description into symptom terms. Without it the
-  classifier never receives input.
-- **Conversation state is in memory** and is lost on restart, which on Render's
-  free tier means patients lose their place mid-booking. A Mongo-backed store
-  means implementing three methods — `get`, `save`, `clear`.
+- **Symptom extraction is a stand-in.** `SymptomExtractor` in
+  `backend/chatbot/ml/adapter.py` matches known symptom words and synonyms. The
+  planned OpenAI step that reads free text properly is not built.
+- **Conversation state is in memory.** It is lost on restart, and it is why the
+  backend must run with `--workers 1`. A Mongo-backed store means implementing
+  three methods — `get`, `save`, `clear`.
+- **The website's contact form sends nothing yet.** It validates and shows a
+  confirmation, but no backend endpoint receives it.
 - **Two components are missing from the Phase 2 SDS** — the ML classifier and
   the scripted question flow. Section 3.1 still describes the orchestrator as
   "predefined match → OpenAI".
 
-## When the Twilio account arrives
+## WhatsApp webhook
 
-The webhook belongs in `backend/app/features/whatsapp/`, alongside the other
-features. It is thin, because the logic is already done — read `Body` and
-`From`, call `handle_message`, return TwiML:
+Twilio posts each incoming message to `POST /whatsapp/webhook`
+(`backend/app/features/whatsapp/`), which calls `handle_message` and replies
+with TwiML.
 
-```python
-reply = handle_message(Body, phone=From)
-```
-
-Three things it needs that are not written yet: signature validation via
-`twilio.request_validator.RequestValidator` (without it, anyone who finds the
-URL can post fake patient messages), a TwiML rather than JSON response, and a
-public URL into localhost for development. `python-multipart` is already pinned
-— Twilio posts form-encoded, and FastAPI's `Form(...)` raises without it.
+Every request's `X-Twilio-Signature` is checked before anything else. Without
+`TWILIO_AUTH_TOKEN` the webhook refuses every request rather than trusting
+them. `backend/.env.example` covers the settings, including the switch for
+local testing.
 
 `reply.collected` is populated when a booking flow finishes, carrying the
 patient's answers for the Appointment Engine to turn into a `pending` record.

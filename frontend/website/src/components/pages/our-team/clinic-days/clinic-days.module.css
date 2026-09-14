@@ -1,0 +1,271 @@
+.section {
+  padding-block: 64px var(--space-4xl);
+}
+
+.head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 50px;
+  margin-bottom: 30px;
+}
+
+.eyebrow {
+  font-size: 11px;
+  font-weight: var(--weight-semibold);
+  line-height: 1.3;
+  letter-spacing: var(--tracking-lockup);
+  text-transform: uppercase;
+  color: var(--ink-eyebrow);
+}
+
+.heading {
+  margin-top: var(--space-sm);
+  font-size: var(--heading-lg);
+  line-height: 1.14;
+}
+
+.support {
+  max-width: 380px;
+  font-size: 16px;
+  font-weight: var(--weight-light);
+  line-height: var(--leading-body);
+  color: var(--ink-soft);
+}
+
+/* The card padding is what makes the rows read as inset pills rather than
+   full-bleed stripes. */
+.card {
+  background: var(--cream-card);
+  border: 1px solid var(--border-soft);
+  border-radius: 30px;
+  padding: 10px;
+}
+
+.table {
+  width: 100%;
+  table-layout: fixed;
+  border-collapse: separate;
+  border-spacing: 0;
+  text-align: left;
+}
+
+.colDepartment {
+  width: 26.2%;
+}
+.colLead {
+  width: 31%;
+}
+.colDays {
+  width: 23.8%;
+}
+.colTheatre {
+  width: 19%;
+}
+
+/* ---- Header row ---- */
+
+.th {
+  padding: 14px 0 16px;
+  font-family: var(--font-family-primary);
+  font-size: var(--font-3xs);
+  font-weight: var(--weight-semibold);
+  line-height: 1.3;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ink-eyebrow);
+}
+
+.th:first-child {
+  padding-left: 26px;
+}
+
+.th:last-child {
+  padding-right: 26px;
+}
+
+/* ---- Data rows ---- */
+
+.row > th,
+.row > td {
+  padding: 17px var(--space-md) 17px 0;
+  vertical-align: middle;
+}
+
+.row > th:first-child,
+.row > td:first-child {
+  padding-left: 26px;
+  border-top-left-radius: 20px;
+  border-bottom-left-radius: 20px;
+}
+
+.row > th:last-child,
+.row > td:last-child {
+  padding-right: 26px;
+  border-top-right-radius: 20px;
+  border-bottom-right-radius: 20px;
+}
+
+.rowStriped > th,
+.rowStriped > td {
+  background: var(--cream-base);
+}
+
+.department {
+  font-family: var(--font-family-heading);
+  font-size: 17px;
+  font-weight: var(--weight-medium);
+  line-height: 1.3;
+  color: var(--ink);
+}
+
+.lead {
+  font-size: var(--font-md);
+  color: var(--ink-80);
+}
+
+.leadLink {
+  color: inherit;
+}
+
+.leadLink:hover {
+  color: var(--sage);
+}
+
+.days {
+  font-size: var(--font-md);
+  color: var(--ink-muted);
+}
+
+.theatre {
+  font-size: var(--font-md);
+  color: var(--ink-meta);
+}
+
+.footnote {
+  margin-top: 18px;
+  font-size: var(--font-sm);
+  line-height: var(--leading-normal);
+  color: var(--ink-meta);
+}
+
+.footnoteShort {
+  display: none;
+}
+
+@media screen and (max-width: 1023px) {
+  .section {
+    padding-block: var(--space-xl) var(--section-y-md);
+  }
+
+  .head {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-sm);
+  }
+}
+
+@media screen and (max-width: 767px) {
+  .section {
+    padding-block: var(--space-md) var(--section-y-sm);
+  }
+
+  .heading {
+    font-size: var(--heading-sm);
+  }
+
+  .support {
+    font-size: var(--content-size-sm);
+  }
+
+  .card {
+    border-radius: var(--radius-lg);
+    padding: var(--space-2xs);
+  }
+
+  /* Two columns only on phones: department, and OPD days right-aligned.
+     Lead clinician and theatre are dropped, and their <col> widths are
+     zeroed so table-layout: fixed does not keep reserving space. */
+  .colDepartment {
+    width: 58%;
+  }
+
+  .colLead,
+  .colTheatre {
+    width: 0;
+  }
+
+  .colDays {
+    width: 42%;
+  }
+
+  .table th:nth-child(2),
+  .table td:nth-child(2),
+  .table th:nth-child(4),
+  .table td:nth-child(4) {
+    display: none;
+  }
+
+  .table th:nth-child(3),
+  .table td:nth-child(3) {
+    text-align: right;
+  }
+
+  .th {
+    padding: 10px 0 12px;
+  }
+
+  .th:first-child {
+    padding-left: var(--space-sm);
+  }
+
+  .row > th,
+  .row > td {
+    padding: 13px var(--space-sm) 13px 0;
+  }
+
+  .row > th:first-child {
+    padding-left: var(--space-sm);
+    border-top-left-radius: var(--radius-xs);
+    border-bottom-left-radius: var(--radius-xs);
+  }
+
+  /* The last visible cell is now the third one, so it carries the right
+     rounding instead of :last-child. */
+  .row > td:nth-child(3) {
+    padding-right: var(--space-sm);
+    border-top-right-radius: var(--radius-xs);
+    border-bottom-right-radius: var(--radius-xs);
+  }
+
+  .row > th:first-child,
+  .row > td:nth-child(3) {
+    border-radius: var(--radius-xs);
+  }
+
+  .row > th:first-child {
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+  }
+
+  .row > td:nth-child(3) {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+  }
+
+  .department {
+    font-size: var(--font-md);
+  }
+
+  .days {
+    font-size: 13.5px;
+  }
+
+  .footnoteFull {
+    display: none;
+  }
+
+  .footnoteShort {
+    display: block;
+  }
+}

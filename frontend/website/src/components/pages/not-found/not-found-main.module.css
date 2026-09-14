@@ -1,0 +1,22 @@
+.section {
+  padding-block: 140px var(--section-y);
+}
+
+.actions {
+  margin-top: var(--space-lg);
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 14px;
+}
+
+@media screen and (max-width: 767px) {
+  .section {
+    padding-block: var(--space-3xl) var(--section-y-sm);
+  }
+
+  .actions {
+    width: 100%;
+    flex-direction: column;
+  }
+}

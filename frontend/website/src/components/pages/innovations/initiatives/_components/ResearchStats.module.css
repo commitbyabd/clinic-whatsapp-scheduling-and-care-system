@@ -1,0 +1,22 @@
+.stats {
+  padding-top: var(--space-md);
+  border-top: 1px solid var(--overlay-rule-dark-2);
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+}
+
+.value {
+  font-family: var(--font-family-heading);
+  font-size: var(--stat-sm);
+  font-weight: var(--weight-regular);
+  line-height: var(--leading-none);
+  color: var(--gold-on-dark);
+}
+
+.label {
+  margin-top: 6px;
+  font-size: 12.5px;
+  line-height: 1.4;
+  color: var(--on-dark-meta);
+}

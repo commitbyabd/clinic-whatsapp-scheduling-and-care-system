@@ -1,0 +1,129 @@
+.section {
+  padding: 0 var(--space-md) 110px;
+}
+
+.block {
+  position: relative;
+  overflow: hidden;
+  max-width: var(--container-wide);
+  margin-inline: auto;
+  background: var(--sage-pale);
+  border-radius: var(--radius-4xl);
+  padding: 74px var(--space-2xl) 80px;
+}
+
+.circle {
+  top: -120px;
+  left: -100px;
+  width: 400px;
+  height: 400px;
+  background: var(--overlay-sage-16);
+}
+
+.inner {
+  position: relative;
+  max-width: var(--container-inner);
+  margin-inline: auto;
+}
+
+.intro {
+  max-width: 640px;
+}
+
+.intro :global(h2) {
+  margin-top: 18px;
+  font-size: clamp(40px, 4.2vw, 54px);
+  line-height: var(--leading-tight);
+  letter-spacing: var(--tracking-display);
+}
+
+.intro :global(p:last-child) {
+  margin-top: 20px;
+  font-size: var(--font-lg);
+  line-height: 1.66;
+}
+
+/* A wrapping flex row, not a grid — every card keeps its own width. */
+.roster {
+  margin-top: 52px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 34px 30px;
+  align-items: flex-start;
+}
+
+.closing {
+  margin-top: var(--space-2xl);
+  padding-top: 34px;
+  border-top: 1px solid var(--overlay-rule-light);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 28px;
+}
+
+.quote {
+  max-width: 640px;
+  font-family: var(--font-family-heading);
+  font-size: var(--font-2xl);
+  font-style: italic;
+  font-weight: var(--weight-regular);
+  line-height: var(--leading-normal);
+  color: var(--ink-90);
+}
+
+.attribution {
+  margin-left: auto;
+  font-size: var(--font-sm);
+  line-height: 1.55;
+  text-align: right;
+  color: var(--ink-muted);
+}
+
+@media screen and (max-width: 1023px) {
+  .section {
+    padding-bottom: var(--section-y-md);
+  }
+
+  .block {
+    padding: var(--space-2xl) var(--space-xl);
+  }
+}
+
+@media screen and (max-width: 767px) {
+  .section {
+    padding: 0 14px var(--section-y-sm);
+  }
+
+  .block {
+    border-radius: var(--radius-block-sm);
+    padding: var(--space-lg) var(--space-md) var(--space-xl);
+  }
+
+  .circle {
+    width: 240px;
+    height: 240px;
+    top: -90px;
+    left: -80px;
+  }
+
+  .roster {
+    margin-top: var(--space-lg);
+    gap: 22px 18px;
+  }
+
+  .closing {
+    margin-top: var(--space-lg);
+    padding-top: var(--space-md);
+    gap: var(--space-sm);
+  }
+
+  .quote {
+    font-size: var(--font-lg);
+  }
+
+  .attribution {
+    margin-left: 0;
+    text-align: left;
+  }
+}

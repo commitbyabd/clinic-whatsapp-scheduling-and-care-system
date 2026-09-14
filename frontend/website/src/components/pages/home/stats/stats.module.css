@@ -1,0 +1,74 @@
+.section {
+  padding-bottom: var(--section-y);
+}
+
+/* Sage is the institution — this strip is the clinic stating its scale. */
+.strip {
+  background: var(--sage);
+  border-radius: var(--radius-3xl);
+  padding: 52px var(--space-2xl);
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-xl);
+}
+
+.stat + .stat {
+  padding-left: var(--space-xl);
+  border-left: 1px solid var(--overlay-rule-dark-3);
+}
+
+.value {
+  font-family: var(--font-family-heading);
+  font-size: var(--stat-lg);
+  font-weight: var(--weight-regular);
+  line-height: var(--leading-none);
+  letter-spacing: var(--tracking-heading);
+  color: var(--cream-ink);
+}
+
+.label {
+  margin-top: var(--space-2xs);
+  font-size: 14px;
+  line-height: 1.4;
+  color: var(--sage-on-body);
+}
+
+@media screen and (max-width: 1023px) {
+  .section {
+    padding-bottom: var(--section-y-md);
+  }
+
+  .strip {
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-lg);
+    padding: var(--space-xl);
+  }
+
+  /* Only the second column keeps a divider once this is a 2x2 grid. */
+  .stat + .stat {
+    padding-left: 0;
+    border-left: 0;
+  }
+
+  .stat:nth-child(even) {
+    padding-left: var(--space-lg);
+    border-left: 1px solid var(--overlay-rule-dark-3);
+  }
+
+  .value {
+    font-size: var(--stat-md);
+  }
+}
+
+@media screen and (max-width: 767px) {
+  .section {
+    padding-bottom: var(--section-y-sm);
+  }
+
+  .strip {
+    margin-inline: -6px;
+    border-radius: 30px;
+    padding: var(--space-md) 18px;
+    gap: var(--space-md);
+  }
+}

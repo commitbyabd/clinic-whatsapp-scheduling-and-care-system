@@ -13,7 +13,7 @@ class Settings(BaseSettings):
 
 
      # Comma-separated. Override in .env, e.g. CORS_ORIGINS=https://cwac.vercel.app
-    cors_origins: str = "http://localhost:3000,http://localhost:5173"
+    cors_origins: str = "http://localhost:5000,http://localhost:3000"
 
     @property
     def cors_origins_list(self) -> list[str]:

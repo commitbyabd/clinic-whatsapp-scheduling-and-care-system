@@ -6,7 +6,7 @@ export default defineConfig({
   plugins: [react(), tailwindcss()],
   server: {
     // Not strict: a busy port should move the dev server, not stop it.
-    port: 3000,
+    port: 5000,
   },
   test: {
     environment: "node",

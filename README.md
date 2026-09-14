@@ -36,12 +36,12 @@ npm run dev
 ```
 cd frontend/website
 npm install
-npm run dev -- --port 3001
+npm run dev
 ```
 
-Both apps default to port 3000. Keep the portal there: the backend's
-`CORS_ORIGINS` allows it on 3000, so if the website takes 3000 first the portal
-moves to 3001 and signing in fails.
+The portal runs on http://localhost:5000 and the website on
+http://localhost:3000. The backend's `CORS_ORIGINS` has to include the portal's
+address, or signing in fails.
 
 Tests — no network calls, no API key needed:
 

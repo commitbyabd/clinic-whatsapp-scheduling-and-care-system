@@ -9,7 +9,7 @@ from typing import Sequence
 from chatbot import classifier
 from chatbot import llm_fallback
 from chatbot.classifier import Classification
-from chatbot.conversation import ConversationEngine
+from chatbot.conversation import SYMPTOM_STEP, ConversationEngine
 from chatbot.predefined_responses.response import (
     EMERGENCY_RESPONSE,
     is_emergency,
@@ -28,6 +28,15 @@ CANNED_REPLY = (
     "Sorry, I didn't quite understand that. A member of our staff will get "
     "back to you shortly. For anything urgent, please call the clinic directly."
 )
+
+
+def _routing_note(result: Classification) -> str:
+    # shown mid-booking, so it leads into the next question rather than
+    # asking for a date itself
+    return (
+        f"Thanks. Based on what you've shared, our {result.specialization} "
+        "would be the right fit."
+    )
 
 
 def _classification_reply(result: Classification) -> str:
@@ -75,12 +84,35 @@ def handle_message(
         return Reply(text=EMERGENCY_RESPONSE, source="emergency", matched=True)
 
     if phone:
+        routed = None
+        state = engine.store.get(phone)
+        if state is not None and state.step == SYMPTOM_STEP:
+            routed = classifier.classify(symptoms or classifier.extract_symptoms(message))
+            if routed is not None and routed.emergency:
+                # symptoms can add up to an emergency without the patient using
+                # any emergency keyword, so the rules layer above misses these
+                engine.store.clear(phone)
+                return Reply(
+                    text=EMERGENCY_RESPONSE,
+                    source="emergency",
+                    matched=True,
+                    classification=routed,
+                )
+            if routed is not None:
+                # reaches the receptionist through Reply.collected
+                state.data["specialization"] = routed.specialization
+                engine.store.save(state)
+
         result = engine.advance(phone, message)
         if result is not None:
+            text = result.text
+            if routed is not None and result.step is not None:
+                text = f"{_routing_note(routed)}\n\n{text}"
             return Reply(
-                text=result.text,
+                text=text,
                 source="flow",
                 matched=True,
+                classification=routed,
                 collected=result.data if result.finished else None,
             )
 
@@ -100,6 +132,13 @@ def handle_message(
 
     if symptoms:
         result = classifier.classify(symptoms)
+        if result is not None and result.emergency:
+            return Reply(
+                text=EMERGENCY_RESPONSE,
+                source="emergency",
+                matched=True,
+                classification=result,
+            )
         if result is not None:
             logger.info(
                 "classified as %s (%.2f)", result.specialization, result.confidence

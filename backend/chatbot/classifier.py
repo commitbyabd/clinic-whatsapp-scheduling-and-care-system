@@ -16,6 +16,8 @@ Contract the delivered model must satisfy:
                     specialization. A valid answer, not a failure.
     specialization  one of SPECIALIZATIONS below. Never a disease name.
     confidence      0.0-1.0, honest.
+    emergency       True when the right reply is "get help now" rather than
+                    "book an appointment". Skips the confidence threshold.
 
     Must not raise. Should be fast, a patient is waiting.
 
@@ -58,6 +60,7 @@ DEFAULT_SPECIALIZATION = "General Physician"
 class Classification:
     specialization: str
     confidence: float
+    emergency: bool = False
 
     def is_valid(self) -> bool:
         # rejects a disease name, a department the clinic does not have, and
@@ -67,12 +70,15 @@ class Classification:
             and isinstance(self.confidence, (int, float))
             and not isinstance(self.confidence, bool)
             and 0.0 <= float(self.confidence) <= 1.0
+            and isinstance(self.emergency, bool)
         )
 
 
 SymptomClassifier = Callable[[Sequence[str]], "Classification | None"]
+SymptomExtractor = Callable[[str], Sequence[str]]
 
 _classifier: SymptomClassifier | None = None
+_extractor: SymptomExtractor | None = None
 
 
 def register(fn: SymptomClassifier) -> None:
@@ -82,8 +88,26 @@ def register(fn: SymptomClassifier) -> None:
     logger.info("symptom classifier registered: %s", getattr(fn, "__name__", fn))
 
 
+def register_extractor(fn: SymptomExtractor) -> None:
+    """Install the text-to-symptoms step. The OpenAI version replaces this later."""
+    global _extractor
+    _extractor = fn
+    logger.info("symptom extractor registered: %s", getattr(fn, "__name__", fn))
+
+
 def is_registered() -> bool:
     return _classifier is not None
+
+
+def extract_symptoms(text: str) -> list[str]:
+    """Pull symptom terms out of free text. [] when unavailable, never raises."""
+    if _extractor is None or not text or not text.strip():
+        return []
+    try:
+        return [s for s in _extractor(text) if s]
+    except Exception:
+        logger.exception("symptom extractor raised")
+        return []
 
 
 def classify(symptoms: Sequence[str]) -> Classification | None:
@@ -112,6 +136,12 @@ def classify(symptoms: Sequence[str]) -> Classification | None:
     if not isinstance(result, Classification) or not result.is_valid():
         logger.warning("classifier returned malformed output, ignoring: %r", result)
         return None
+
+    # checked before the threshold on purpose: a 45% chance of a heart attack
+    # still warrants telling someone to get help
+    if result.emergency:
+        logger.warning("classifier flagged a possible emergency (%.2f)", result.confidence)
+        return result
 
     if result.confidence < classifier_settings.min_confidence:
         # symptoms are health data, so log the score and not the terms

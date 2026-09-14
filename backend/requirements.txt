@@ -57,3 +57,14 @@ python-multipart==0.0.32
 # that an incoming request genuinely came from Twilio. Replies go back as TwiML
 # in the HTTP response, so no outbound Twilio API calls are made.
 twilio==9.11.0
+
+# The symptom classifier (ENG-1660).
+# scikit-learn is pinned to the exact version that saved model.joblib. Loading
+# a model saved by a different version prints hundreds of warnings about
+# "invalid results" and is not guaranteed to work. Bump this only together
+# with a retrained model.
+scikit-learn==1.8.0
+numpy==2.5.3
+scipy==1.18.1
+joblib==1.6.0
+threadpoolctl==3.6.0

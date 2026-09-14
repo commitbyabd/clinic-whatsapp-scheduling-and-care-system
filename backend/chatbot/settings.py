@@ -102,23 +102,30 @@ openai_settings = OpenAISettings(
 class ClassifierSettings:
     enabled: bool
     min_confidence: float
+    min_symptoms: int
+    emergency_threshold: float
 
     def explain(self) -> str:
         if not self.enabled:
             return "Symptom classifier: disabled via CLASSIFIER_ENABLED"
         return (
-            "Symptom classifier: enabled, discarding predictions below "
-            f"{self.min_confidence:.2f} confidence (inactive until a model is "
-            "registered)"
+            f"Symptom classifier: enabled, routing at >={self.min_confidence:.2f}, "
+            f"emergency at >={self.emergency_threshold:.2f}, "
+            f"needs {self.min_symptoms}+ symptoms"
         )
 
 
 classifier_settings = ClassifierSettings(
     enabled=_env_bool("CLASSIFIER_ENABLED", True),
     # conservative: a wrong department wastes a patient's trip, so an unsure
-    # prediction is better handed to the LLM. Tune once the real model's
-    # precision and recall are known.
+    # prediction is better handed to the LLM
     min_confidence=_env_float("CLASSIFIER_MIN_CONFIDENCE", 0.6),
+    # one symptom is too weak to act on: "sweating" alone scores 0.74 heart attack
+    min_symptoms=_env_int("CLASSIFIER_MIN_SYMPTOMS", 2),
+    # measured across 1,433 symptom combinations: every real emergency scored
+    # >=0.56, so 0.4 misses none and false-alarms on ~1%. Lower it rather than
+    # raise it; a missed emergency cannot be undone.
+    emergency_threshold=_env_float("CLASSIFIER_EMERGENCY_THRESHOLD", 0.4),
 )
 
 

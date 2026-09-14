@@ -126,6 +126,10 @@ class InMemoryStore:
 
 # --- the appointment flow. Add steps here; the engine does not change. ---
 
+# the orchestrator classifies the answer to this step, so renaming it here
+# means renaming it there
+SYMPTOM_STEP = "ask_symptoms"
+
 YES_NO = (
     Option("yes", "Yes", ("y", "yeah", "yep", "haan", "han", "ji", "ji haan")),
     Option("no", "No", ("n", "nope", "nahi", "nahin")),

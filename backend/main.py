@@ -22,6 +22,15 @@ async def lifespan(app: FastAPI):
     for setting in (twilio_settings, openai_settings, classifier_settings):
         logger.info(setting.explain())
 
+    # imported here rather than at the top so a missing ML package or a corrupt
+    # model file cannot stop the rest of the app from starting
+    try:
+        from chatbot.ml.adapter import register_symptom_model
+
+        register_symptom_model()
+    except Exception:
+        logger.exception("symptom model failed to load, continuing without it")
+
     yield  # app runs here, serving requests
     await close_mongo_connection()  # runs once, at shutdown
 

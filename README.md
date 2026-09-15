@@ -100,7 +100,7 @@ Built and tested:
 - the staff portal: admin sign-in and staff management
 - the public website
 
-79 backend tests, 23 portal tests.
+89 backend tests, 23 portal tests.
 
 Waiting on other people: the backend runs on the office server but is only
 reachable inside the office network. Real WhatsApp messages need port

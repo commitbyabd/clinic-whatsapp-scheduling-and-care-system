@@ -126,9 +126,11 @@ class InMemoryStore:
 
 # --- the appointment flow. Add steps here; the engine does not change. ---
 
-# the orchestrator classifies the answer to this step, so renaming it here
-# means renaming it there
+# the orchestrator classifies the answer to this step, and reads symptoms typed
+# at REASON_STEP instead of a menu number, so renaming either here means
+# renaming it there
 SYMPTOM_STEP = "ask_symptoms"
+REASON_STEP = "ask_reason"
 
 YES_NO = (
     Option("yes", "Yes", ("y", "yeah", "yep", "haan", "han", "ji", "ji haan")),
@@ -211,11 +213,33 @@ class ConversationEngine:
     def is_active(self, phone: str) -> bool:
         return self.store.get(phone) is not None
 
-    def start(self, phone: str, flow: str) -> FlowResult:
+    def start(
+        self, phone: str, flow: str, answers: dict[str, str] | None = None
+    ) -> FlowResult:
+        """Begin a flow. answers holds anything the patient already told us."""
         entry = FLOW_ENTRY_STEP[flow]
-        state = ConversationState(phone=phone, flow=flow, step=entry)
-        self.store.save(state)
-        return FlowResult(text=FLOWS[flow][entry].render(), step=entry)
+        state = ConversationState(
+            phone=phone, flow=flow, step=entry, data=dict(answers or {})
+        )
+        return self._move_to(state, entry)
+
+    def understands(self, phone: str, reply: str) -> bool:
+        """True when advance() would take the reply as an answer or a cancel."""
+        state = self.store.get(phone)
+        if state is None:
+            return False
+        if _normalize(reply) in CANCEL_WORDS:
+            return True
+        return FLOWS[state.flow][state.step].match(reply) is not None
+
+    def fill(self, phone: str, answers: dict[str, str]) -> FlowResult | None:
+        """Record answers given early, then ask the next question still open."""
+        state = self.store.get(phone)
+        if state is None:
+            return None
+        state.data.update(answers)
+        state.reprompts = 0
+        return self._move_to(state, state.step)
 
     def advance(self, phone: str, reply: str) -> FlowResult | None:
         """Read a reply as an answer to the current step.
@@ -249,15 +273,24 @@ class ConversationEngine:
         if step.field:
             state.data[step.field] = answer
         state.reprompts = 0
+        return self._move_to(state, step.resolve_next(answer))
 
-        next_id = step.resolve_next(answer)
-        if next_id is None:
+    def _move_to(self, state: ConversationState, step_id: str | None) -> FlowResult:
+        steps = FLOWS[state.flow]
+        # skip questions already answered, e.g. symptoms described before the
+        # flow asked for them. Bounded so a looping flow cannot hang here.
+        for _ in range(len(steps)):
+            if step_id is None or steps[step_id].field not in state.data:
+                break
+            step_id = steps[step_id].resolve_next(state.data[steps[step_id].field])
+
+        if step_id is None:
             data = dict(state.data)
-            self.store.clear(phone)
+            self.store.clear(state.phone)
             return FlowResult(
                 text=COMPLETION_MESSAGE, step=None, finished=True, data=data
             )
 
-        state.step = next_id
+        state.step = step_id
         self.store.save(state)
-        return FlowResult(text=FLOWS[state.flow][next_id].render(), step=next_id)
+        return FlowResult(text=steps[step_id].render(), step=step_id)

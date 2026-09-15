@@ -26,7 +26,7 @@ app/
   utils/             object_serializer, shared helpers
 
 chatbot/             the WhatsApp chatbot — see its __init__.py
-tests/chatbot/       79 tests, no network and no API key required
+tests/chatbot/       89 tests, no network and no API key required
 ```
 
 ## Conventions

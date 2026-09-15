@@ -22,7 +22,8 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
 
-from chatbot import orchestrator  # noqa: E402
+from chatbot import classifier, orchestrator  # noqa: E402
+from chatbot.classifier import Classification  # noqa: E402
 from chatbot.conversation import (  # noqa: E402
     CANCEL_WORDS,
     FLOWS,
@@ -197,6 +198,131 @@ def test_no_phone_disables_the_flow():
     reply = handle_message("I want to book an appointment")
     assert reply.source == "appointment"
     assert "preferred date and time" in reply.text
+
+
+# --- symptoms given before they are asked for ---------------------------
+
+
+FEVER = "I have a fever and a bad cough"
+RASH = "my skin is really itchy and I have a rash with blisters"
+HEART_ATTACK = Classification("Cardiologist", 0.88, emergency=True)
+
+
+class _Symptoms:
+    """Stands in for OpenAI extraction and the model, so these run offline."""
+
+    def __init__(self, found=("high_fever", "cough"), result=None):
+        self.found = list(found)
+        self.result = result or Classification("General Physician", 0.9)
+        self.texts = []
+
+    def _extract(self, text):
+        self.texts.append(text)
+        return self.found
+
+    def __enter__(self):
+        self._saved = (classifier._classifier, classifier._extractor)
+        classifier.register(lambda symptoms: self.result)
+        classifier.register_extractor(self._extract)
+        return self
+
+    def __exit__(self, *exc):
+        classifier._classifier, classifier._extractor = self._saved
+
+
+def test_opening_with_symptoms_starts_the_booking():
+    phone = _phone()
+    with _Symptoms():
+        reply = handle_message(FEVER, phone=phone)
+    assert reply.source == "flow", reply.source
+    assert "General Physician" in reply.text, reply.text
+    assert "visited us before" in reply.text, reply.text
+    assert orchestrator.engine.is_active(phone)
+
+
+def test_symptoms_given_up_front_are_not_asked_for_again():
+    phone = _phone()
+    with _Symptoms():
+        handle_message(FEVER, phone=phone)
+        reply = handle_message("1", phone=phone)  # visited before
+        assert "date and time" in reply.text, reply.text
+        done = handle_message("Tuesday 3pm", phone=phone)
+    assert done.collected == {
+        "reason": "symptoms",
+        "symptom_text": FEVER,
+        "specialization": "General Physician",
+        "returning_patient": "yes",
+        "preferred_datetime": "Tuesday 3pm",
+    }, done.collected
+
+
+def test_opening_with_symptoms_still_books_without_the_model():
+    # nothing registered, as when the model fails to load: the booking still
+    # starts, and the receptionist still gets what the patient wrote
+    phone = _phone()
+    reply = handle_message(FEVER, phone=phone)
+    assert "not feeling well" in reply.text and "visited us before" in reply.text
+    reply = _say(phone, "2", "Zainab Bibi")
+    assert "date and time" in reply.text, reply.text
+    done = handle_message("Tuesday 3pm", phone=phone)
+    assert done.collected["symptom_text"] == FEVER
+    assert "specialization" not in done.collected
+
+
+def test_symptoms_typed_at_the_menu_are_taken_as_the_answer():
+    phone = _phone()
+    dermatology = Classification("Dermatologist", 0.9)
+    with _Symptoms(found=("itching", "skin_rash"), result=dermatology):
+        _say(phone, "appointment", "1")  # now at "seen for?"
+        reply = handle_message(RASH, phone=phone)
+        assert "didn't catch that" not in reply.text, reply.text
+        assert "Dermatologist" in reply.text and "date and time" in reply.text, reply.text
+        done = handle_message("Tuesday 3pm", phone=phone)
+    assert done.collected["reason"] == "symptoms"
+    assert done.collected["symptom_text"] == RASH
+
+
+def test_other_text_at_the_menu_is_still_reasked():
+    with _Symptoms(found=()):
+        reply = _say(_phone(), "appointment", "1", "something else entirely")
+    assert "didn't catch that" in reply.text, reply.text
+
+
+def test_menu_answers_are_not_sent_for_extraction():
+    # a number or a cancel word needs no OpenAI call
+    with _Symptoms() as spy:
+        _say(_phone(), "appointment", "1", "2")
+        _say(_phone(), "appointment", "1", "cancel")
+    assert spy.texts == [], f"sent for extraction: {spy.texts}"
+
+
+def test_emergency_symptoms_up_front_do_not_start_a_booking():
+    phone = _phone()
+    with _Symptoms(found=("sweating", "vomiting"), result=HEART_ATTACK):
+        reply = handle_message("I feel sick and I keep sweating", phone=phone)
+    assert reply.source == "emergency", reply.source
+    assert orchestrator.engine.is_active(phone) is False
+
+
+def test_emergency_symptoms_at_the_menu_stop_the_booking():
+    phone = _phone()
+    with _Symptoms(found=("sweating", "vomiting"), result=HEART_ATTACK):
+        _say(phone, "appointment", "1")
+        reply = handle_message("I keep sweating and throwing up", phone=phone)
+    assert reply.source == "emergency", reply.source
+    assert orchestrator.engine.is_active(phone) is False
+
+
+def test_no_phone_keeps_the_symptom_rule_reply():
+    reply = handle_message(FEVER)
+    assert reply.source == "feeling_unwell", reply.source
+
+
+def test_answers_already_known_are_skipped():
+    engine = ConversationEngine(InMemoryStore())
+    phone = _phone()
+    assert engine.start(phone, "appointment", {"reason": "general"}).step == "ask_returning"
+    assert engine.advance(phone, "1").step == "ask_datetime"
 
 
 # --- state lifetime -----------------------------------------------------

@@ -9,7 +9,12 @@ from typing import Sequence
 from chatbot import classifier
 from chatbot import llm_fallback
 from chatbot.classifier import Classification
-from chatbot.conversation import SYMPTOM_STEP, ConversationEngine
+from chatbot.conversation import (
+    REASON_STEP,
+    SYMPTOM_STEP,
+    ConversationEngine,
+    FlowResult,
+)
 from chatbot.predefined_responses.response import (
     EMERGENCY_RESPONSE,
     is_emergency,
@@ -24,10 +29,16 @@ engine = ConversationEngine()
 # rule names that open the scripted flow instead of answering directly
 FLOW_TRIGGERS = {"appointment": "appointment"}
 
+# a patient who opens with symptoms wants to be seen, so this rule starts the
+# booking too, with what they wrote already filled in
+SYMPTOM_RULE = "feeling_unwell"
+
 CANNED_REPLY = (
     "Sorry, I didn't quite understand that. A member of our staff will get "
     "back to you shortly. For anything urgent, please call the clinic directly."
 )
+
+UNWELL_LEAD = "We understand you're not feeling well."
 
 
 def _routing_note(result: Classification) -> str:
@@ -59,6 +70,39 @@ class Reply:
     collected: dict[str, str] | None = None
 
 
+def _emergency_reply(routed: Classification | None = None) -> Reply:
+    return Reply(
+        text=EMERGENCY_RESPONSE, source="emergency", matched=True, classification=routed
+    )
+
+
+def _flow_reply(
+    result: FlowResult, routed: Classification | None = None, lead: str = ""
+) -> Reply:
+    text = result.text
+    if result.step is not None:
+        if routed is not None:
+            text = f"{_routing_note(routed)}\n\n{text}"
+        elif lead:
+            text = f"{lead}\n\n{text}"
+    return Reply(
+        text=text,
+        source="flow",
+        matched=True,
+        classification=routed,
+        collected=result.data if result.finished else None,
+    )
+
+
+def _symptom_answers(message: str, routed: Classification | None) -> dict[str, str]:
+    # answers both the reason question and the symptoms question, so neither
+    # is asked. specialization reaches the receptionist through Reply.collected
+    answers = {"reason": "symptoms", "symptom_text": message}
+    if routed is not None:
+        answers["specialization"] = routed.specialization
+    return answers
+
+
 def handle_message(
     message: str,
     phone: str | None = None,
@@ -77,7 +121,7 @@ def handle_message(
         # with "so what date suits you?" would be indefensible
         if phone:
             engine.store.clear(phone)
-        return Reply(text=EMERGENCY_RESPONSE, source="emergency", matched=True)
+        return _emergency_reply()
 
     if phone:
         routed = None
@@ -88,39 +132,47 @@ def handle_message(
                 # symptoms can add up to an emergency without the patient using
                 # any emergency keyword, so the rules layer above misses these
                 engine.store.clear(phone)
-                return Reply(
-                    text=EMERGENCY_RESPONSE,
-                    source="emergency",
-                    matched=True,
-                    classification=routed,
-                )
+                return _emergency_reply(routed)
             if routed is not None:
                 # reaches the receptionist through Reply.collected
                 state.data["specialization"] = routed.specialization
                 engine.store.save(state)
 
+        elif (
+            state is not None
+            and state.step == REASON_STEP
+            and not engine.understands(phone, message)
+        ):
+            # symptoms typed instead of a menu number: take them as the answer
+            # rather than replying "didn't catch that" and asking again
+            found = symptoms or classifier.extract_symptoms(message)
+            if found:
+                routed = classifier.classify(found)
+                if routed is not None and routed.emergency:
+                    engine.store.clear(phone)
+                    return _emergency_reply(routed)
+                result = engine.fill(phone, _symptom_answers(message, routed))
+                return _flow_reply(result, routed)
+
         result = engine.advance(phone, message)
         if result is not None:
-            text = result.text
-            if routed is not None and result.step is not None:
-                text = f"{_routing_note(routed)}\n\n{text}"
-            return Reply(
-                text=text,
-                source="flow",
-                matched=True,
-                classification=routed,
-                collected=result.data if result.finished else None,
-            )
+            return _flow_reply(result, routed)
 
     rule = match_rule(message)
     if rule is not None:
         name, text = rule
+        if phone and name == SYMPTOM_RULE:
+            found = symptoms or classifier.extract_symptoms(message)
+            routed = classifier.classify(found)
+            if routed is not None and routed.emergency:
+                return _emergency_reply(routed)
+            logger.info("starting appointment flow from symptoms")
+            result = engine.start(phone, "appointment", _symptom_answers(message, routed))
+            return _flow_reply(result, routed, lead=UNWELL_LEAD)
         flow = FLOW_TRIGGERS.get(name)
         if flow and phone:
             logger.info("starting %s flow", flow)
-            return Reply(
-                text=engine.start(phone, flow).text, source="flow", matched=True
-            )
+            return _flow_reply(engine.start(phone, flow))
         return Reply(text=text, source=name, matched=True)
 
     # every one of these is a keyword missing from rules.py
@@ -129,12 +181,7 @@ def handle_message(
     if symptoms:
         result = classifier.classify(symptoms)
         if result is not None and result.emergency:
-            return Reply(
-                text=EMERGENCY_RESPONSE,
-                source="emergency",
-                matched=True,
-                classification=result,
-            )
+            return _emergency_reply(result)
         if result is not None:
             logger.info(
                 "classified as %s (%.2f)", result.specialization, result.confidence

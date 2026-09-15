@@ -43,6 +43,18 @@ The portal runs on http://localhost:5000 and the website on
 http://localhost:3000. The backend's `CORS_ORIGINS` has to include the portal's
 address, or signing in fails.
 
+On the office server, from `backend` (the backend runs on port 7222):
+
+```
+run.cmd                start it by hand; it restarts itself if it stops
+install-startup.cmd    once, as Administrator: start it at every boot
+stop.cmd               as Administrator: stop it, for example before an update
+```
+
+To update: `stop.cmd`, `git pull`,
+`.\.venv\Scripts\python.exe -m pip install -r requirements.txt`, then
+`schtasks /run /tn "CWAC Backend"`. Output goes to `backend/logs/backend.log`.
+
 Tests — no network calls, no API key needed:
 
 ```

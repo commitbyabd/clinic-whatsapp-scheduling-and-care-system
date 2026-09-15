@@ -17,12 +17,13 @@ from chatbot.predefined_responses import clinic
 
 logger = logging.getLogger(__name__)
 
-# built once. A new client per request rebuilds the connection pool, which is
-# pure added latency on a path where a patient is waiting.
+# built once and shared with symptom_extraction.py. A new client per request
+# rebuilds the connection pool, which is pure added latency on a path where a
+# patient is waiting.
 _client: OpenAI | None = None
 
 
-def _get_client() -> OpenAI:
+def get_client() -> OpenAI:
     global _client
     if _client is None:
         _client = OpenAI(
@@ -87,7 +88,7 @@ def generate_fallback_reply(message: str) -> str | None:
         return None
 
     try:
-        response = _get_client().chat.completions.create(
+        response = get_client().chat.completions.create(
             model=openai_settings.model,
             max_completion_tokens=openai_settings.max_output_tokens,
             messages=[

@@ -59,10 +59,15 @@ class OpenAISettings:
     timeout_seconds: float
     max_output_tokens: int
     enabled: bool
+    extraction_enabled: bool
 
     @property
     def is_configured(self) -> bool:
         return self.enabled and not _placeholder(self.api_key)
+
+    @property
+    def extraction_configured(self) -> bool:
+        return self.extraction_enabled and not _placeholder(self.api_key)
 
     @property
     def masked_key(self) -> str:
@@ -95,6 +100,7 @@ openai_settings = OpenAISettings(
     timeout_seconds=_env_float("OPENAI_TIMEOUT_SECONDS", 10.0),
     max_output_tokens=_env_int("OPENAI_MAX_OUTPUT_TOKENS", 300),
     enabled=_env_bool("LLM_FALLBACK_ENABLED", True),
+    extraction_enabled=_env_bool("OPENAI_SYMPTOM_EXTRACTION", True),
 )
 
 

@@ -15,7 +15,8 @@ from pathlib import Path
 from chatbot import classifier
 from chatbot.classifier import Classification
 from chatbot.ml.predict import DiseaseModel, load_specialization_map, normalize
-from chatbot.settings import classifier_settings
+from chatbot.settings import classifier_settings, openai_settings
+from chatbot.symptom_extraction import OpenAISymptomExtractor
 
 logger = logging.getLogger(__name__)
 
@@ -95,9 +96,10 @@ class SymptomModelClassifier:
 class SymptomExtractor:
     """Finds known symptom terms in a patient's sentence.
 
-    A stand-in for the planned OpenAI extraction step, and deliberately strict:
-    exact terms, synonyms and long-word typos only. The model's own resolver
-    also matches on word overlap, which would read a bare "pain" as stomach_pain.
+    The keyword matcher: used on its own without an OpenAI key, and as the
+    backup when OpenAI extraction fails. Deliberately strict: exact terms,
+    synonyms and long-word typos only. The model's own resolver also matches
+    on word overlap, which would read a bare "pain" as stomach_pain.
     """
 
     def __init__(self, model: DiseaseModel):
@@ -176,9 +178,21 @@ def register_symptom_model() -> None:
         logger.error("mapping uses departments the clinic lacks: %s", sorted(unknown))
 
     classifier.register(SymptomModelClassifier(model, specialization_map))
-    classifier.register_extractor(SymptomExtractor(model))
+
+    keywords = SymptomExtractor(model)
+    if openai_settings.extraction_configured:
+        # keywords stay on as the backup for when OpenAI is slow or down
+        classifier.register_extractor(
+            OpenAISymptomExtractor(model.vocab.symptoms, fallback=keywords)
+        )
+        extraction = "OpenAI, keywords as backup"
+    else:
+        classifier.register_extractor(keywords)
+        extraction = "keywords only"
+
     logger.info(
-        "symptom model loaded: %s diseases, %s symptoms",
+        "symptom model loaded: %s diseases, %s symptoms, extraction: %s",
         len(model.classes_),
         len(model.vocab),
+        extraction,
     )

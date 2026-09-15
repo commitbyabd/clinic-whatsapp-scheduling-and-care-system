@@ -86,7 +86,7 @@ def register(fn: SymptomClassifier) -> None:
 
 
 def register_extractor(fn: SymptomExtractor) -> None:
-    """Install the text-to-symptoms step. The OpenAI version replaces this later."""
+    """Install the text-to-symptoms step. Call once at startup."""
     global _extractor
     _extractor = fn
     logger.info("symptom extractor registered: %s", getattr(fn, "__name__", fn))

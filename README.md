@@ -52,6 +52,7 @@ cd backend
 .\.venv\Scripts\python.exe tests\chatbot\test_conversation.py
 .\.venv\Scripts\python.exe tests\chatbot\test_webhook.py
 .\.venv\Scripts\python.exe tests\chatbot\test_ml_classifier.py
+.\.venv\Scripts\python.exe tests\chatbot\test_symptom_extraction.py
 ```
 
 ```
@@ -93,10 +94,13 @@ Built and tested:
 - the chatbot: rules, the scripted booking flow, and the decision chain
 - the Twilio WhatsApp webhook, with signature checking
 - the outsourced symptom classifier, wired in with emergency detection
+- OpenAI symptom extraction: reads a patient's own words, including Roman
+  Urdu, into the classifier's symptom names, with the keyword matcher as backup
+- the OpenAI fallback for general wellness questions, tested with a real key
 - the staff portal: admin sign-in and staff management
 - the public website
 
-66 backend tests, 23 portal tests.
+79 backend tests, 23 portal tests.
 
 Waiting on other people: the backend runs on the office server but is only
 reachable inside the office network. Real WhatsApp messages need port
@@ -104,12 +108,6 @@ forwarding to that server, and the Twilio Auth Token.
 
 Known gaps, none blocked on anyone:
 
-- **The OpenAI fallback has never actually run.** The key in `.env` is a
-  placeholder, so the real call and its response parsing are unverified. Needs
-  only a key.
-- **Symptom extraction is a stand-in.** `SymptomExtractor` in
-  `backend/chatbot/ml/adapter.py` matches known symptom words and synonyms. The
-  planned OpenAI step that reads free text properly is not built.
 - **Conversation state is in memory.** It is lost on restart, and it is why the
   backend must run with `--workers 1`. A Mongo-backed store means implementing
   three methods — `get`, `save`, `clear`.

@@ -15,6 +15,7 @@ webhook lives in app/features/whatsapp/ and calls into here.
     conversation.py         scripted question flow and per-patient state
     classifier.py           seam for the outsourced ML model
     llm_fallback.py         the OpenAI call and its safety prompt
+    symptom_extraction.py   OpenAI reads symptoms from the patient's own words
     settings.py             config from the environment
     predefined_responses/   the rule engine
 """

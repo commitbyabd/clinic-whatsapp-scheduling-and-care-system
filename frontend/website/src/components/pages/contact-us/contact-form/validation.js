@@ -32,8 +32,6 @@ export const buildInitialValues = (department) => ({
   message: "",
 });
 
-export const initialValues = buildInitialValues();
-
 export const validationSchema = Yup.object({
   name: Yup.string().trim().required("Please tell us your name."),
   phone: Yup.string()

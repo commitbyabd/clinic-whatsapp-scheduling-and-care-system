@@ -52,9 +52,6 @@ SPECIALIZATIONS = (
     "Endocrinologist",
 )
 
-# an unsure model should widen the net, not narrow it
-DEFAULT_SPECIALIZATION = "General Physician"
-
 
 @dataclass(frozen=True)
 class Classification:

@@ -58,10 +58,6 @@ class Reply:
     # populated when a booking flow finishes, for the Appointment Engine
     collected: dict[str, str] | None = None
 
-    @property
-    def used_llm(self) -> bool:
-        return self.source == "llm"
-
 
 def handle_message(
     message: str,

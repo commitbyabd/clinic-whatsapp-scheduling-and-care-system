@@ -31,7 +31,6 @@ async def add_doctor(payload: dict):
             return api_response(
                 status_code=409,
                 message="A user with this email already exists",
-                # success=True,
                 error_code="EMAIL_TAKEN",
                 data=None,
             )

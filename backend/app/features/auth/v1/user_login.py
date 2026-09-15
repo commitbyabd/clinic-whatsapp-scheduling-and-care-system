@@ -1,6 +1,4 @@
-from fastapi import HTTPException, status
-from app.core.response import api_response
-from app.core.security import create_access_token, verify_password
+from app.core.security import verify_password
 from app.db_functions.auth import get_user_by_email
 
 

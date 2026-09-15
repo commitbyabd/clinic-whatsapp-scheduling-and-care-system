@@ -3,10 +3,8 @@
    so there is one place to change it. */
 
 export const COMPANY_NAME = "Marigold Health";
-export const COMPANY_SHORT_NAME = "Marigold";
 export const COMPANY_FULL_NAME = "Marigold Health Clinic & Medical Centre";
 export const COMPANY_TAGLINE = "Clinic & Medical Centre";
-export const FOUNDED_YEAR = 1994;
 
 /* The full brand lockup — mark, name and tagline in one image. Both are
    right-sized copies of /images/logo.avif made by npm run images:thumbs;
@@ -31,7 +29,6 @@ export const PHONE_TEL_HREF = `tel:${PHONE_E164}`;
 export const EMAIL = "care@marigold.health";
 export const EMAIL_HREF = "mailto:care@marigold.health";
 
-export const ADDRESS_LINE = "14 Alder Grove Road, Fairmont, CA 94112";
 export const ADDRESS_STREET = "14 Alder Grove Road";
 export const ADDRESS_CITY = "Fairmont, CA 94112";
 

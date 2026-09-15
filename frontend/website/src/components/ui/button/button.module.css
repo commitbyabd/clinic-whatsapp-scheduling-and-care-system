@@ -125,12 +125,6 @@
   color: var(--cream-ink);
 }
 
-/* ---- Modifiers ---- */
-
-.full {
-  width: 100%;
-}
-
 @media screen and (max-width: 767px) {
   .lg,
   .sm {

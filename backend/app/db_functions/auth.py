@@ -1,5 +1,4 @@
 from app.core.database import get_database
-import bson
 
 
 async def get_user_by_email(email: str) -> dict | None:

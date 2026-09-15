@@ -3,7 +3,7 @@
    - Base styles, resets, and typography
    - Responsive headings and description text
    - Scrollbar styling
-   - Utility classes (block backgrounds, full-bleed, a11y)
+   - Utility classes (decorative blobs, a11y)
 ======================================== */
 
 @import url("./fonts.css");
@@ -34,8 +34,7 @@ a,
 button,
 [role="button"],
 summary,
-label[for],
-.clickable {
+label[for] {
   cursor: var(--hover-cursor);
 }
 
@@ -320,48 +319,6 @@ html.lenis body {
 /* =========================
    Utility classes
 ========================= */
-
-/* Full-bleed colored blocks break out past the 1200px content
-   width; their inner content is constrained back by Container. */
-.fullBleed {
-  max-width: var(--container-wide);
-  margin-inline: auto;
-  padding-inline: var(--space-md);
-}
-
-/* Block backgrounds — sage is the institution, terracotta is
-   the Fund, gold is the ask. Never swap their jobs. */
-.bgCream {
-  background: var(--cream-base);
-}
-.bgCard {
-  background: var(--cream-card);
-}
-.bgSand {
-  background: var(--sand);
-}
-.bgSage {
-  background: var(--sage);
-  color: var(--cream-ink);
-}
-.bgPaleSage {
-  background: var(--sage-pale);
-}
-.bgTerracotta {
-  background: var(--terracotta);
-  color: var(--cream-ink);
-}
-.bgDark {
-  background: var(--ink);
-  color: var(--on-dark-body);
-}
-
-/* The sticky header's glass */
-.bgGlass {
-  background: var(--overlay-header);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-}
 
 /* Soft decorative circles bleeding off a block's edge.
    Always aria-hidden, always inside an overflow:hidden parent. */

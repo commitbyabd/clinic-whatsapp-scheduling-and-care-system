@@ -24,6 +24,7 @@ from fastapi.testclient import TestClient  # noqa: E402
 from twilio.request_validator import RequestValidator  # noqa: E402
 
 import app.features.whatsapp.v1.webhook as webhook  # noqa: E402
+from chatbot.predefined_responses import clinic  # noqa: E402
 from chatbot.settings import TwilioSettings  # noqa: E402
 from main import app  # noqa: E402
 
@@ -85,7 +86,7 @@ HOURS = {"Body": "what are your timings", "From": "whatsapp:+923001234567"}
 def test_valid_signature_is_accepted():
     response = _post(HOURS, _sign(HOURS))
     assert response.status_code == 200, response.text
-    assert "9 AM" in response.text, response.text
+    assert clinic.OPENING_TIME in response.text, response.text
 
 
 def test_signature_from_the_wrong_token_is_rejected():
@@ -116,7 +117,7 @@ def test_skip_flag_allows_local_testing():
     """The deliberate escape hatch, so curl works before the token arrives."""
     response = _post(HOURS, signature=None, settings=SKIPPING)
     assert response.status_code == 200
-    assert "9 AM" in response.text
+    assert clinic.OPENING_TIME in response.text
 
 
 # --- TwiML --------------------------------------------------------------

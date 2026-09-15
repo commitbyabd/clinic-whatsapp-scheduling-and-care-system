@@ -28,7 +28,9 @@ def _get_client() -> OpenAI:
         _client = OpenAI(
             api_key=openai_settings.api_key,
             timeout=openai_settings.timeout_seconds,
-            max_retries=2,
+            # Twilio gives up on the webhook after 15s and every retry costs a
+            # whole timeout, so try once and let the canned reply cover a miss
+            max_retries=0,
         )
     return _client
 

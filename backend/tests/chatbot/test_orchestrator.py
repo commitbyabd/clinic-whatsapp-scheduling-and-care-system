@@ -17,6 +17,7 @@ No dependencies. Run either way:
 """
 
 import sys
+from dataclasses import replace
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
@@ -246,8 +247,14 @@ def test_junk_input_never_raises():
 
 
 def test_real_components_are_inert_without_a_key_or_model():
-    """Unstubbed, as the project actually stands today: no network, no crash."""
-    reply = handle_message(UNMATCHED)
+    """Unstubbed apart from the key: with none set, no network and no crash."""
+    # .env holds a real key now, so blank it here or every test run bills OpenAI
+    saved = llm_fallback.openai_settings
+    llm_fallback.openai_settings = replace(saved, api_key="")
+    try:
+        reply = handle_message(UNMATCHED)
+    finally:
+        llm_fallback.openai_settings = saved
     assert reply.source == "canned"
     assert reply.text == CANNED_REPLY
 

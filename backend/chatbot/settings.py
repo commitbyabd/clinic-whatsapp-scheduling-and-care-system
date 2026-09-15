@@ -116,8 +116,8 @@ class ClassifierSettings:
             return "Symptom classifier: disabled via CLASSIFIER_ENABLED"
         return (
             f"Symptom classifier: enabled, routing at >={self.min_confidence:.2f}, "
-            f"emergency at >={self.emergency_threshold:.2f}, "
-            f"needs {self.min_symptoms}+ symptoms"
+            f"emergency at >={self.emergency_threshold:.2f} "
+            f"with {self.min_symptoms}+ symptoms"
         )
 
 
@@ -126,7 +126,8 @@ classifier_settings = ClassifierSettings(
     # conservative: a wrong department wastes a patient's trip, so an unsure
     # prediction is better handed to the LLM
     min_confidence=_env_float("CLASSIFIER_MIN_CONFIDENCE", 0.6),
-    # one symptom is too weak to act on: "sweating" alone scores 0.74 heart attack
+    # fewer symptoms never raise an emergency: "sweating" alone scores 0.74
+    # heart attack. They can still suggest a department.
     min_symptoms=_env_int("CLASSIFIER_MIN_SYMPTOMS", 2),
     # measured across 1,433 symptom combinations: every real emergency scored
     # >=0.56, so 0.4 misses none and false-alarms on ~1%. Lower it rather than

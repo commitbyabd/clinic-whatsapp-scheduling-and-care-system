@@ -21,6 +21,11 @@ from chatbot.settings import OpenAISettings, openai_settings
 
 logger = logging.getLogger(__name__)
 
+# an unmatched message is read for symptoms and then, if none are found, sent to
+# the chat fallback, all inside Twilio's 15 seconds. Replies here take 1-3s; a
+# slower one falls back to keywords rather than eating the fallback's time.
+_TIMEOUT_SECONDS = 4.0
+
 _PROMPT = (
     "You read one WhatsApp message from a clinic patient and list the symptoms "
     "they say they have now, using only the allowed names.\n"
@@ -91,6 +96,7 @@ class OpenAISymptomExtractor:
         response = client.chat.completions.create(
             model=self._settings.model,
             max_completion_tokens=self._settings.max_output_tokens,
+            timeout=_TIMEOUT_SECONDS,
             messages=[
                 {"role": "system", "content": _PROMPT},
                 {"role": "user", "content": text},

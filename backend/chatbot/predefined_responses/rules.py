@@ -192,7 +192,15 @@ RAW_RULES: dict[str, RawRule] = {
             "feeling sick",
             "feel sick",
             "sick",
-            "ill",
+            # not a bare "ill": WhatsApp users type "I'll" as "ill", so
+            # "ok ill book an appointment" read as a symptom
+            "am ill",
+            "i'm ill",
+            "im ill",
+            "is ill",
+            "feel ill",
+            "feeling ill",
+            "fell ill",
             "unwell",
             "fever",
             "cough",

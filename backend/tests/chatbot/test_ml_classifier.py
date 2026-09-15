@@ -96,8 +96,9 @@ def test_emergency_skips_the_confidence_threshold():
         assert classifier.classify(["x", "y"]) == possible_heart_attack
 
 
-def test_one_symptom_is_not_acted_on():
-    # "sweating" alone scores 0.74 heart attack; too weak to send anyone to A&E
+def test_one_symptom_never_raises_an_emergency():
+    # "sweating" alone scores 0.74 heart attack: too weak to send anyone to A&E,
+    # and too risky to route as routine, so nothing comes back
     assert _CLASSIFY(["sweating"]) is None
 
 

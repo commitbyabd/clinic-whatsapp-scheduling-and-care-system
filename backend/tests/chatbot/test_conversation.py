@@ -230,20 +230,31 @@ class _Symptoms:
         classifier._classifier, classifier._extractor = self._saved
 
 
-def test_opening_with_symptoms_starts_the_booking():
+def test_symptoms_get_a_department_and_a_booking_offer():
     phone = _phone()
     with _Symptoms():
         reply = handle_message(FEVER, phone=phone)
     assert reply.source == "flow", reply.source
-    assert "General Physician" in reply.text, reply.text
-    assert "visited us before" in reply.text, reply.text
-    assert orchestrator.engine.is_active(phone)
+    assert "General Physician can help" in reply.text, reply.text
+    assert "Would you like to book an appointment?" in reply.text, reply.text
+    assert "visited us before" not in reply.text, "started booking without asking"
 
 
-def test_symptoms_given_up_front_are_not_asked_for_again():
+def test_symptoms_without_a_keyword_get_the_offer_too():
+    # "blisters" is not in rules.py, so only extraction can catch it
+    phone = _phone()
+    with _Symptoms(found=("blister",), result=Classification("Dermatologist", 0.9)):
+        reply = handle_message("i have blisters on my feet", phone=phone)
+    assert "Dermatologist can help" in reply.text, reply.text
+    assert "Would you like to book" in reply.text, reply.text
+
+
+def test_yes_books_without_asking_for_symptoms_again():
     phone = _phone()
     with _Symptoms():
         handle_message(FEVER, phone=phone)
+        reply = handle_message("yes", phone=phone)
+        assert "visited us before" in reply.text, reply.text
         reply = handle_message("1", phone=phone)  # visited before
         assert "date and time" in reply.text, reply.text
         done = handle_message("Tuesday 3pm", phone=phone)
@@ -256,17 +267,50 @@ def test_symptoms_given_up_front_are_not_asked_for_again():
     }, done.collected
 
 
-def test_opening_with_symptoms_still_books_without_the_model():
-    # nothing registered, as when the model fails to load: the booking still
-    # starts, and the receptionist still gets what the patient wrote
+def test_saying_you_will_book_counts_as_yes():
+    phone = _phone()
+    with _Symptoms():
+        handle_message(FEVER, phone=phone)
+        reply = handle_message("ok ill book an appointment", phone=phone)
+    assert "visited us before" in reply.text, reply.text
+
+
+def test_no_ends_the_offer_politely():
+    phone = _phone()
+    with _Symptoms():
+        handle_message(FEVER, phone=phone)
+        reply = handle_message("no", phone=phone)
+    assert "book later" in reply.text, reply.text
+    assert reply.collected is None
+    assert orchestrator.engine.is_active(phone) is False
+
+
+def test_another_question_drops_the_offer():
+    phone = _phone()
+    with _Symptoms():
+        handle_message(FEVER, phone=phone)
+        reply = handle_message("what are your timings", phone=phone)
+    assert reply.source == "clinic_hours", reply.source
+    assert orchestrator.engine.is_active(phone) is False
+
+
+def test_the_offer_still_works_without_the_model():
+    # nothing registered, as when the model fails to load: no department, but
+    # booking is still offered and the symptoms still reach the receptionist
     phone = _phone()
     reply = handle_message(FEVER, phone=phone)
-    assert "not feeling well" in reply.text and "visited us before" in reply.text
-    reply = _say(phone, "2", "Zainab Bibi")
+    assert "not feeling well" in reply.text and "Would you like to book" in reply.text
+    reply = _say(phone, "1", "2", "Zainab Bibi")  # yes, first visit, name
     assert "date and time" in reply.text, reply.text
     done = handle_message("Tuesday 3pm", phone=phone)
     assert done.collected["symptom_text"] == FEVER
     assert "specialization" not in done.collected
+
+
+def test_ill_meaning_i_will_is_not_a_symptom():
+    reply = _say(_phone(), "ok ill book an appointment")
+    assert "visited us before" in reply.text, reply.text
+    assert "not feeling well" not in reply.text, reply.text
 
 
 def test_symptoms_typed_at_the_menu_are_taken_as_the_answer():

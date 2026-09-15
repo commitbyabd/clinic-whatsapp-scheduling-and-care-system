@@ -10,6 +10,7 @@ from chatbot import classifier
 from chatbot import llm_fallback
 from chatbot.classifier import Classification
 from chatbot.conversation import (
+    OFFER_FLOW,
     REASON_STEP,
     SYMPTOM_STEP,
     ConversationEngine,
@@ -29,8 +30,8 @@ engine = ConversationEngine()
 # rule names that open the scripted flow instead of answering directly
 FLOW_TRIGGERS = {"appointment": "appointment"}
 
-# a patient who opens with symptoms wants to be seen, so this rule starts the
-# booking too, with what they wrote already filled in
+# the symptom keywords. A match is read for symptoms and a booking is offered,
+# the same as symptoms described without any keyword
 SYMPTOM_RULE = "feeling_unwell"
 
 CANNED_REPLY = (
@@ -39,6 +40,13 @@ CANNED_REPLY = (
 )
 
 UNWELL_LEAD = "We understand you're not feeling well."
+
+DECLINED_MESSAGE = "No problem. If you'd like to book later, just message us."
+
+
+def _offer_note(result: Classification) -> str:
+    # suggests a department, never names a condition
+    return f"This sounds like something our {result.specialization} can help with."
 
 
 def _routing_note(result: Classification) -> str:
@@ -103,6 +111,47 @@ def _symptom_answers(message: str, routed: Classification | None) -> dict[str, s
     return answers
 
 
+def _offer_booking(phone: str, message: str, found: Sequence[str]) -> Reply:
+    routed = classifier.classify(found)
+    if routed is not None and routed.emergency:
+        return _emergency_reply(routed)
+
+    logger.info("offering a booking from symptoms")
+    result = engine.start(phone, OFFER_FLOW, _symptom_answers(message, routed))
+    lead = _offer_note(routed) if routed is not None else UNWELL_LEAD
+    return Reply(
+        text=f"{lead}\n\n{result.text}",
+        source="flow",
+        matched=True,
+        classification=routed,
+    )
+
+
+def _answer_offer(phone: str, message: str) -> Reply | None:
+    """Yes starts the booking with the symptoms kept, no ends it politely.
+
+    None means the message was not an answer. The offer is dropped so the
+    caller reads the message afresh, and a patient asking something else is
+    never stuck on "didn't catch that".
+    """
+    rule = match_rule(message)
+    if engine.understands(phone, message):
+        result = engine.advance(phone, message)
+    elif rule is not None and rule[0] == "appointment":
+        # "ok I'll book an appointment" is a yes
+        result = engine.advance(phone, "yes")
+    else:
+        engine.store.clear(phone)
+        return None
+
+    answers = dict(result.data)
+    if "wants_booking" not in answers:
+        return _flow_reply(result)  # a cancel word
+    if answers.pop("wants_booking") != "yes":
+        return Reply(text=DECLINED_MESSAGE, source="flow", matched=True)
+    return _flow_reply(engine.start(phone, "appointment", answers))
+
+
 def handle_message(
     message: str,
     phone: str | None = None,
@@ -110,9 +159,9 @@ def handle_message(
 ) -> Reply:
     """Run one message through the chain. Never raises.
 
-    phone keys the conversation state; without it the scripted flow is off.
-    symptoms comes from the flow after OpenAI extraction; without it the
-    classifier is skipped.
+    phone keys the conversation state; without it the scripted flow and the
+    booking offer are off. symptoms skips extraction when the caller already
+    has them.
     """
     # Emergency first, on every message. A patient mid-menu who types "chest
     # pain" must not have it read as a menu answer. Do not move this.
@@ -126,6 +175,13 @@ def handle_message(
     if phone:
         routed = None
         state = engine.store.get(phone)
+
+        if state is not None and state.flow == OFFER_FLOW:
+            reply = _answer_offer(phone, message)
+            if reply is not None:
+                return reply
+            state = None
+
         if state is not None and state.step == SYMPTOM_STEP:
             routed = classifier.classify(symptoms or classifier.extract_symptoms(message))
             if routed is not None and routed.emergency:
@@ -163,12 +219,7 @@ def handle_message(
         name, text = rule
         if phone and name == SYMPTOM_RULE:
             found = symptoms or classifier.extract_symptoms(message)
-            routed = classifier.classify(found)
-            if routed is not None and routed.emergency:
-                return _emergency_reply(routed)
-            logger.info("starting appointment flow from symptoms")
-            result = engine.start(phone, "appointment", _symptom_answers(message, routed))
-            return _flow_reply(result, routed, lead=UNWELL_LEAD)
+            return _offer_booking(phone, message, found)
         flow = FLOW_TRIGGERS.get(name)
         if flow and phone:
             logger.info("starting %s flow", flow)
@@ -177,6 +228,12 @@ def handle_message(
 
     # every one of these is a keyword missing from rules.py
     logger.info("no rule matched")
+
+    if phone:
+        # symptoms without a keyword, such as "blisters on my feet"
+        found = symptoms or classifier.extract_symptoms(message)
+        if found:
+            return _offer_booking(phone, message, found)
 
     if symptoms:
         result = classifier.classify(symptoms)

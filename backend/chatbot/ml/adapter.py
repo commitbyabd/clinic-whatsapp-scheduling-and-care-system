@@ -64,8 +64,12 @@ class SymptomModelClassifier:
 
     def __call__(self, symptoms) -> Classification | None:
         recognized = [m.matched for m in self.model.vocab.resolve_many(symptoms) if m.ok]
-        if len(recognized) < classifier_settings.min_symptoms:
+        if not recognized:
             return None
+        # fewer than this is too thin to raise an alarm on: "sweating" alone
+        # scores 0.74 heart attack. It can still suggest a department, since
+        # most symptoms belong to one department (blister -> Dermatologist).
+        enough = len(recognized) >= classifier_settings.min_symptoms
 
         proba = self.model.predict_proba_sets([frozenset(recognized)])[0]
 
@@ -74,6 +78,9 @@ class SymptomModelClassifier:
         # can rank pneumonia first while still being a likely heart attack
         worst = max(self._emergency, key=lambda e: proba[e[0]], default=None)
         if worst is not None and proba[worst[0]] >= classifier_settings.emergency_threshold:
+            if not enough:
+                # too thin for an alarm, too risky to route as routine
+                return None
             index, disease = worst
             return Classification(
                 specialization=self.specialization_map.get(disease, "General Physician"),

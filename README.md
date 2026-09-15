@@ -53,6 +53,7 @@ cd backend
 .\.venv\Scripts\python.exe tests\chatbot\test_webhook.py
 .\.venv\Scripts\python.exe tests\chatbot\test_ml_classifier.py
 .\.venv\Scripts\python.exe tests\chatbot\test_symptom_extraction.py
+.\.venv\Scripts\python.exe tests\chatbot\test_model_adapter.py
 ```
 
 ```
@@ -100,7 +101,7 @@ Built and tested:
 - the staff portal: admin sign-in and staff management
 - the public website
 
-89 backend tests, 23 portal tests.
+99 backend tests, 23 portal tests.
 
 Waiting on other people: the backend runs on the office server but is only
 reachable inside the office network. Real WhatsApp messages need port

@@ -119,6 +119,13 @@ def test_the_patient_message_is_sent_as_the_user_turn():
     assert messages[-1] == {"role": "user", "content": PATIENT}
 
 
+def test_extraction_gives_up_early():
+    # leaves the chat fallback its time inside Twilio's 15 seconds
+    client = _FakeClient('{"symptoms": []}')
+    _extractor(client)(PATIENT)
+    assert client.requests[0].get("timeout", 99) <= 5, client.requests[0].get("timeout")
+
+
 def test_a_blank_message_is_not_sent():
     client = _FakeClient('{"symptoms": ["sweating"]}')
     extract = _extractor(client)

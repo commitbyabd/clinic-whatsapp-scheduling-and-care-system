@@ -177,9 +177,36 @@ APPOINTMENT_FLOW: dict[str, Step] = {
     ),
 }
 
-FLOWS: dict[str, dict[str, Step]] = {"appointment": APPOINTMENT_FLOW}
+# --- the booking offer, sent when a patient describes symptoms unprompted ---
 
-FLOW_ENTRY_STEP = {"appointment": "ask_returning"}
+OFFER_FLOW = "offer"
+
+BOOKING_YES_NO = (
+    Option(
+        "yes",
+        "Yes",
+        ("y", "yeah", "yep", "sure", "ok", "okay", "yes please", "please",
+         "haan", "han", "ji", "ji haan", "theek hai"),
+    ),
+    Option("no", "No", ("n", "nope", "no thanks", "not now", "later", "nahi", "nahin")),
+)
+
+OFFER_STEPS: dict[str, Step] = {
+    "ask_book": Step(
+        id="ask_book",
+        question="Would you like to book an appointment?",
+        options=BOOKING_YES_NO,
+        field="wants_booking",
+        next=None,
+    ),
+}
+
+FLOWS: dict[str, dict[str, Step]] = {
+    "appointment": APPOINTMENT_FLOW,
+    OFFER_FLOW: OFFER_STEPS,
+}
+
+FLOW_ENTRY_STEP = {"appointment": "ask_returning", OFFER_FLOW: "ask_book"}
 
 # says a request was submitted, never that an appointment is booked
 COMPLETION_MESSAGE = (

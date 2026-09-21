@@ -1,14 +1,18 @@
 from fastapi import APIRouter, Depends
 
 from app.dependencies.auth import require_role
-from app.schemas.appointment_notes_update import AppointmentNotesUpdate
+from app.schemas.appointment_status_update import AppointmentStatusUpdate
+from app.schemas.consultation_update import ConsultationUpdate
 from app.schemas.doctor_schedule_update import DoctorScheduleUpdate
+from app.schemas.patient_medical_update import PatientMedicalUpdate
 
 from .v1.doctor_dashboard import (
     get_doctor_schedule_api,
     edit_doctor_schedule_api,
     get_appointments_api,
-    edit_patient_detail_api,
+    save_consultation_api,
+    set_appointment_status_api,
+    edit_patient_medical_api,
 )
 
 router = APIRouter(prefix="/doctor", tags=["doctor-dashboard"])
@@ -45,18 +49,54 @@ async def doctor_appointments(
 
 
 # Here the id DOES arrive in the URL, so the token id travels with it and the
-# query matches on both. That pairing is what stops one doctor writing notes
-# into another doctor's consultation.
-@router.patch("/appointments/{appointment_id}/notes")
-async def save_appointment_notes(
+# query matches on both. That pairing is what stops one doctor writing into
+# another doctor's consultation.
+#
+# PUT: the whole write-up (diagnosis, vitals, prescriptions, follow-up and
+# notes) arrives every time and replaces the last one.
+@router.put("/appointments/{appointment_id}/consultation")
+async def save_appointment_consultation(
     appointment_id: str,
-    notes: AppointmentNotesUpdate,
+    consultation: ConsultationUpdate,
     user: dict = Depends(require_role("doctor")),
 ):
-    return await edit_patient_detail_api(
+    return await save_consultation_api(
         {
             "doctor_id": str(user["_id"]),
             "appointment_id": appointment_id,
-            **notes.model_dump(),
+            **consultation.model_dump(),
+        }
+    )
+
+
+# How the visit went: completed or no_show, or back to booked to undo either.
+@router.patch("/appointments/{appointment_id}/status")
+async def save_appointment_status(
+    appointment_id: str,
+    update: AppointmentStatusUpdate,
+    user: dict = Depends(require_role("doctor")),
+):
+    return await set_appointment_status_api(
+        {
+            "doctor_id": str(user["_id"]),
+            "appointment_id": appointment_id,
+            "status": update.status,
+        }
+    )
+
+
+# Allergies, long-term conditions and blood group. Only doctors change these,
+# and only for patients they have an appointment with.
+@router.put("/patients/{patient_id}/medical")
+async def save_patient_medical(
+    patient_id: str,
+    medical: PatientMedicalUpdate,
+    user: dict = Depends(require_role("doctor")),
+):
+    return await edit_patient_medical_api(
+        {
+            "doctor_id": str(user["_id"]),
+            "patient_id": patient_id,
+            **medical.model_dump(),
         }
     )

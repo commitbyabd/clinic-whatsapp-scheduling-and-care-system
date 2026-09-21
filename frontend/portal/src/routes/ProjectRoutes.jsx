@@ -12,6 +12,7 @@ import { homePathFor } from "../utils/roleHome.js";
 // Split out so the login page does not ship the portals with it.
 const Dashboard = lazy(() => import("../pages/dashboard/Dashboard.jsx"));
 const Reception = lazy(() => import("../pages/reception/Reception.jsx"));
+const Doctor = lazy(() => import("../pages/doctor/Doctor.jsx"));
 
 function RootRedirect() {
   const { isAuthenticated, role } = useAuth();
@@ -37,6 +38,10 @@ function ProjectRoutes() {
 
         <Route element={<ProtectedRoutes roles={["receptionist"]} />}>
           <Route path="/reception" element={<Reception />} />
+        </Route>
+
+        <Route element={<ProtectedRoutes roles={["doctor"]} />}>
+          <Route path="/doctor" element={<Doctor />} />
         </Route>
 
         <Route path="/forbidden" element={<Forbidden />} />

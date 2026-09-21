@@ -29,21 +29,24 @@ receptionist), specialization (doctors), is_active`
 [{day_of_week 0-6, start_time "09:00", end_time}], slot_minutes,
 blackout_dates, is_active, created_at, updated_at`
 
-**patients** (built: created when a receptionist schedules a new patient,
-read by doctor endpoints): `full_name, preferred_name, date_of_birth
-(midnight UTC), gender, whatsapp_number, allergies, chronic_conditions,
-blood_group, notes, is_active, created_at, updated_at`
+**patients** (built: created when a receptionist schedules a new patient;
+allergies, chronic_conditions and blood_group are edited by doctors, see
+[doctor-portal.md](doctor-portal.md)): `full_name, preferred_name,
+date_of_birth (midnight UTC), gender, whatsapp_number, allergies,
+chronic_conditions, blood_group (A+ … O-), notes, is_active, created_at,
+updated_at`
 
 **appointments** (built: booked by receptionists, see
-[receptionist-scheduling.md](receptionist-scheduling.md); read and noted by
-doctor endpoints): `doctor_id, patient_id, scheduled_for (UTC),
-duration_minutes, status, reason, symptom_summary, doctor_notes,
-notes_updated_at, doctor_snapshot {full_name}, specialization, request_id,
-booked_by, created_at, updated_at`. Status: `booked` (a receptionist booked
-it), `confirmed` (the patient confirmed; planned), `completed`, `no_show`,
-`cancelled` (gives the slot back). Planned: `consultation {diagnosis, vitals
-{bp, pulse, temperature, weight}, prescriptions [{medicine, dose, frequency,
-days, instructions}], follow_up_on}`
+[receptionist-scheduling.md](receptionist-scheduling.md); written up by
+doctors, see [doctor-portal.md](doctor-portal.md)): `doctor_id, patient_id,
+scheduled_for (UTC), duration_minutes, status, reason, symptom_summary,
+doctor_notes, notes_updated_at, doctor_snapshot {full_name}, specialization,
+request_id, booked_by, created_at, updated_at, consultation {diagnosis,
+vitals {bp "120/80", pulse bpm, temperature °F, weight kg}, prescriptions
+[{medicine, dose, frequency, days, instructions}], follow_up_on (midnight
+UTC)}`. Status: `booked` (a receptionist booked it), `confirmed` (the patient
+confirmed; planned), `completed` and `no_show` (set by the doctor, who can
+undo either back to `booked`), `cancelled` (gives the slot back).
 
 **booking_requests** (built, see [booking-requests.md](booking-requests.md)):
 `channel, whatsapp_number, patient_name, returning_patient, reason,

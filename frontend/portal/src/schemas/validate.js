@@ -25,6 +25,25 @@ export function validateWith(schema, values) {
   return { valid: false, data: null, errors };
 }
 
+// Like validateWith, but keyed by the whole path ("prescriptions.0.medicine"),
+// for forms that hold lists of rows.
+export function validateWithPaths(schema, values) {
+  const result = schema.safeParse(values);
+
+  if (result.success) {
+    return { valid: true, data: result.data, errors: {} };
+  }
+
+  const errors = {};
+
+  for (const issue of result.error.issues) {
+    const key = issue.path.join(".");
+    if (key && !errors[key]) errors[key] = issue.message;
+  }
+
+  return { valid: false, data: null, errors };
+}
+
 // Checks one field, for validating on blur. A name the schema does not
 // declare returns no message, so blurring password on an edit form is
 // silent.

@@ -105,15 +105,15 @@ uvicorn, `git pull`, install requirements if they changed, start again.
 ## Status (updated 2026-09-21)
 
 Built: the WhatsApp chatbot end to end, the webhook on the office server,
-admin portal (staff management), doctor API endpoints (schedule, appointments,
-notes), public website, saving booking requests, receptionist inbox,
-receptionist scheduling (a request becomes an appointment, or is declined).
+admin portal (staff management), public website, saving booking requests,
+receptionist inbox, receptionist scheduling (a request becomes an
+appointment, or is declined), doctor portal (visits, consultation write-up,
+medical details, working hours).
 
-Next: doctor portal (including a screen for working hours), telling the
-patient on WhatsApp when they are booked (needs the Twilio credentials),
-conversation state in Mongo, contact form email via Google SMTP, deploying
-both frontends, SDS test plan, demo. Phase 3 was due Sep 21, Phase 4 is due
-Sep 28.
+Next: telling the patient on WhatsApp when they are booked (needs the Twilio
+credentials), conversation state in Mongo, contact form email via Google
+SMTP, deploying both frontends, SDS test plan, demo. Phase 3 was due Sep 21,
+Phase 4 is due Sep 28.
 
 ## Feature docs
 
@@ -123,6 +123,7 @@ Sep 28.
 | [booking-requests.md](booking-requests.md) | saving finished WhatsApp booking chats |
 | [receptionist-inbox.md](receptionist-inbox.md) | the receptionist's list of new requests |
 | [receptionist-scheduling.md](receptionist-scheduling.md) | free slots, matching patients, booking a request, declining |
+| [doctor-portal.md](doctor-portal.md) | the doctor's visits, consultation write-up, medical details, working hours |
 
 ## Template for a feature doc
 

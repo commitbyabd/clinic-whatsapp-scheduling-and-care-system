@@ -2,9 +2,9 @@
 Tests for receptionist scheduling: free slots, matching patients, booking a
 request into an appointment, and declining one.
 
-A small in-memory fake stands in for MongoDB, so these need no database.
-The transaction is replaced by a plain call, and the fake records the
-session each write was given, to check every write joins the transaction.
+The in-memory fake in fake_mongo.py stands in for MongoDB, so these need no
+database. The transaction is replaced by a plain call, and the fake records
+the session each write was given, to check every write joins the transaction.
 
     python tests/app/test_receptionist_scheduling.py
     pytest
@@ -15,7 +15,6 @@ import json
 import sys
 from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
-from types import SimpleNamespace
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
 
@@ -31,6 +30,7 @@ from app.features.receptionist.v1 import get_free_slots as slots  # noqa: E402
 from app.features.receptionist.v1 import get_matching_patients as matching  # noqa: E402
 from app.features.receptionist.v1 import schedule_booking_request as scheduling  # noqa: E402
 from app.schemas.booking_schedule import BookingSchedule  # noqa: E402
+from fake_mongo import FakeCollection, FakeDatabase  # noqa: E402
 from main import app  # noqa: E402
 
 client = TestClient(app)
@@ -110,108 +110,23 @@ def _clock(day, hhmm):
 # --------------------------------------------------------------- fake Mongo
 
 
-def _utc(value):
-    if isinstance(value, datetime) and value.tzinfo is None:
-        return value.replace(tzinfo=UTC)
-    return value
-
-
-def _matches(doc, query):
-    for field, wanted in query.items():
-        value = _utc(doc.get(field))
-        if isinstance(wanted, dict):
-            for op, operand in wanted.items():
-                if op == "$in" and value not in operand:
-                    return False
-                if op == "$gte" and (value is None or value < operand):
-                    return False
-                if op == "$lt" and (value is None or value >= operand):
-                    return False
-        elif value != wanted:
-            return False
-    return True
-
-
-class _FakeCursor:
-    def __init__(self, rows):
-        self.rows = rows
-
-    def sort(self, key, direction):
-        self.rows.sort(key=lambda row: row.get(key), reverse=direction == -1)
-        return self
-
-    def limit(self, count):
-        self.rows = self.rows[:count]
-        return self
-
-    async def to_list(self, length=None):
-        return self.rows
-
-
-class _FakeCollection:
-    def __init__(self, docs=(), error=None, insert_error=None):
-        self.docs = [dict(doc) for doc in docs]
-        self.error = error
-        self.insert_error = insert_error
-        self.inserted = []
-        self.queries = []
-        # the session each write was given
-        self.write_sessions = []
-
-    def _check(self, query):
-        if self.error is not None:
-            raise self.error
-        self.queries.append(query)
-
-    async def find_one(self, query, projection=None, session=None):
-        self._check(query)
-        return next((dict(doc) for doc in self.docs if _matches(doc, query)), None)
-
-    def find(self, query, projection=None, session=None):
-        self._check(query)
-        return _FakeCursor([dict(doc) for doc in self.docs if _matches(doc, query)])
-
-    async def insert_one(self, doc, session=None):
-        if self.insert_error is not None:
-            raise self.insert_error
-        self.write_sessions.append(session)
-        self.docs.append(dict(doc))
-        self.inserted.append(doc)
-        return SimpleNamespace(inserted_id=doc["_id"])
-
-    async def update_one(self, query, update, session=None):
-        self._check(query)
-        self.write_sessions.append(session)
-        for doc in self.docs:
-            if _matches(doc, query):
-                doc.update(update["$set"])
-                return SimpleNamespace(matched_count=1)
-        return SimpleNamespace(matched_count=0)
-
-    async def find_one_and_update(self, query, update, return_document=None, session=None):
-        self._check(query)
-        for doc in self.docs:
-            if _matches(doc, query):
-                doc.update(update["$set"])
-                return dict(doc)
-        return None
-
-
 MODULES = (decline, doctors, slots, matching, scheduling)
 
 
-class _FakeDatabase:
-    """Stands in for get_database() in every scheduling module."""
+class _FakeDatabase(FakeDatabase):
+    """The shared fake, filled with the scheduling test data, and with the
+    transaction replaced by a plain call that hands every write SESSION."""
 
     def __init__(self, requests=(REQUEST,), appointments=(), patients=(PATIENT,),
                  users=(DOCTOR,), schedules=(SCHEDULE,), **collections):
-        self.booking_requests = _FakeCollection(requests)
-        self.appointments = _FakeCollection(appointments)
-        self.patients = _FakeCollection(patients)
-        self.users = _FakeCollection(users)
-        self.schedules = _FakeCollection(schedules)
-        for name, collection in collections.items():
-            setattr(self, name, collection)
+        super().__init__(MODULES, **{
+            "booking_requests": requests,
+            "appointments": appointments,
+            "patients": patients,
+            "users": users,
+            "schedules": schedules,
+            **collections,
+        })
         self.transactions = 0
 
     async def _transaction(self, work):
@@ -219,16 +134,13 @@ class _FakeDatabase:
         return await work(SESSION)
 
     def __enter__(self):
-        self._originals = [(module, module.get_database) for module in MODULES]
-        for module in MODULES:
-            module.get_database = lambda: self
+        super().__enter__()
         self._original_transaction = scheduling.run_in_transaction
         scheduling.run_in_transaction = self._transaction
         return self
 
     def __exit__(self, *exc):
-        for module, original in self._originals:
-            module.get_database = original
+        super().__exit__(*exc)
         scheduling.run_in_transaction = self._original_transaction
 
 
@@ -460,7 +372,7 @@ def test_a_time_between_slots_is_refused():
 
 def test_a_slot_booked_at_the_same_moment_is_refused():
     # two receptionists passed the slot check together; the index stops one
-    appointments = _FakeCollection(insert_error=DuplicateKeyError("E11000 duplicate key"))
+    appointments = FakeCollection(insert_error=DuplicateKeyError("E11000 duplicate key"))
     with _FakeDatabase(appointments=(), patients=[PATIENT]) as db:
         db.appointments = appointments
         status, body = _schedule(patient_id=str(PATIENT["_id"]), new_patient=None)
@@ -495,7 +407,7 @@ def test_a_malformed_id_is_a_400():
 
 
 def test_a_database_failure_is_a_500_without_details():
-    broken = _FakeCollection(error=RuntimeError("connection refused to cluster0"))
+    broken = FakeCollection(error=RuntimeError("connection refused to cluster0"))
     with _FakeDatabase(booking_requests=broken):
         status, body = _schedule()
     assert status == 500, body

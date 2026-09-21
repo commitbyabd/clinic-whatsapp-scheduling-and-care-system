@@ -136,13 +136,8 @@ Error codes: `INVALID_ID` 400; `REQUEST_NOT_FOUND`, `DOCTOR_NOT_FOUND`,
 
 ## How to try it
 
-1. The doctor needs working hours, and no portal screen sets them yet. Run
-   the backend, open `http://localhost:8000/docs` and sign in as the doctor
-   with `POST /auth/login`. Click Authorize with the token, then
-   `PUT /doctor/schedule` with, for example,
-   `{"working_hours": [{"day_of_week": 0, "start_time": "09:00",
-   "end_time": "13:00"}], "slot_minutes": 30, "blackout_dates": []}`
-   (0 is Monday; add a row per working day).
+1. The doctor needs working hours. Sign in as the doctor and set them on the
+   Working hours tab ([doctor-portal.md](doctor-portal.md)).
 2. Finish a booking on WhatsApp, so a request is waiting.
 3. Sign in as a receptionist, press Schedule, pick the patient, the doctor
    and a time, then Book appointment.
@@ -154,8 +149,6 @@ Error codes: `INVALID_ID` 400; `REQUEST_NOT_FOUND`, `DOCTOR_NOT_FOUND`,
 - **The patient is not told on WhatsApp.** Sending needs the Twilio REST API
   (Account SID and Auth Token) and, outside WhatsApp's 24-hour window, an
   approved template. Until then the receptionist tells them.
-- There is no screen for a doctor's working hours; it comes with the doctor
-  portal.
 - The receptionist has no list of booked appointments, and no reschedule or
   cancel.
 - Decline takes no reason.

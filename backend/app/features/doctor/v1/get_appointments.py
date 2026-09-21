@@ -76,6 +76,31 @@ def calculate_age(date_of_birth) -> int | None:
     return today.year - born.year - ((today.month, today.day) < (born.month, born.day))
 
 
+def shape_consultation(consultation: dict | None) -> dict | None:
+    # None until the doctor first saves one
+    if not consultation:
+        return None
+
+    vitals = consultation.get("vitals") or {}
+    follow_up = consultation.get("follow_up_on")
+
+    return {
+        "diagnosis": consultation.get("diagnosis", ""),
+        "vitals": {
+            key: vitals.get(key) for key in ("bp", "pulse", "temperature", "weight")
+        },
+        "prescriptions": [
+            {
+                key: item.get(key)
+                for key in ("medicine", "dose", "frequency", "days", "instructions")
+            }
+            for item in consultation.get("prescriptions") or []
+        ],
+        # stored as midnight UTC, sent as the day alone
+        "follow_up_on": follow_up.date() if isinstance(follow_up, datetime) else None,
+    }
+
+
 def shape_appointment(row: dict) -> dict:
     # a patient deleted out from under an appointment leaves the join empty
     patient = row.get("patient") or {}
@@ -89,6 +114,8 @@ def shape_appointment(row: dict) -> dict:
         # what the WhatsApp conversation gathered before the visit
         "symptom_summary": row.get("symptom_summary"),
         "doctor_notes": row.get("doctor_notes", ""),
+        "notes_updated_at": row.get("notes_updated_at"),
+        "consultation": shape_consultation(row.get("consultation")),
         "patient": {
             "_id": patient.get("_id"),
             "full_name": patient.get("full_name"),
@@ -98,6 +125,7 @@ def shape_appointment(row: dict) -> dict:
             "whatsapp_number": patient.get("whatsapp_number"),
             "allergies": patient.get("allergies", []),
             "chronic_conditions": patient.get("chronic_conditions", []),
+            "blood_group": patient.get("blood_group"),
             "notes": patient.get("notes", ""),
         },
         "patient_history": [
@@ -106,6 +134,7 @@ def shape_appointment(row: dict) -> dict:
                 "scheduled_for": visit.get("scheduled_for"),
                 "status": visit.get("status"),
                 "reason": visit.get("reason"),
+                "diagnosis": (visit.get("consultation") or {}).get("diagnosis", ""),
                 "doctor_notes": visit.get("doctor_notes", ""),
                 # who saw them that day, which may not be this doctor
                 "seen_by": (visit.get("doctor_snapshot") or {}).get("full_name"),
@@ -174,6 +203,7 @@ async def get_appointments_query(doctor_id: str, include_past: bool) -> list[dic
                             "scheduled_for": 1,
                             "status": 1,
                             "reason": 1,
+                            "consultation.diagnosis": 1,
                             "doctor_notes": 1,
                             "doctor_snapshot": 1,
                         }

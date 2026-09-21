@@ -11,9 +11,12 @@ const LOADING = { status: "loading", data: null, message: "" };
   changes the old result is hidden straight away, so one doctor's slots
   never show under another's name. A null key loads nothing ("idle").
 
+  Changing 'version' loads the same thing again but keeps the current
+  result on screen until the new one arrives, so a refresh does not flash.
+
   message is the server's text, which also explains an empty result.
 */
-export function useApiResource(key, load) {
+export function useApiResource(key, load, version = 0) {
   const [result, setResult] = useState({ key: null, ...LOADING });
 
   // Callers pass an inline arrow, which is new every render. The latest one
@@ -54,7 +57,7 @@ export function useApiResource(key, load) {
     return () => {
       cancelled = true;
     };
-  }, [key]);
+  }, [key, version]);
 
   if (key === null) return IDLE;
   return result.key === key ? result : LOADING;

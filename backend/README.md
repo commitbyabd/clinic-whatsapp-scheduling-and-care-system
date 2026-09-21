@@ -27,8 +27,9 @@ app/
   utils/             object_serializer, shared helpers
 
 chatbot/             the WhatsApp chatbot — see its __init__.py
-tests/               139 tests in chatbot/ and app/, no network and no API
-                     key required
+tests/               158 tests in chatbot/ and app/, no network and no API
+                     key required; tests/app/fake_mongo.py stands in for
+                     MongoDB
 ```
 
 ## Conventions

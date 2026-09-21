@@ -22,6 +22,12 @@ export function todayInClinic(now = new Date()) {
   return `${parts.year}-${parts.month}-${parts.day}`;
 }
 
+// The clinic day a moment falls on, "YYYY-MM-DD", or "" if it is not a date
+export function clinicDay(value) {
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? "" : todayInClinic(date);
+}
+
 const TIME = new Intl.DateTimeFormat("en-US", {
   timeZone: CLINIC_TIME_ZONE,
   hour: "numeric",

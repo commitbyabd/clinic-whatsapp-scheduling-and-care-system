@@ -60,6 +60,7 @@ cd backend
 .\.venv\Scripts\python.exe tests\chatbot\test_model_adapter.py
 .\.venv\Scripts\python.exe tests\app\test_receptionist_inbox.py
 .\.venv\Scripts\python.exe tests\app\test_receptionist_scheduling.py
+.\.venv\Scripts\python.exe tests\app\test_doctor_portal.py
 ```
 
 ```
@@ -108,10 +109,13 @@ Built and tested:
 - the receptionist inbox: new booking requests in the portal at `/reception`
 - receptionist scheduling: a request becomes an appointment with a free slot
   from the doctor's hours, for a new or existing patient, or is declined
+- the doctor portal: today's and past visits, the consultation write-up
+  (diagnosis, vitals, prescriptions, follow-up), completing or marking a
+  no-show, allergies and conditions, and the doctor's working hours
 - the staff portal: admin sign-in and staff management
 - the public website
 
-139 backend tests, 46 portal tests.
+158 backend tests, 65 portal tests.
 
 Waiting on other people: the backend runs on the office server but is only
 reachable inside the office network. Real WhatsApp messages need port

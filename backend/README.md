@@ -27,6 +27,8 @@ app/
   utils/             object_serializer, shared helpers
 
 chatbot/             the WhatsApp chatbot — see its __init__.py
+scripts/             one-off tools run by hand, e.g. seed_schedules.py gives
+                     doctors a default week of working hours
 tests/               158 tests in chatbot/ and app/, no network and no API
                      key required; tests/app/fake_mongo.py stands in for
                      MongoDB

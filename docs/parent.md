@@ -43,6 +43,7 @@ docs/               this file and one file per feature
 ```
 backend:   .\.venv\Scripts\python.exe -m uvicorn main:app --reload     (port 8000)
 tests:     .\.venv\Scripts\python.exe tests\<chatbot|app>\<file>.py
+hours:     .\.venv\Scripts\python.exe scripts\seed_schedules.py [--dry-run] [--replace]
 portal:    npm run dev    npm test    npm run lint
 website:   npm run dev
 ```

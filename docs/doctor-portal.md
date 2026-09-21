@@ -149,6 +149,15 @@ Run the backend and the portal, sign in as a doctor created in the admin
 portal, and you land on `/doctor`. Set working hours first. Reception can then
 book visits, which appear under Upcoming.
 
+To skip typing hours, `backend/scripts/seed_schedules.py` gives every active
+doctor without hours Monday to Saturday, 9 AM to 1 PM and 5 to 8 PM, in
+30-minute visits. `--replace` also overwrites hours doctors already have (it
+keeps their days off), and `--dry-run` only shows what would change. It
+writes to the database in `backend/.env`. On 2026-09-21 it was run with
+`--replace` on the shared database, and the four doctors' specializations were
+renamed to the chatbot's department names (Dermatologist, Cardiologist,
+Pediatrician) so reception gets the suggested doctor pre-selected.
+
 ## Next / known gaps
 
 - The doctor sees only their own visits and cannot search for patients.

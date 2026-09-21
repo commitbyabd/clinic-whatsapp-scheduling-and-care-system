@@ -62,7 +62,10 @@ the ML model and `tests/chatbot/test_ml_classifier.py` only run on the server.
 - **Shape responses by hand**, listing the fields to send, so a field added to
   a document later never leaks. `serialize_data` renames `_id` to `id` and
   sends datetimes as UTC ISO strings.
-- **Store UTC, show clinic time** (Pakistan, UTC+5).
+- **Store UTC, show clinic time** (Pakistan, UTC+5). Helpers are in
+  `app/core/clinic_time.py`.
+- **Writes that must happen together** go through `run_in_transaction` in
+  `app/core/database.py` (see receptionist-scheduling.md).
 - **Indexes** are declared in `app/core/indexes.py` and created at startup.
 
 ## The chatbot (backend/chatbot/)
@@ -78,7 +81,8 @@ general wellness questions → a canned reply. The webhook in
 
 Pages go in `pages/<area>/`, their pieces in `components/pages/<area>/`, and
 shared UI in `components/ui/`. API calls live in `api/<area>.js` and return
-the response envelope. `ProtectedRoutes roles={[...]}` guards pages, and
+the response envelope; `hooks/useApiResource.js` loads one of them by key.
+`ProtectedRoutes roles={[...]}` guards pages, and
 `utils/roleHome.js` decides where each role lands after signing in. Design
 tokens are in `variables.css`.
 
@@ -102,12 +106,14 @@ uvicorn, `git pull`, install requirements if they changed, start again.
 
 Built: the WhatsApp chatbot end to end, the webhook on the office server,
 admin portal (staff management), doctor API endpoints (schedule, appointments,
-notes), public website, saving booking requests, receptionist inbox.
+notes), public website, saving booking requests, receptionist inbox,
+receptionist scheduling (a request becomes an appointment, or is declined).
 
-Next: receptionist scheduling (request → patient → slot → appointment), doctor
-portal, conversation state in Mongo, contact form email via Google SMTP,
-deploying both frontends, SDS test plan, demo. Phase 3 was due Sep 21, Phase 4
-is due Sep 28.
+Next: doctor portal (including a screen for working hours), telling the
+patient on WhatsApp when they are booked (needs the Twilio credentials),
+conversation state in Mongo, contact form email via Google SMTP, deploying
+both frontends, SDS test plan, demo. Phase 3 was due Sep 21, Phase 4 is due
+Sep 28.
 
 ## Feature docs
 
@@ -116,6 +122,7 @@ is due Sep 28.
 | [database.md](database.md) | collections, fields, agreed decisions, indexes |
 | [booking-requests.md](booking-requests.md) | saving finished WhatsApp booking chats |
 | [receptionist-inbox.md](receptionist-inbox.md) | the receptionist's list of new requests |
+| [receptionist-scheduling.md](receptionist-scheduling.md) | free slots, matching patients, booking a request, declining |
 
 ## Template for a feature doc
 

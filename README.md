@@ -59,6 +59,7 @@ cd backend
 .\.venv\Scripts\python.exe tests\chatbot\test_symptom_extraction.py
 .\.venv\Scripts\python.exe tests\chatbot\test_model_adapter.py
 .\.venv\Scripts\python.exe tests\app\test_receptionist_inbox.py
+.\.venv\Scripts\python.exe tests\app\test_receptionist_scheduling.py
 ```
 
 ```
@@ -105,10 +106,12 @@ Built and tested:
 - the OpenAI fallback for general wellness questions, tested with a real key
 - finished WhatsApp booking chats saved to `booking_requests` for the front desk
 - the receptionist inbox: new booking requests in the portal at `/reception`
+- receptionist scheduling: a request becomes an appointment with a free slot
+  from the doctor's hours, for a new or existing patient, or is declined
 - the staff portal: admin sign-in and staff management
 - the public website
 
-110 backend tests, 31 portal tests.
+139 backend tests, 46 portal tests.
 
 Waiting on other people: the backend runs on the office server but is only
 reachable inside the office network. Real WhatsApp messages need port
@@ -137,7 +140,8 @@ them. `backend/.env.example` covers the settings, including the switch for
 local testing.
 
 `reply.collected` is populated when a booking flow finishes, carrying the
-patient's answers for the Appointment Engine to turn into a `pending` record.
+patient's answers. The webhook saves them to `booking_requests`, and a
+receptionist turns each one into an appointment in the portal.
 
 ## Configuration
 

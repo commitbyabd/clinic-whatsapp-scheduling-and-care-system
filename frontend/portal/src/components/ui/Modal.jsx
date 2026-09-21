@@ -91,7 +91,8 @@ function Modal({
         aria-modal="true"
         aria-label={title}
         tabIndex={-1}
-        className={`relative w-full ${width} bg-porcelain/95 p-6 shadow-card backdrop-blur-card outline-none sm:p-7`}
+        // a tall form scrolls inside the dialog instead of running off screen
+        className={`relative max-h-[calc(100dvh-2rem)] w-full overflow-y-auto ${width} bg-porcelain/95 p-6 shadow-card backdrop-blur-card outline-none sm:p-7`}
       >
         <div className="flex items-start justify-between gap-4">
           <div className="min-w-0">

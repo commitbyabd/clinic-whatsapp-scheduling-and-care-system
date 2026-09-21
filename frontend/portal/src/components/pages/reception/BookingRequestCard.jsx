@@ -1,13 +1,21 @@
-import { CalendarClock, MessageSquareText, Phone } from "lucide-react";
+import {
+  Ban,
+  CalendarClock,
+  CalendarPlus,
+  MessageSquareText,
+  Phone,
+} from "lucide-react";
 import Card from "../../ui/Card.jsx";
 import Avatar from "../../ui/Avatar.jsx";
 import Badge from "../../ui/Badge.jsx";
+import Button from "../../ui/Button.jsx";
 
 /*
   One WhatsApp booking request.
 
   Presentation only: ReceptionMain maps the API's field names into these
-  props. 'phone' is left out when the title already is the number.
+  props. 'phone' is left out when the title already is the number. Both
+  actions only open a dialog; the list that owns the request does the rest.
 */
 function BookingRequestCard({
   initials,
@@ -19,6 +27,8 @@ function BookingRequestCard({
   department,
   preferredTime,
   received,
+  onSchedule,
+  onDecline,
 }) {
   return (
     <Card
@@ -78,10 +88,37 @@ function BookingRequestCard({
         </p>
       )}
 
-      <p className="mt-3 flex items-center gap-2 font-primary text-sm text-ink">
-        <CalendarClock className="size-4 shrink-0 text-violet" strokeWidth={2} />
-        <span>Prefers: {preferredTime || "no time given"}</span>
-      </p>
+      <div className="mt-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <p className="flex items-center gap-2 font-primary text-sm text-ink">
+          <CalendarClock
+            className="size-4 shrink-0 text-violet"
+            strokeWidth={2}
+          />
+          <span>Prefers: {preferredTime || "no time given"}</span>
+        </p>
+
+        <div className="flex shrink-0 items-center gap-2">
+          <Button
+            variant="danger"
+            size="sm"
+            onClick={onDecline}
+            aria-label={`Decline the request from ${title}`}
+            leadingIcon={<Ban className="size-4" strokeWidth={2} />}
+          >
+            Decline
+          </Button>
+
+          <Button
+            variant="primary"
+            size="sm"
+            onClick={onSchedule}
+            aria-label={`Schedule ${title}`}
+            leadingIcon={<CalendarPlus className="size-4" strokeWidth={2} />}
+          >
+            Schedule
+          </Button>
+        </div>
+      </div>
     </Card>
   );
 }

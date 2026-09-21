@@ -1,7 +1,8 @@
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timezone
 
 from bson import ObjectId
 
+from app.core.clinic_time import CLINIC_TZ
 from app.core.database import get_database
 from app.core.response import api_response
 from app.utils.object_serializer import serialize_data
@@ -12,12 +13,6 @@ from logging_config import logger
 # built by hand: adding a field to `patients` must never leak it into the API by
 # accident.
 HISTORY_LIMIT = 20
-
-# The clinic is in Pakistan, which sits at UTC+5 all year and never shifts for
-# daylight saving. "Yesterday" has to mean yesterday to the doctor standing in
-# the building, so the cut-off is worked out here and then converted to UTC.
-# Belongs in settings the day a second clinic in another country appears.
-CLINIC_TZ = timezone(timedelta(hours=5))
 
 
 async def get_appointments(doctor_id: str, include_past: bool = False):

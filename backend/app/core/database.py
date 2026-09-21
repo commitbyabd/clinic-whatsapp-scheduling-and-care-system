@@ -22,3 +22,11 @@ def get_database() -> AsyncDatabase:
     if mongo.db is None:
         raise RuntimeError("Database not initialised — is lifespan configured?")
     return mongo.db
+
+
+async def run_in_transaction(work):
+    # Every write work(session) makes is saved together or not at all. On a
+    # write conflict the whole of work runs again, so it must be safe to
+    # repeat. Transactions need a replica set, which every Atlas cluster is.
+    async with get_database().client.start_session() as session:
+        return await session.with_transaction(work)

@@ -29,23 +29,28 @@ receptionist), specialization (doctors), is_active`
 [{day_of_week 0-6, start_time "09:00", end_time}], slot_minutes,
 blackout_dates, is_active, created_at, updated_at`
 
-**patients** (read by doctor endpoints; creation planned): `full_name,
-preferred_name, date_of_birth, gender, whatsapp_number, allergies,
-chronic_conditions, blood_group, notes, is_active, created_at, updated_at`
+**patients** (built: created when a receptionist schedules a new patient,
+read by doctor endpoints): `full_name, preferred_name, date_of_birth
+(midnight UTC), gender, whatsapp_number, allergies, chronic_conditions,
+blood_group, notes, is_active, created_at, updated_at`
 
-**appointments** (read and noted by doctor endpoints; booking planned):
-`doctor_id, patient_id, scheduled_for, duration_minutes, status (booked |
-confirmed | completed | no_show | cancelled), reason, symptom_summary,
-doctor_notes, notes_updated_at, doctor_snapshot {full_name}`. Planned
-additions: `request_id, booked_by, specialization, created_at, consultation
-{diagnosis, vitals {bp, pulse, temperature, weight}, prescriptions [{medicine,
-dose, frequency, days, instructions}], follow_up_on}`
+**appointments** (built: booked by receptionists, see
+[receptionist-scheduling.md](receptionist-scheduling.md); read and noted by
+doctor endpoints): `doctor_id, patient_id, scheduled_for (UTC),
+duration_minutes, status, reason, symptom_summary, doctor_notes,
+notes_updated_at, doctor_snapshot {full_name}, specialization, request_id,
+booked_by, created_at, updated_at`. Status: `booked` (a receptionist booked
+it), `confirmed` (the patient confirmed; planned), `completed`, `no_show`,
+`cancelled` (gives the slot back). Planned: `consultation {diagnosis, vitals
+{bp, pulse, temperature, weight}, prescriptions [{medicine, dose, frequency,
+days, instructions}], follow_up_on}`
 
 **booking_requests** (built, see [booking-requests.md](booking-requests.md)):
 `channel, whatsapp_number, patient_name, returning_patient, reason,
 symptom_text, suggested_specialization, preferred_time_text, status (new |
 scheduled | declined | cancelled), patient_id, appointment_id, handled_by,
-handled_at, created_at`
+handled_at, created_at`. Scheduling sets `scheduled` and the ids; declining
+sets `declined`.
 
 **conversation_states** (planned): replaces the chatbot's in-memory store.
 `whatsapp_number (unique), flow, step, data, reprompts, updated_at`, deleted
@@ -72,9 +77,12 @@ out), text, source, created_at`, deleted after 90 days.
 
 ## Indexes
 
-Built (`app/core/indexes.py`): `booking_requests (status, created_at desc)`.
+Built (`app/core/indexes.py`): `booking_requests (status, created_at desc)`;
+`patients (whatsapp_number)`; unique `appointments (doctor_id,
+scheduled_for)` for status booked or confirmed only
+(`one_active_appointment_per_slot`), which stops double booking. It is
+created last, because duplicates already in the data make it fail.
 
-Planned: unique active appointment per `(doctor_id, scheduled_for)` to stop
-double booking; `appointments (doctor_id, scheduled_for)` and `(patient_id,
-scheduled_for)`; `patients (whatsapp_number)`; TTL indexes on
-`conversation_states.updated_at` (24h) and `chat_messages.created_at` (90d).
+Planned: `appointments (patient_id, scheduled_for)` for history; TTL indexes
+on `conversation_states.updated_at` (24h) and `chat_messages.created_at`
+(90d).

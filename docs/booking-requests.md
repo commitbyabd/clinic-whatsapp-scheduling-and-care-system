@@ -61,4 +61,4 @@ Atlas under `cwac` → `booking_requests`.
 ## Next / known gaps
 
 Returning patients are not asked their name, so the receptionist matches them
-by number. Matching and scheduling are the next feature.
+by number when scheduling ([receptionist-scheduling.md](receptionist-scheduling.md)).

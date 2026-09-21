@@ -5,8 +5,8 @@ Status: built 2026-09-21 · Area: backend + portal
 ## What it is
 
 The receptionist's first screen: the WhatsApp booking requests waiting to be
-handled, newest first. Read only for now; scheduling and declining are the
-next feature.
+handled, newest first. Each card's Schedule and Decline buttons are written up
+in [receptionist-scheduling.md](receptionist-scheduling.md).
 
 ## What it does
 
@@ -52,7 +52,6 @@ Portal:
   patient health data.
 - **Fields are shaped by hand**, so bookkeeping fields (`handled_by`,
   `channel`) and anything added later stay off the screen.
-- **No actions yet**, so there are no dead buttons; they come with scheduling.
 
 ## Tests
 
@@ -69,6 +68,6 @@ request in the database (finish a booking on WhatsApp).
 
 ## Next / known gaps
 
-Scheduling: pick or create the patient (matched by number), pick a free slot
-from the doctor's schedule, create the appointment, and mark the request
-`scheduled` (or `declined`). The list does not refresh on its own yet.
+The list does not refresh on its own. It reloads when Refresh is pressed and
+whenever a schedule or decline dialog closes. There is no tab yet for
+scheduled or declined requests, though the endpoint already takes `status`.

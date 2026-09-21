@@ -98,10 +98,11 @@ Built and tested:
 - OpenAI symptom extraction: reads a patient's own words, including Roman
   Urdu, into the classifier's symptom names, with the keyword matcher as backup
 - the OpenAI fallback for general wellness questions, tested with a real key
+- finished WhatsApp booking chats saved to `booking_requests` for the front desk
 - the staff portal: admin sign-in and staff management
 - the public website
 
-99 backend tests, 23 portal tests.
+103 backend tests, 23 portal tests.
 
 Waiting on other people: the backend runs on the office server but is only
 reachable inside the office network. Real WhatsApp messages need port

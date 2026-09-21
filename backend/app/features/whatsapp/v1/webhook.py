@@ -9,6 +9,13 @@ from chatbot.orchestrator import handle_message
 from chatbot.settings import twilio_settings
 from logging_config import logger
 
+from .save_booking_request import booking_request_document, save_booking_request_query
+
+SAVE_FAILED_REPLY = (
+    "Sorry, we couldn't pass your request to our staff just now. Please try "
+    "again in a few minutes, or call the clinic directly."
+)
+
 
 def public_url(request) -> str:
     # Twilio signs the public URL it called. Behind a proxy we see an internal
@@ -67,4 +74,18 @@ async def reply_to_message(body: str, from_number: str) -> str:
     # number together are patient health data
     logger.info("whatsapp message handled: source=%s", reply.source)
 
-    return twiml(reply.text)
+    text = reply.text
+    if reply.collected:
+        # the reply tells the patient staff have their request, so it must not
+        # go out unless the request was actually saved
+        try:
+            await save_booking_request_query(
+                booking_request_document(reply.collected, from_number)
+            )
+            logger.info("booking request saved")
+        except Exception as exc:
+            # the type only: a database error can quote the document
+            logger.error("Could not save booking request (%s)", type(exc).__name__)
+            text = SAVE_FAILED_REPLY
+
+    return twiml(text)

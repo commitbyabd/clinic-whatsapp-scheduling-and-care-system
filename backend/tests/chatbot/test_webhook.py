@@ -16,6 +16,7 @@ hand-rolled, so these tests fail if the library changes what it expects.
 import logging
 import sys
 from dataclasses import replace
+from datetime import datetime
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
@@ -24,6 +25,9 @@ from fastapi.testclient import TestClient  # noqa: E402
 from twilio.request_validator import RequestValidator  # noqa: E402
 
 import app.features.whatsapp.v1.webhook as webhook  # noqa: E402
+from app.features.whatsapp.v1.save_booking_request import (  # noqa: E402
+    booking_request_document,
+)
 from chatbot.predefined_responses import clinic  # noqa: E402
 from chatbot.settings import TwilioSettings  # noqa: E402
 from main import app  # noqa: E402
@@ -206,6 +210,101 @@ def test_patient_message_and_number_are_never_logged():
     logged = "\n".join(records)
     assert "sharp pain" not in logged, f"patient symptoms reached the logs:\n{logged}"
     assert "923009998877" not in logged, f"phone number reached the logs:\n{logged}"
+
+
+# --- saving booking requests ----------------------------------------------
+
+
+class _SavedRequests:
+    """Stands in for the booking_requests collection, so no database is needed."""
+
+    def __init__(self, error=None):
+        self.documents = []
+        self.error = error
+
+    async def __call__(self, document):
+        if self.error is not None:
+            raise self.error
+        self.documents.append(document)
+
+    def __enter__(self):
+        self._original = webhook.save_booking_request_query
+        webhook.save_booking_request_query = self
+        return self
+
+    def __exit__(self, *exc):
+        webhook.save_booking_request_query = self._original
+
+
+def _chat(number, *messages):
+    """Send messages from one WhatsApp number in order, return the last response."""
+    response = None
+    for message in messages:
+        form = {"Body": message, "From": number}
+        response = _post(form, _sign(form))
+    return response
+
+
+# returning patient, general check-up, then a time: a whole booking chat
+BOOKING = ("book an appointment", "1", "1", "Tuesday 3pm")
+
+
+def test_finished_booking_is_saved_for_the_front_desk():
+    with _SavedRequests() as saved:
+        response = _chat("whatsapp:+923001110001", *BOOKING)
+    assert "passed your request" in response.text, response.text
+    assert len(saved.documents) == 1, saved.documents
+    document = saved.documents[0]
+    assert document["whatsapp_number"] == "+923001110001"
+    assert document["returning_patient"] == "yes"
+    assert document["reason"] == "general"
+    assert document["preferred_time_text"] == "Tuesday 3pm"
+    assert document["status"] == "new"
+    assert isinstance(document["created_at"], datetime)
+
+
+def test_a_booking_that_was_not_saved_is_not_claimed():
+    records = []
+
+    class _Capture(logging.Handler):
+        def emit(self, record):
+            records.append(record.getMessage())
+
+    handler = _Capture()
+    logging.getLogger().addHandler(handler)
+    try:
+        with _SavedRequests(error=RuntimeError("database unreachable")):
+            response = _chat("whatsapp:+923001110002", *BOOKING)
+    finally:
+        logging.getLogger().removeHandler(handler)
+
+    assert "couldn't pass your request" in response.text, response.text
+    assert "passed your request to our staff, and" not in response.text
+    assert "923001110002" not in "\n".join(records), "phone number reached the logs"
+
+
+def test_other_replies_save_nothing():
+    with _SavedRequests() as saved:
+        _chat("whatsapp:+923001110003", "what are your timings")
+        _chat("whatsapp:+923001110004", "book an appointment", "cancel")
+    assert saved.documents == [], saved.documents
+
+
+def test_a_symptom_booking_keeps_what_the_patient_said():
+    collected = {
+        "returning_patient": "no",
+        "name": "Ayesha Khan",
+        "reason": "symptoms",
+        "symptom_text": "my skin is itchy with blisters",
+        "specialization": "Dermatologist",
+        "preferred_datetime": "tomorrow at 9am",
+    }
+    document = booking_request_document(collected, "whatsapp:+923001110005")
+    assert document["patient_name"] == "Ayesha Khan"
+    assert document["symptom_text"] == "my skin is itchy with blisters"
+    assert document["suggested_specialization"] == "Dermatologist"
+    assert document["preferred_time_text"] == "tomorrow at 9am"
+    assert document["patient_id"] is None and document["appointment_id"] is None
 
 
 if __name__ == "__main__":

@@ -98,7 +98,9 @@ def _flow_reply(
         source="flow",
         matched=True,
         classification=routed,
-        collected=result.data if result.finished else None,
+        # a cancelled or handed-off flow finishes with no data, and must not
+        # look like a booking to save
+        collected=result.data if result.finished and result.data else None,
     )
 
 

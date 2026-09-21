@@ -10,6 +10,7 @@ import { login, readApiError } from "../../../api/auth.js";
 import { useAuth } from "../../../context/authContext.js";
 import { userLoginSchema } from "../../../schemas/auth.js";
 import { validateField, validateWith } from "../../../schemas/validate.js";
+import { homePathFor } from "../../../utils/roleHome.js";
 
 // Owns the form state and the sign-in call; LoginMain stays layout only.
 function LoginForm() {
@@ -65,8 +66,10 @@ function LoginForm() {
         user: { full_name: data?.full_name ?? "", role: data?.role ?? "" },
       });
 
-      // Where the guard interrupted them, if it did.
-      navigate(location.state?.from?.pathname ?? "/dashboard", {
+      // Where the guard interrupted them, if it did, otherwise their own
+      // portal. The role comes off the response: the session state set by
+      // signIn is not readable until the next render.
+      navigate(location.state?.from?.pathname ?? homePathFor(data?.role), {
         replace: true,
       });
     } catch (error) {

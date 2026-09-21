@@ -4,9 +4,11 @@ from contextlib import asynccontextmanager
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
 from app.core.database import connect_to_mongo, close_mongo_connection
+from app.core.indexes import ensure_indexes
 from app.routers.auth import router as auth_router
 from app.routers.admin import router as admin_router
 from app.routers.doctor import router as doctor_router
+from app.routers.receptionist import router as receptionist_router
 from app.routers.whatsapp import router as whatsapp_router
 from chatbot.settings import classifier_settings, openai_settings, twilio_settings
 from logging_config import logger
@@ -15,6 +17,13 @@ from logging_config import logger
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     await connect_to_mongo()
+
+    # a missing index makes queries slower, not wrong, so it must not stop
+    # the webhook from starting
+    try:
+        await ensure_indexes()
+    except Exception:
+        logger.exception("could not create indexes, continuing without them")
 
     # Say out loud which optional pieces are actually live. Without this you
     # discover a missing key when a patient message silently takes the wrong
@@ -66,4 +75,5 @@ async def health():
 app.include_router(auth_router)
 app.include_router(admin_router)
 app.include_router(doctor_router)
+app.include_router(receptionist_router)
 app.include_router(whatsapp_router)

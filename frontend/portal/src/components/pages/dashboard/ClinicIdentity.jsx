@@ -2,7 +2,8 @@ import { HeartPulse } from "lucide-react";
 import IconBox from "../../ui/IconBox.jsx";
 import Badge from "../../ui/Badge.jsx";
 
-function ClinicIdentity() {
+// label is the portal's name: Administrator, Reception, and so on
+function ClinicIdentity({ label = "Administrator" }) {
   return (
     <div className="flex items-center gap-3">
       <IconBox
@@ -18,7 +19,7 @@ function ClinicIdentity() {
           Northgate Clinic
         </span>
         <Badge dot={false} className="bg-lavender text-plum">
-          Administrator
+          {label}
         </Badge>
       </div>
     </div>

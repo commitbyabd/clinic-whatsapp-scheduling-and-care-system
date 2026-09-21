@@ -7,13 +7,15 @@ import Login from "../pages/login/Login.jsx";
 import Forbidden from "../pages/Forbidden.jsx";
 import NotFound from "../pages/NotFound.jsx";
 import { useAuth } from "../context/authContext.js";
+import { homePathFor } from "../utils/roleHome.js";
 
-// Split out so the login page does not ship the dashboard with it.
+// Split out so the login page does not ship the portals with it.
 const Dashboard = lazy(() => import("../pages/dashboard/Dashboard.jsx"));
+const Reception = lazy(() => import("../pages/reception/Reception.jsx"));
 
 function RootRedirect() {
-  const { isAuthenticated } = useAuth();
-  return <Navigate to={isAuthenticated ? "/dashboard" : "/login"} replace />;
+  const { isAuthenticated, role } = useAuth();
+  return <Navigate to={isAuthenticated ? homePathFor(role) : "/login"} replace />;
 }
 
 // Route table for the whole app. Each element points at a page in
@@ -31,6 +33,10 @@ function ProjectRoutes() {
         {/* Pathless layout route: anything nested here is guarded by default */}
         <Route element={<ProtectedRoutes roles={["admin"]} />}>
           <Route path="/dashboard" element={<Dashboard />} />
+        </Route>
+
+        <Route element={<ProtectedRoutes roles={["receptionist"]} />}>
+          <Route path="/reception" element={<Reception />} />
         </Route>
 
         <Route path="/forbidden" element={<Forbidden />} />

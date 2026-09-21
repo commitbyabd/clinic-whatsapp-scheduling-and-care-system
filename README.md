@@ -19,6 +19,10 @@ The website and portal are separate apps on purpose. They share no styles, so
 keeping them apart means a change to one can never break the other, and each
 can be deployed on its own.
 
+Each feature is written up in `docs/`, starting from
+[docs/parent.md](docs/parent.md): what it is, how it works, and why it was
+built that way.
+
 ## Running it
 
 ```
@@ -54,6 +58,7 @@ cd backend
 .\.venv\Scripts\python.exe tests\chatbot\test_ml_classifier.py
 .\.venv\Scripts\python.exe tests\chatbot\test_symptom_extraction.py
 .\.venv\Scripts\python.exe tests\chatbot\test_model_adapter.py
+.\.venv\Scripts\python.exe tests\app\test_receptionist_inbox.py
 ```
 
 ```
@@ -99,10 +104,11 @@ Built and tested:
   Urdu, into the classifier's symptom names, with the keyword matcher as backup
 - the OpenAI fallback for general wellness questions, tested with a real key
 - finished WhatsApp booking chats saved to `booking_requests` for the front desk
+- the receptionist inbox: new booking requests in the portal at `/reception`
 - the staff portal: admin sign-in and staff management
 - the public website
 
-103 backend tests, 23 portal tests.
+110 backend tests, 31 portal tests.
 
 Waiting on other people: the backend runs on the office server but is only
 reachable inside the office network. Real WhatsApp messages need port

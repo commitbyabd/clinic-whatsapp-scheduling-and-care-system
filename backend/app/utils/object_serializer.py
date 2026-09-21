@@ -1,5 +1,5 @@
 # common place to do serialization make it generic
-from datetime import date, datetime
+from datetime import date, datetime, timezone
 from typing import Any
 
 from bson import ObjectId
@@ -24,8 +24,16 @@ def serialize_data(data: Any, excluded_fields: list[str] | None = None) -> Any:
     if isinstance(data, ObjectId):
         return str(data)
 
+    # Mongo hands datetimes back without a timezone, but everything is stored
+    # in UTC. Saying so matters: without the offset a browser reads the string
+    # as its own local time.
+    if isinstance(data, datetime):
+        if data.tzinfo is None:
+            data = data.replace(tzinfo=timezone.utc)
+        return data.isoformat()
+
     # ISO 8601 is the one date format the browser's Date can parse reliably
-    if isinstance(data, (datetime, date)):
+    if isinstance(data, date):
         return data.isoformat()
 
     # Handle iterable collections (lists of documents or values)

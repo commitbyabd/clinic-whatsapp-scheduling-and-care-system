@@ -62,6 +62,7 @@ cd backend
 .\.venv\Scripts\python.exe tests\app\test_receptionist_scheduling.py
 .\.venv\Scripts\python.exe tests\app\test_doctor_portal.py
 .\.venv\Scripts\python.exe tests\app\test_conversation_store.py
+.\.venv\Scripts\python.exe tests\app\test_staff_schemas.py
 ```
 
 ```
@@ -115,10 +116,11 @@ Built and tested:
 - the doctor portal: today's and past visits, the consultation write-up
   (diagnosis, vitals, prescriptions, follow-up), completing or marking a
   no-show, allergies and conditions, and the doctor's working hours
-- the staff portal: admin sign-in and staff management
+- the staff portal: admin sign-in and staff management, with each doctor's
+  specialization picked from the chatbot's departments
 - the public website
 
-166 backend tests, 65 portal tests.
+169 backend tests, 66 portal tests.
 
 Waiting on other people: the Twilio Account SID and Auth Token, which sending
 patients their booked time needs.

@@ -4,8 +4,10 @@ import Modal from "../../ui/Modal.jsx";
 import Button from "../../ui/Button.jsx";
 import Alert from "../../ui/Alert.jsx";
 import TextField from "../../ui/TextField.jsx";
+import SelectField from "../../ui/SelectField.jsx";
 import IconBox from "../../ui/IconBox.jsx";
 import PasswordField from "../../ui/PasswordField.jsx";
+import { SPECIALIZATIONS } from "../../../config/specializations.js";
 import {
   createDoctor,
   createReceptionist,
@@ -48,10 +50,18 @@ function StaffFormModal({ staff = null, kind, onClose, onSaved }) {
       isCreate ? "create" : "update"
     ];
 
+  // A name typed before the list existed matches no option, and a select
+  // would quietly show the first one instead. It starts empty, so the admin
+  // has to pick, and the prompt says what it was.
+  const legacySpecialization =
+    staff?.specialization && !SPECIALIZATIONS.includes(staff.specialization)
+      ? staff.specialization
+      : null;
+
   const [values, setValues] = useState({
     full_name: staff?.full_name ?? "",
     email: staff?.email ?? "",
-    specialization: staff?.specialization ?? "",
+    specialization: legacySpecialization ? "" : (staff?.specialization ?? ""),
     password: "",
   });
   const [fieldErrors, setFieldErrors] = useState({});
@@ -164,12 +174,13 @@ function StaffFormModal({ staff = null, kind, onClose, onSaved }) {
             }
           />
 
+          {/* a list, not free text, so the name always matches the
+              department the chatbot suggests to reception */}
           {isDoctor && (
-            <TextField
+            <SelectField
               id={`${mode}-specialization`}
               name="specialization"
               label="Specialization"
-              placeholder="Dermatology"
               value={values.specialization}
               onChange={handleChange}
               onBlur={handleBlur}
@@ -181,7 +192,18 @@ function StaffFormModal({ staff = null, kind, onClose, onSaved }) {
                   <Stethoscope className="size-4 text-violet" strokeWidth={2} />
                 </IconBox>
               }
-            />
+            >
+              <option value="" disabled>
+                {legacySpecialization
+                  ? `Choose a department (was “${legacySpecialization}”)`
+                  : "Choose a department"}
+              </option>
+              {SPECIALIZATIONS.map((name) => (
+                <option key={name} value={name}>
+                  {name}
+                </option>
+              ))}
+            </SelectField>
           )}
 
           {/* Only asked for at creation: there is no change-password

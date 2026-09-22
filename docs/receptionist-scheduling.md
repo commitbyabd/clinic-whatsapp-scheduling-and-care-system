@@ -110,8 +110,9 @@ Error codes: `INVALID_ID` 400; `REQUEST_NOT_FOUND`, `DOCTOR_NOT_FOUND`,
 - **The appointment copies what the doctor needs:** `reason`, `symptom_text`
   as `symptom_summary`, the doctor's name (`doctor_snapshot`) and
   specialization, plus `request_id` and `booked_by`.
-- **The suggested doctor is an exact match, ignoring case.** Admins type
-  specializations freely, so "Dermatology" does not match "Dermatologist".
+- **The suggested doctor is an exact match, ignoring case.** Admins pick
+  specializations from the chatbot's own list of departments, so the names
+  match (see [admin-portal.md](admin-portal.md)).
 - **No medical fields for receptionists.** Matched patients show name, date
   of birth and gender only.
 
@@ -152,5 +153,3 @@ Error codes: `INVALID_ID` 400; `REQUEST_NOT_FOUND`, `DOCTOR_NOT_FOUND`,
 - The receptionist has no list of booked appointments, and no reschedule or
   cancel.
 - Decline takes no reason.
-- Specializations are free text. A fixed list shared with the model would
-  make the suggestion always match.

@@ -11,7 +11,7 @@ const doctor = {
   full_name: "Dr. Sara Khan",
   email: "sara@clinic.com",
   password: "correct horse",
-  specialization: "Dermatology",
+  specialization: "Dermatologist",
 };
 
 describe("validateWith", () => {
@@ -79,6 +79,21 @@ describe("validateWith", () => {
       "specialization",
     ]);
     expect(errors.password).toMatch(/at least 8/);
+  });
+
+  it("takes a specialization only from the chatbot's departments", () => {
+    // "Dermatology" would never match the chatbot's "Dermatologist"
+    const { errors } = validateWith(doctorCreateSchema, {
+      ...doctor,
+      specialization: "Dermatology",
+    });
+    expect(errors.specialization).toMatch(/from the list/);
+
+    const { valid } = validateWith(doctorUpdateSchema, {
+      ...doctor,
+      specialization: "ENT Specialist",
+    });
+    expect(valid).toBe(true);
   });
 
   it("enforces the server's length ceilings", () => {

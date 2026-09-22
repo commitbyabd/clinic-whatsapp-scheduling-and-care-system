@@ -121,6 +121,7 @@ SDS test plan, demo. Phase 3 was due Sep 21, Phase 4 is due Sep 28.
 | File | Covers |
 |---|---|
 | [database.md](database.md) | collections, fields, agreed decisions, indexes |
+| [admin-portal.md](admin-portal.md) | staff accounts: add, edit, deactivate; doctors' specializations |
 | [booking-requests.md](booking-requests.md) | saving finished WhatsApp booking chats |
 | [receptionist-inbox.md](receptionist-inbox.md) | the receptionist's list of new requests |
 | [receptionist-scheduling.md](receptionist-scheduling.md) | free slots, matching patients, booking a request, declining |

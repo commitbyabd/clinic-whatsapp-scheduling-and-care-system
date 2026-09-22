@@ -16,7 +16,7 @@ function ClinicIdentity({ label = "Administrator" }) {
 
       <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
         <span className="font-primary text-md-lg font-semibold text-plum">
-          Northgate Clinic
+          Marigold Health
         </span>
         <Badge dot={false} className="bg-lavender text-plum">
           {label}

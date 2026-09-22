@@ -89,8 +89,8 @@ export function defaultPatientChoice(request, patients) {
 }
 
 // The doctor whose specialization is the department the model suggested.
-// Admins type specializations freely, so a near miss such as "Dermatology"
-// is not matched and the receptionist picks.
+// Admins pick specializations from the same list (config/specializations.js),
+// so they match; case is ignored for anything saved before that.
 export function suggestedDoctorId(doctors, department) {
   const wanted = normalise(department);
   if (!wanted) return "";

@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { SPECIALIZATIONS } from "../config/specializations.js";
 
 /*
   Client-side mirror of the staff models in app/schemas/. Every rule here
@@ -29,11 +30,11 @@ const email = z
       .max(254, "Email address cannot be longer than 254 characters."),
   );
 
-const specialization = z
-  .string()
-  .trim()
-  .min(2, "Specialization must be at least 2 characters.")
-  .max(100, "Specialization cannot be longer than 100 characters.");
+// one of the chatbot's departments, picked from a list
+const specialization = z.enum(
+  SPECIALIZATIONS,
+  "Choose a specialization from the list.",
+);
 
 // Never trimmed: spaces are legitimate password characters and the hash
 // has to match what was typed. The 64 ceiling is the server's, because

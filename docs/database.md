@@ -55,9 +55,10 @@ scheduled | declined | cancelled), patient_id, appointment_id, handled_by,
 handled_at, created_at`. Scheduling sets `scheduled` and the ids; declining
 sets `declined`.
 
-**conversation_states** (planned): replaces the chatbot's in-memory store.
-`whatsapp_number (unique), flow, step, data, reprompts, updated_at`, deleted
-24 hours after `updated_at`.
+**conversation_states** (built, see
+[conversation-state.md](conversation-state.md)): each patient's place in the
+booking chat. `whatsapp_number (unique, bare number), flow, step, data,
+reprompts, updated_at`, deleted 24 hours after `updated_at`.
 
 **chat_messages** (planned): `whatsapp_number, patient_id, direction (in |
 out), text, source, created_at`, deleted after 90 days.
@@ -81,11 +82,11 @@ out), text, source, created_at`, deleted after 90 days.
 ## Indexes
 
 Built (`app/core/indexes.py`): `booking_requests (status, created_at desc)`;
-`patients (whatsapp_number)`; unique `appointments (doctor_id,
-scheduled_for)` for status booked or confirmed only
-(`one_active_appointment_per_slot`), which stops double booking. It is
-created last, because duplicates already in the data make it fail.
+`patients (whatsapp_number)`; `conversation_states`: unique
+`whatsapp_number`, and a TTL on `updated_at` (24h); unique `appointments
+(doctor_id, scheduled_for)` for status booked or confirmed only
+(`one_active_appointment_per_slot`), which stops double booking. That last
+one is created last, because duplicates already in the data make it fail.
 
-Planned: `appointments (patient_id, scheduled_for)` for history; TTL indexes
-on `conversation_states.updated_at` (24h) and `chat_messages.created_at`
-(90d).
+Planned: `appointments (patient_id, scheduled_for)` for history; a TTL index
+on `chat_messages.created_at` (90d).

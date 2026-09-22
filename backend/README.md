@@ -29,7 +29,7 @@ app/
 chatbot/             the WhatsApp chatbot — see its __init__.py
 scripts/             one-off tools run by hand, e.g. seed_schedules.py gives
                      doctors a default week of working hours
-tests/               158 tests in chatbot/ and app/, no network and no API
+tests/               166 tests in chatbot/ and app/, no network and no API
                      key required; tests/app/fake_mongo.py stands in for
                      MongoDB
 ```
@@ -49,5 +49,6 @@ there is nothing to request it with.
 **`chatbot/` is not a feature.** Features have URLs; the chatbot has none. It
 takes a message string and returns a reply, knowing nothing about HTTP or
 Twilio, which is why its tests need no network. The Twilio webhook in
-`features/whatsapp/` is pure transport: it calls into the chatbot and saves
-finished bookings.
+`features/whatsapp/` is pure transport: it calls into the chatbot, saves
+finished bookings, and gives the chatbot its Mongo-backed state store at
+startup.

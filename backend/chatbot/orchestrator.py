@@ -24,7 +24,8 @@ from chatbot.predefined_responses.response import (
 
 logger = logging.getLogger(__name__)
 
-# one engine per process. Phase 3 swaps engine.store for a Mongo-backed one.
+# One engine per process. At startup main.py swaps engine.store for the
+# Mongo-backed one, so the chatbot itself never learns about Mongo.
 engine = ConversationEngine()
 
 # rule names that open the scripted flow instead of answering directly

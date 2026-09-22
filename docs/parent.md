@@ -90,7 +90,8 @@ tokens are in `variables.css`.
 ## Deployment
 
 The backend runs on an office Windows server from a git clone, started with
-`--workers 1` (the chat state is in memory). `backend/.env` and `.venv` never
+`--workers 1` (each worker would load its own copy of the ML model; the chat
+state is in Mongo, so restarts are safe). `backend/.env` and `.venv` never
 come from git: they are created by hand on each machine. To update: stop
 uvicorn, `git pull`, install requirements if they changed, start again.
 
@@ -103,18 +104,17 @@ uvicorn, `git pull`, install requirements if they changed, start again.
 - **Every new feature gets `docs/<feature>.md`** (template below) and a row in
   the index. Update the status list when something ships.
 
-## Status (updated 2026-09-21)
+## Status (updated 2026-09-22)
 
 Built: the WhatsApp chatbot end to end, the webhook on the office server,
 admin portal (staff management), public website, saving booking requests,
 receptionist inbox, receptionist scheduling (a request becomes an
 appointment, or is declined), doctor portal (visits, consultation write-up,
-medical details, working hours).
+medical details, working hours), chat state in Mongo (survives restarts).
 
 Next: telling the patient on WhatsApp when they are booked (needs the Twilio
-credentials), conversation state in Mongo, contact form email via Google
-SMTP, deploying both frontends, SDS test plan, demo. Phase 3 was due Sep 21,
-Phase 4 is due Sep 28.
+credentials), contact form email via Google SMTP, deploying both frontends,
+SDS test plan, demo. Phase 3 was due Sep 21, Phase 4 is due Sep 28.
 
 ## Feature docs
 
@@ -125,6 +125,7 @@ Phase 4 is due Sep 28.
 | [receptionist-inbox.md](receptionist-inbox.md) | the receptionist's list of new requests |
 | [receptionist-scheduling.md](receptionist-scheduling.md) | free slots, matching patients, booking a request, declining |
 | [doctor-portal.md](doctor-portal.md) | the doctor's visits, consultation write-up, medical details, working hours |
+| [conversation-state.md](conversation-state.md) | where the booking chat keeps each patient's place, in Mongo |
 
 ## Template for a feature doc
 

@@ -5,6 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
 from app.core.database import connect_to_mongo, close_mongo_connection
 from app.core.indexes import ensure_indexes
+from app.features.whatsapp.v1.conversation_store import use_mongo_store
 from app.routers.auth import router as auth_router
 from app.routers.admin import router as admin_router
 from app.routers.doctor import router as doctor_router
@@ -25,6 +26,15 @@ async def lifespan(app: FastAPI):
     except Exception:
         logger.exception("could not create indexes, continuing without them")
 
+    # Each patient's place in the booking chat lives in Mongo, so a restart
+    # does not drop it. Failing that, the chatbot keeps its in-memory store.
+    state_client = None
+    try:
+        state_client = use_mongo_store()
+        logger.info("Conversation state: kept in MongoDB")
+    except Exception:
+        logger.exception("conversation state stays in memory, lost on restart")
+
     # Say out loud which optional pieces are actually live. Without this you
     # discover a missing key when a patient message silently takes the wrong
     # path, rather than in the first ten lines of the server log.
@@ -41,7 +51,11 @@ async def lifespan(app: FastAPI):
         logger.exception("symptom model failed to load, continuing without it")
 
     yield  # app runs here, serving requests
-    await close_mongo_connection()  # runs once, at shutdown
+
+    # runs once, at shutdown
+    if state_client is not None:
+        state_client.close()
+    await close_mongo_connection()
 
 
 setup_logging()

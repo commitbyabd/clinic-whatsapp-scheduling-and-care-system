@@ -61,6 +61,7 @@ cd backend
 .\.venv\Scripts\python.exe tests\app\test_receptionist_inbox.py
 .\.venv\Scripts\python.exe tests\app\test_receptionist_scheduling.py
 .\.venv\Scripts\python.exe tests\app\test_doctor_portal.py
+.\.venv\Scripts\python.exe tests\app\test_conversation_store.py
 ```
 
 ```
@@ -106,6 +107,8 @@ Built and tested:
   Urdu, into the classifier's symptom names, with the keyword matcher as backup
 - the OpenAI fallback for general wellness questions, tested with a real key
 - finished WhatsApp booking chats saved to `booking_requests` for the front desk
+- each patient's place in the booking chat kept in MongoDB, so a restart no
+  longer drops chats in progress
 - the receptionist inbox: new booking requests in the portal at `/reception`
 - receptionist scheduling: a request becomes an appointment with a free slot
   from the doctor's hours, for a new or existing patient, or is declined
@@ -115,17 +118,13 @@ Built and tested:
 - the staff portal: admin sign-in and staff management
 - the public website
 
-158 backend tests, 65 portal tests.
+166 backend tests, 65 portal tests.
 
-Waiting on other people: the backend runs on the office server but is only
-reachable inside the office network. Real WhatsApp messages need port
-forwarding to that server, and the Twilio Auth Token.
+Waiting on other people: the Twilio Account SID and Auth Token, which sending
+patients their booked time needs.
 
 Known gaps, none blocked on anyone:
 
-- **Conversation state is in memory.** It is lost on restart, and it is why the
-  backend must run with `--workers 1`. A Mongo-backed store means implementing
-  three methods — `get`, `save`, `clear`.
 - **The website's contact form sends nothing yet.** It validates and shows a
   confirmation, but no backend endpoint receives it.
 - **Two components are missing from the Phase 2 SDS** — the ML classifier and

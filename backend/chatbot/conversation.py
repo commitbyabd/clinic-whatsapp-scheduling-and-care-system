@@ -101,7 +101,8 @@ class StateStore(Protocol):
 
 
 class InMemoryStore:
-    """Development store. Lost on restart; Phase 3 replaces it with Mongo."""
+    """Used by the tests, and until startup puts the Mongo store in its place
+    (app/features/whatsapp/v1/conversation_store.py). Lost on restart."""
 
     def __init__(self) -> None:
         self._states: dict[str, ConversationState] = {}

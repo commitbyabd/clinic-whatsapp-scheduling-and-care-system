@@ -7,6 +7,7 @@ run on every boot and adding one is a new line here.
 from pymongo import ASCENDING, DESCENDING
 
 from app.core.database import get_database
+from chatbot.conversation import STATE_TTL
 
 
 async def ensure_indexes() -> None:
@@ -19,6 +20,12 @@ async def ensure_indexes() -> None:
 
     # patients are matched by the number a booking came from
     await db.patients.create_index("whatsapp_number")
+
+    # one chat state per patient, deleted a day after their last message
+    await db.conversation_states.create_index("whatsapp_number", unique=True)
+    await db.conversation_states.create_index(
+        "updated_at", expireAfterSeconds=int(STATE_TTL.total_seconds())
+    )
 
     # One active appointment per doctor per start time. The slot check stops
     # this too; the index is what stops two receptionists booking the same

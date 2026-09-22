@@ -150,6 +150,5 @@ Error codes: `INVALID_ID` 400; `REQUEST_NOT_FOUND`, `DOCTOR_NOT_FOUND`,
 - **The patient is not told on WhatsApp.** Sending needs the Twilio REST API
   (Account SID and Auth Token) and, outside WhatsApp's 24-hour window, an
   approved template. Until then the receptionist tells them.
-- The receptionist has no list of booked appointments, and no reschedule or
-  cancel.
-- Decline takes no reason.
+- Booked visits are listed, moved and cancelled on the Appointments tab, and
+  declining takes a reason ([reception-appointments.md](reception-appointments.md)).

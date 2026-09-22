@@ -5,7 +5,7 @@ from app.core.database import get_database
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
-from app.core.security import decode_access_token
+from app.core.security import decode_access_token, issued_before
 
 bearer_scheme = HTTPBearer()
 
@@ -33,6 +33,22 @@ async def get_current_user(
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="User no longer exists",
+        )
+
+    # Checked on every request, not only at sign in, so deactivating an
+    # account shuts it out straight away rather than when its token expires.
+    if not user.get("is_active", False):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="This account has been deactivated",
+        )
+
+    # a password change or reset ends every session signed in before it
+    changed = user.get("password_changed_at")
+    if changed is not None and issued_before(payload, changed):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Your password was changed. Please sign in again.",
         )
 
     return user

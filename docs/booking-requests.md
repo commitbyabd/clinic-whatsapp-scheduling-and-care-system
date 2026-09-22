@@ -10,9 +10,15 @@ collection for a receptionist to act on.
 
 ## What it does
 
-The booking chat asks: visited before? (first-timers also give their name)
-what for? (symptoms are read by OpenAI and the model) and when? When the chat
-finishes, one document is saved with `status: "new"`:
+The booking chat asks four things:
+
+- **Visited before?** Then the patient's name: a first-timer's creates the
+  record, and a returning patient's lets reception find theirs among a
+  family sharing one phone.
+- **What for?** Symptoms are read by OpenAI and the model.
+- **When?**
+
+When the chat finishes, one document is saved with `status: "new"`:
 
 ```
 channel "whatsapp", whatsapp_number "+923001234567", patient_name,
@@ -60,5 +66,8 @@ Atlas under `cwac` → `booking_requests`.
 
 ## Next / known gaps
 
-Returning patients are not asked their name, so the receptionist matches them
-by number when scheduling ([receptionist-scheduling.md](receptionist-scheduling.md)).
+A request saved before 2026-09-22 from a returning patient has no name,
+because they were not asked then; the receptionist matches it by number
+([receptionist-scheduling.md](receptionist-scheduling.md)). A declined
+request keeps an optional `decline_reason`
+([reception-appointments.md](reception-appointments.md)).

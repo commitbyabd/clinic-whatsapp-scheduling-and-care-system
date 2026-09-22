@@ -6,6 +6,7 @@ import ManagePanel from "./ManagePanel.jsx";
 import SectionHeader from "./SectionHeader.jsx";
 import StaffCard from "./StaffCard.jsx";
 import StaffFormModal from "./StaffFormModal.jsx";
+import ResetPasswordModal from "./ResetPasswordModal.jsx";
 import ConfirmDialog from "../../ui/ConfirmDialog.jsx";
 import Alert from "../../ui/Alert.jsx";
 import Button from "../../ui/Button.jsx";
@@ -39,6 +40,7 @@ function DashboardMain() {
   } = usePagination(items, PAGE_SIZE);
 
   const [editing, setEditing] = useState(null);
+  const [resetting, setResetting] = useState(null);
   const [creating, setCreating] = useState(false);
   const [confirming, setConfirming] = useState(null);
   const [confirmBusy, setConfirmBusy] = useState(false);
@@ -179,6 +181,9 @@ function DashboardMain() {
                         onEdit={
                           isRestore ? undefined : () => setEditing(member)
                         }
+                        onResetPassword={
+                          isRestore ? undefined : () => setResetting(member)
+                        }
                         onDeactivate={
                           isRestore ? undefined : () => setConfirming(member)
                         }
@@ -226,6 +231,17 @@ function DashboardMain() {
             // The name just typed, not the one the list still holds.
             showToast(`${saved.full_name}'s fields updated successfully.`);
             refresh();
+          }}
+        />
+      )}
+
+      {resetting && isList && (
+        <ResetPasswordModal
+          staff={resetting}
+          onClose={() => setResetting(null)}
+          onDone={(text) => {
+            setResetting(null);
+            showToast(text);
           }}
         />
       )}

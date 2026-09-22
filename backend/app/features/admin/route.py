@@ -16,8 +16,10 @@ from .v1.admin_dashboard import (
     edit_doctor_api,
     edit_receptionist_api,
     get_deactivated_users_api,
+    reset_staff_password_api,
 )
 from app.schemas.doctor_create import DoctorCreate
+from app.schemas.password_update import PasswordReset
 from app.schemas.doctor_update import DoctorUpdate
 from app.schemas.receptionist_create import ReceptionistCreate
 from app.schemas.receptionist_update import ReceptionistUpdate
@@ -116,3 +118,16 @@ async def edit_receptionist(
 @router.get("/deactivated-users")
 async def deactivated_users(_: dict = Depends(require_role("admin"))):
     return await get_deactivated_users_api()
+
+
+# For a doctor or receptionist who has lost their password. There is no
+# email to send a reset link, so the admin sets one and tells them.
+@router.put("/staff/{user_id}/password")
+async def reset_staff_password(
+    user_id: str,
+    reset: PasswordReset,
+    _: dict = Depends(require_role("admin")),
+):
+    return await reset_staff_password_api(
+        user_id, reset.new_password.get_secret_value()
+    )

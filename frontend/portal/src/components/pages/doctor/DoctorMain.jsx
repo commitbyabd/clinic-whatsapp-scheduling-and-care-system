@@ -4,6 +4,7 @@ import { CalendarClock, Clock } from "lucide-react";
 import DashboardHeader from "../dashboard/DashboardHeader.jsx";
 import AppointmentsView from "./AppointmentsView.jsx";
 import WorkingHoursView from "./WorkingHoursView.jsx";
+import TabNav from "../../ui/TabNav.jsx";
 import Toast from "../../ui/Toast.jsx";
 import { getSchedule } from "../../../api/doctor.js";
 import { useApiResource } from "../../../hooks/useApiResource.js";
@@ -47,27 +48,12 @@ function DoctorMain() {
         <DashboardHeader roleLabel="Doctor" />
 
         <div className="mx-auto max-w-310 px-4 py-6 sm:px-6">
-          <nav aria-label="Doctor portal" className="mb-6 flex flex-wrap gap-2">
-            {TABS.map(({ slug, label, icon: Icon }) => {
-              const active = tab === slug;
-              return (
-                <button
-                  key={slug}
-                  type="button"
-                  aria-current={active ? "page" : undefined}
-                  onClick={() => selectTab(slug)}
-                  className={`inline-flex h-10 items-center gap-2 rounded-pill px-4 font-primary text-sm font-semibold transition duration-200 focus-visible:ring-4 focus-visible:ring-violet/22 focus-visible:outline-none ${
-                    active
-                      ? "bg-plum text-white shadow-button"
-                      : "border border-border bg-white text-plum hover:bg-pale-lavender"
-                  }`}
-                >
-                  <Icon className="size-4" strokeWidth={2} />
-                  {label}
-                </button>
-              );
-            })}
-          </nav>
+          <TabNav
+            tabs={TABS}
+            active={tab}
+            onSelect={selectTab}
+            label="Doctor portal"
+          />
 
           <section>
             {tab === "appointments" ? (

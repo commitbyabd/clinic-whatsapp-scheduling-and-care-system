@@ -12,6 +12,7 @@ from .add_receptionist import add_receptionist
 from .edit_doctor import edit_doctor
 from .edit_receptionist import edit_receptionist
 from .get_deactivated_users import get_deactivated_users
+from .reset_staff_password import reset_staff_password
 
 
 async def doctor_list_api():
@@ -74,3 +75,7 @@ async def edit_receptionist_api(payload: dict):
 
 async def get_deactivated_users_api():
     return await get_deactivated_users()
+
+
+async def reset_staff_password_api(user_id: str, new_password: str):
+    return await reset_staff_password(user_id, new_password)

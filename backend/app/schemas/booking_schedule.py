@@ -28,6 +28,13 @@ class NewPatient(BaseModel):
         return value
 
 
+class BookingDecline(BaseModel):
+    model_config = ConfigDict(str_strip_whitespace=True)
+
+    # optional, such as "booked by phone instead"
+    reason: str | None = Field(None, max_length=200)
+
+
 class BookingSchedule(BaseModel):
     doctor_id: str
     # One of the times GET /receptionist/doctors/{id}/slots sent. It must

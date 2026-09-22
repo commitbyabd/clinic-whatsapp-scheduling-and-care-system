@@ -11,8 +11,8 @@ export function reasonLabel(reason) {
   return REASONS[reason] ?? "Reason not given";
 }
 
-// Only first-time patients are asked their name on WhatsApp, so a returning
-// patient is known by their number until the receptionist matches them.
+// Every patient is asked their name on WhatsApp now; a request saved before
+// that has none, so it is known by its number.
 export function patientLabel(request) {
   return request.patient_name || request.whatsapp_number || "Unknown patient";
 }

@@ -54,6 +54,15 @@ export const deactivateReceptionist = (receptionistId) =>
 export const reactivateReceptionist = (receptionistId) =>
   unwrap(api.patch(`/admin/receptionists/${receptionistId}/reactivate`));
 
+/* --------------------------------------------------------------- passwords */
+
+// For a doctor or receptionist who lost theirs. Every session signed in
+// with the old password ends.
+export const resetStaffPassword = (userId, newPassword) =>
+  unwrap(
+    api.put(`/admin/staff/${userId}/password`, { new_password: newPassword }),
+  );
+
 /* ------------------------------------------------------------- deactivated */
 
 /*

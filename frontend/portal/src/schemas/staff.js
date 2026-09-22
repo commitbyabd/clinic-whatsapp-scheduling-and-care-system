@@ -39,7 +39,7 @@ const specialization = z.enum(
 // Never trimmed: spaces are legitimate password characters and the hash
 // has to match what was typed. The 64 ceiling is the server's, because
 // bcrypt ignores anything past 72 bytes.
-const password = z
+export const password = z
   .string()
   .min(8, "Password must be at least 8 characters.")
   .max(64, "Password cannot be longer than 64 characters.");

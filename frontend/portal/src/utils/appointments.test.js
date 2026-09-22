@@ -4,6 +4,7 @@ import {
   dayHeading,
   groupByDay,
   patientFacts,
+  shiftDay,
   statusLabel,
 } from "./appointments.js";
 
@@ -39,6 +40,13 @@ describe("dayHeading", () => {
     expect(dayHeading("2026-09-22", today)).toBe("Tomorrow · Tue, Sep 22");
     expect(dayHeading("2026-09-20", today)).toBe("Yesterday · Sun, Sep 20");
     expect(dayHeading("2026-09-24", today)).toBe("Thu, Sep 24");
+  });
+});
+
+describe("shiftDay", () => {
+  it("moves across the ends of months and years", () => {
+    expect(shiftDay("2026-09-30", 1)).toBe("2026-10-01");
+    expect(shiftDay("2026-01-01", -1)).toBe("2025-12-31");
   });
 });
 

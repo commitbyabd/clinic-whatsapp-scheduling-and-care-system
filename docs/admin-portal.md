@@ -93,6 +93,7 @@ Sign in as an admin: you land on `/dashboard`.
 
 ## Next / known gaps
 
-- There is no way to change or reset a password.
+- Passwords: each card has "Reset password", and everyone can change their
+  own from the header ([staff-passwords.md](staff-passwords.md)).
 - Admins cannot set a doctor's working hours; doctors do that themselves,
   and `backend/scripts/seed_schedules.py` fills in a default week.

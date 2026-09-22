@@ -9,7 +9,9 @@ from app.utils.object_serializer import serialize_data
 from logging_config import logger
 
 
-async def decline_booking_request(request_id: str, receptionist_id: str):
+async def decline_booking_request(
+    request_id: str, receptionist_id: str, reason: str | None = None
+):
     try:
         if not ObjectId.is_valid(request_id) or not ObjectId.is_valid(receptionist_id):
             return api_response(
@@ -19,7 +21,7 @@ async def decline_booking_request(request_id: str, receptionist_id: str):
                 data=None,
             )
 
-        row = await decline_booking_request_query(request_id, receptionist_id)
+        row = await decline_booking_request_query(request_id, receptionist_id, reason)
 
         # nothing changed: either there is no such request, or it has
         # already been scheduled or declined
@@ -56,7 +58,9 @@ async def decline_booking_request(request_id: str, receptionist_id: str):
         )
 
 
-async def decline_booking_request_query(request_id: str, receptionist_id: str) -> dict | None:
+async def decline_booking_request_query(
+    request_id: str, receptionist_id: str, reason: str | None = None
+) -> dict | None:
     # only a new request can be declined, so a scheduled one keeps its
     # appointment
     return await get_database().booking_requests.find_one_and_update(
@@ -64,6 +68,8 @@ async def decline_booking_request_query(request_id: str, receptionist_id: str) -
         {
             "$set": {
                 "status": "declined",
+                # optional, such as "booked by phone instead"
+                "decline_reason": reason or None,
                 "handled_by": ObjectId(receptionist_id),
                 "handled_at": datetime.now(timezone.utc),
             }

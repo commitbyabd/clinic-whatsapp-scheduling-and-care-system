@@ -8,6 +8,7 @@ import Button from "../../ui/Button.jsx";
 import Card from "../../ui/Card.jsx";
 import { listAppointments } from "../../../api/doctor.js";
 import { useApiResource } from "../../../hooks/useApiResource.js";
+import { useAutoRefresh } from "../../../hooks/useAutoRefresh.js";
 import {
   dayHeading,
   groupByDay,
@@ -37,6 +38,8 @@ function AppointmentsView({ needsHours, onShowHours, showToast }) {
   const [mode, setMode] = useState("upcoming");
   const [version, setVersion] = useState(0);
   const refresh = () => setVersion((current) => current + 1);
+  // reception books visits at any moment
+  useAutoRefresh(refresh);
 
   // "Past" asks the server for everything and keeps the earlier days
   const appointments = useApiResource(

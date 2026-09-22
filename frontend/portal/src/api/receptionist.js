@@ -30,8 +30,31 @@ export const scheduleBookingRequest = (requestId, payload) =>
     api.post(`/receptionist/booking-requests/${requestId}/schedule`, payload),
   );
 
-export const declineBookingRequest = (requestId) =>
-  unwrap(api.patch(`/receptionist/booking-requests/${requestId}/decline`));
+// reason is optional, such as "booked by phone instead"
+export const declineBookingRequest = (requestId, reason = null) =>
+  unwrap(
+    api.patch(`/receptionist/booking-requests/${requestId}/decline`, {
+      reason,
+    }),
+  );
+
+/* ----------------------------------------------------------- appointments */
+
+// date is "YYYY-MM-DD", a clinic day: every doctor's visits, cancelled ones
+// included
+export const listDayAppointments = (date) =>
+  unwrap(api.get("/receptionist/appointments", { params: { date } }));
+
+export const cancelAppointment = (appointmentId, reason = null) =>
+  unwrap(
+    api.patch(`/receptionist/appointments/${appointmentId}/cancel`, { reason }),
+  );
+
+// payload: { doctor_id, starts_at }, a time listFreeSlots returned
+export const rescheduleAppointment = (appointmentId, payload) =>
+  unwrap(
+    api.patch(`/receptionist/appointments/${appointmentId}/reschedule`, payload),
+  );
 
 /* ---------------------------------------------------------------- doctors */
 

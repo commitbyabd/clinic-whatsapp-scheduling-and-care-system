@@ -22,8 +22,11 @@ doctor records the visit: consultation (diagnosis, vitals, prescriptions)
 
 ## Collections
 
-**users** (built): `full_name, email, password_hash, role (admin | doctor |
-receptionist), specialization (doctors), is_active`
+**users** (built): `full_name, email, password_hash, password_changed_at,
+role (admin | doctor | receptionist), specialization (doctors, one of the
+chatbot's departments), is_active`. A token issued before
+`password_changed_at`, or for an inactive account, is refused
+([staff-passwords.md](staff-passwords.md)).
 
 **schedules** (built, one per doctor): `doctor_id, working_hours
 [{day_of_week 0-6, start_time "09:00", end_time}], slot_minutes,
@@ -46,14 +49,17 @@ vitals {bp "120/80", pulse bpm, temperature °F, weight kg}, prescriptions
 [{medicine, dose, frequency, days, instructions}], follow_up_on (midnight
 UTC)}`. Status: `booked` (a receptionist booked it), `confirmed` (the patient
 confirmed; planned), `completed` and `no_show` (set by the doctor, who can
-undo either back to `booked`), `cancelled` (gives the slot back).
+undo either back to `booked`), `cancelled` (gives the slot back). Front
+desk changes add `cancel_reason, cancelled_by, cancelled_at` and
+`rescheduled_by, rescheduled_at`
+([reception-appointments.md](reception-appointments.md)).
 
 **booking_requests** (built, see [booking-requests.md](booking-requests.md)):
 `channel, whatsapp_number, patient_name, returning_patient, reason,
 symptom_text, suggested_specialization, preferred_time_text, status (new |
 scheduled | declined | cancelled), patient_id, appointment_id, handled_by,
 handled_at, created_at`. Scheduling sets `scheduled` and the ids; declining
-sets `declined`.
+sets `declined` and an optional `decline_reason`.
 
 **conversation_states** (built, see
 [conversation-state.md](conversation-state.md)): each patient's place in the

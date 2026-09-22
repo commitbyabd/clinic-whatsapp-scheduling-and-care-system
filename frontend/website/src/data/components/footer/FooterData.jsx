@@ -7,11 +7,12 @@ import {
   PHONE_DISPLAY,
   PHONE_TEL_HREF,
   ROUTES,
+  WHATSAPP_DISPLAY,
   WHATSAPP_HREF,
 } from "../../../utils/global/Constants";
 
 export const footerDescription =
-  "A 120-bed multi-specialty clinic in Fairmont, caring for this neighbourhood since 1994.";
+  "A 120-bed multi-specialty clinic in Lahore, caring for this neighbourhood since 1994.";
 
 export const footerColumns = [
   {
@@ -58,7 +59,12 @@ export const footerContact = {
   id: "footer-reach",
   heading: "Reach us",
   items: [
-    { id: "footer-reach-phone", label: PHONE_DISPLAY, href: WHATSAPP_HREF },
+    { id: "footer-reach-phone", label: PHONE_DISPLAY, href: PHONE_TEL_HREF },
+    {
+      id: "footer-reach-whatsapp",
+      label: `WhatsApp ${WHATSAPP_DISPLAY}`,
+      href: WHATSAPP_HREF,
+    },
     { id: "footer-reach-email", label: EMAIL, href: EMAIL_HREF },
     {
       id: "footer-reach-address",

@@ -1,4 +1,7 @@
-import { PHONE_DISPLAY, WHATSAPP_HREF } from "../../../../utils/global/Constants";
+import {
+  WHATSAPP_DISPLAY,
+  WHATSAPP_HREF,
+} from "../../../../utils/global/Constants";
 
 export const whatsappData = {
   badge: "Answers 24/7",
@@ -6,7 +9,7 @@ export const whatsappData = {
   description:
     "You'll first reach our smart virtual assistant — it books, reschedules and sends reports in seconds. Ask for a team member whenever you'd rather talk to a person; during clinic hours that's under two minutes.",
   cta: { id: "whatsapp-cta", label: "Open WhatsApp chat", href: WHATSAPP_HREF },
-  phone: PHONE_DISPLAY,
+  phone: WHATSAPP_DISPLAY,
 };
 
 /* The page's key message: the assistant is a front door, not a wall. */

@@ -8,19 +8,22 @@ and the contact page), so change both together.
 # used as "Welcome to {NAME}", so lower-case unless it is a proper name
 NAME = "Marigold Health"
 
-ADDRESS = "14 Alder Grove Road, Fairmont, CA 94112"
+ADDRESS = "14-B Main Boulevard, Gulberg III, Lahore"
 
-PHONE = "+1 (415) 523-8886"
+# The clinic's line for calls. Patients already reach the bot on WhatsApp,
+# which for the demo is Twilio's sandbox number.
+PHONE = "+92 42 3578 8886"
 EMAIL = "care@marigold.health"
 
-# Interpolated as "please call {EMERGENCY_NUMBER}". The default keeps the
-# generic wording; set it to a real number (e.g. "1122") for a deployment.
-EMERGENCY_NUMBER = "your local emergency number"
+# Interpolated as "please call {EMERGENCY_NUMBER}": Rescue 1122, the
+# emergency service in Punjab, where the clinic is.
+EMERGENCY_NUMBER = "1122"
 
-# read as "open from {OPENING_TIME} to {CLOSING_TIME}, {OPEN_DAYS}."
+# read as "open from {OPENING_TIME} to {CLOSING_TIME}, {OPEN_DAYS}." The
+# doctors' default week (scripts/seed_schedules.py) fits inside these.
 OPENING_TIME = "8 AM"
 CLOSING_TIME = "8 PM"
-OPEN_DAYS = "Monday to Friday, and until 4 PM on Saturday"
+OPEN_DAYS = "Monday to Saturday"
 
 # Interpolated as "a variety of services including {SERVICES_SUMMARY}."
 SERVICES_SUMMARY = (

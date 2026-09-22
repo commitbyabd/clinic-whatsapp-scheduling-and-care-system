@@ -80,20 +80,27 @@ def test_happy_path_collects_every_answer():
 
 
 def test_branching_differs_by_answer():
-    """Returning patients skip the name step; first-timers do not."""
+    """Both give a name: first-timers to create a record, returning patients
+    so reception can find theirs among a family sharing one phone."""
     returning = _say(_phone(), "appointment", "1")
     first_time = _say(_phone(), "appointment", "2")
-    assert "seen for" in returning.text, "returning patient was asked for a name"
-    assert "full name" in first_time.text, "first-timer was not asked for a name"
+    assert "find the record" in returning.text, returning.text
+    assert "create your record" in first_time.text, first_time.text
+
+
+def test_a_returning_patient_gives_their_name():
+    reply = _say(_phone(), "appointment", "1", "Ahmed Khan", "1", "Tuesday 3pm")
+    assert reply.collected["returning_patient"] == "yes"
+    assert reply.collected["name"] == "Ahmed Khan", reply.collected
 
 
 def test_number_label_and_alias_all_work():
     for answer in ("1", "Yes", "yes", "YES", "haan", "ji", "y", "yeah"):
         reply = _say(_phone(), "appointment", answer)
-        assert "seen for" in reply.text, f"{answer!r} did not register as yes"
+        assert "find the record" in reply.text, f"{answer!r} did not register as yes"
     for answer in ("2", "No", "nahi", "nope", "n"):
         reply = _say(_phone(), "appointment", answer)
-        assert "full name" in reply.text, f"{answer!r} did not register as no"
+        assert "create your record" in reply.text, f"{answer!r} did not register as no"
 
 
 def test_out_of_range_number_is_not_accepted():
@@ -129,7 +136,7 @@ def test_cancel_words_exit_the_flow():
 def test_completion_never_claims_a_booking():
     """A receptionist confirms every booking."""
     reply = _say(
-        _phone(), "appointment", "1", "1", "Tuesday 3pm"
+        _phone(), "appointment", "1", "Ahmed Khan", "1", "Tuesday 3pm"
     )
     text = reply.text.lower()
     for phrase in ("you are booked", "is confirmed", "has been confirmed"):
@@ -256,6 +263,8 @@ def test_yes_books_without_asking_for_symptoms_again():
         reply = handle_message("yes", phone=phone)
         assert "visited us before" in reply.text, reply.text
         reply = handle_message("1", phone=phone)  # visited before
+        assert "find the record" in reply.text, reply.text
+        reply = handle_message("Ayesha Khan", phone=phone)
         assert "date and time" in reply.text, reply.text
         done = handle_message("Tuesday 3pm", phone=phone)
     assert done.collected == {
@@ -263,6 +272,7 @@ def test_yes_books_without_asking_for_symptoms_again():
         "symptom_text": FEVER,
         "specialization": "General Physician",
         "returning_patient": "yes",
+        "name": "Ayesha Khan",
         "preferred_datetime": "Tuesday 3pm",
     }, done.collected
 
@@ -317,7 +327,7 @@ def test_symptoms_typed_at_the_menu_are_taken_as_the_answer():
     phone = _phone()
     dermatology = Classification("Dermatologist", 0.9)
     with _Symptoms(found=("itching", "skin_rash"), result=dermatology):
-        _say(phone, "appointment", "1")  # now at "seen for?"
+        _say(phone, "appointment", "1", "Ayesha Khan")  # now at "seen for?"
         reply = handle_message(RASH, phone=phone)
         assert "didn't catch that" not in reply.text, reply.text
         assert "Dermatologist" in reply.text and "date and time" in reply.text, reply.text
@@ -328,15 +338,17 @@ def test_symptoms_typed_at_the_menu_are_taken_as_the_answer():
 
 def test_other_text_at_the_menu_is_still_reasked():
     with _Symptoms(found=()):
-        reply = _say(_phone(), "appointment", "1", "something else entirely")
+        reply = _say(
+            _phone(), "appointment", "1", "Ayesha Khan", "something else entirely"
+        )
     assert "didn't catch that" in reply.text, reply.text
 
 
 def test_menu_answers_are_not_sent_for_extraction():
-    # a number or a cancel word needs no OpenAI call
+    # a name, a number or a cancel word needs no OpenAI call
     with _Symptoms() as spy:
-        _say(_phone(), "appointment", "1", "2")
-        _say(_phone(), "appointment", "1", "cancel")
+        _say(_phone(), "appointment", "1", "Ayesha Khan", "2")
+        _say(_phone(), "appointment", "1", "Ayesha Khan", "cancel")
     assert spy.texts == [], f"sent for extraction: {spy.texts}"
 
 
@@ -351,7 +363,7 @@ def test_emergency_symptoms_up_front_do_not_start_a_booking():
 def test_emergency_symptoms_at_the_menu_stop_the_booking():
     phone = _phone()
     with _Symptoms(found=("sweating", "vomiting"), result=HEART_ATTACK):
-        _say(phone, "appointment", "1")
+        _say(phone, "appointment", "1", "Ayesha Khan")
         reply = handle_message("I keep sweating and throwing up", phone=phone)
     assert reply.source == "emergency", reply.source
     assert orchestrator.engine.is_active(phone) is False
@@ -366,7 +378,13 @@ def test_answers_already_known_are_skipped():
     engine = ConversationEngine(InMemoryStore())
     phone = _phone()
     assert engine.start(phone, "appointment", {"reason": "general"}).step == "ask_returning"
-    assert engine.advance(phone, "1").step == "ask_datetime"
+    assert engine.advance(phone, "1").step == "ask_returning_name"
+    assert engine.advance(phone, "Ahmed Khan").step == "ask_datetime"
+
+    # a name given earlier is not asked for again
+    other = _phone()
+    engine.start(other, "appointment", {"reason": "general", "name": "Ahmed Khan"})
+    assert engine.advance(other, "1").step == "ask_datetime"
 
 
 # --- state lifetime -----------------------------------------------------

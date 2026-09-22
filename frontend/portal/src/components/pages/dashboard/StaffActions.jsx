@@ -1,9 +1,9 @@
-import { Pencil, Ban, RotateCcw } from "lucide-react";
+import { Pencil, Ban, RotateCcw, KeyRound } from "lucide-react";
 import Button from "../../ui/Button.jsx";
 
 // Every button only opens a dialog. The request belongs to whoever owns the
 // list, since that is what has to refresh afterwards.
-function StaffActions({ name, onEdit, onDeactivate, onReactivate }) {
+function StaffActions({ name, onEdit, onResetPassword, onDeactivate, onReactivate }) {
   // A deactivated account has nothing worth editing until it is restored,
   // so that list offers the one action that changes anything.
   if (onReactivate) {
@@ -23,7 +23,7 @@ function StaffActions({ name, onEdit, onDeactivate, onReactivate }) {
   }
 
   return (
-    <div className="flex shrink-0 items-center gap-2">
+    <div className="flex shrink-0 flex-wrap items-center gap-2">
       <Button
         variant="outline"
         size="sm"
@@ -32,6 +32,16 @@ function StaffActions({ name, onEdit, onDeactivate, onReactivate }) {
         leadingIcon={<Pencil className="size-4" strokeWidth={2} />}
       >
         Edit
+      </Button>
+
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={onResetPassword}
+        aria-label={`Reset the password of ${name}`}
+        leadingIcon={<KeyRound className="size-4" strokeWidth={2} />}
+      >
+        Reset password
       </Button>
 
       <Button

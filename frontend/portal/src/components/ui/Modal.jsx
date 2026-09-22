@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 import { X } from "lucide-react";
 import Card from "./Card.jsx";
 
@@ -75,7 +76,9 @@ function Modal({
     };
   }, []);
 
-  return (
+  // Rendered into body: an ancestor with a backdrop blur, like the sticky
+  // header, would otherwise trap this fixed overlay inside its own box.
+  return createPortal(
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       {/* Sibling of the panel, not its parent, so a click inside the dialog
           never bubbles out and closes it */}
@@ -118,7 +121,8 @@ function Modal({
 
         <div className="mt-6">{children}</div>
       </Card>
-    </div>
+    </div>,
+    document.body,
   );
 }
 

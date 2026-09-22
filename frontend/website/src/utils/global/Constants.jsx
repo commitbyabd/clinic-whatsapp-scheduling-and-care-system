@@ -14,23 +14,29 @@ export const LOGO_ON_DARK_SRC = "/images/logo/logo-on-dark.avif";
 export const LOGO_WIDTH = 400;
 export const LOGO_HEIGHT = 133;
 
-/* One number, written three ways.
+/* Two numbers: the clinic's phone line for calls, and WhatsApp for the
+   chatbot.
 
-   E.164 is the international form with no punctuation at all — it is what
-   both tel: and WhatsApp want, and the only form wa.me accepts. */
-export const PHONE_DISPLAY = "+1 (415) 523-8886";
-export const PHONE_E164 = "+14155238886";
-export const PHONE_DIGITS = "14155238886";
+   E.164 is the international form with no punctuation at all, which is
+   what tel: wants. */
+export const PHONE_DISPLAY = "+92 42 3578 8886";
+export const PHONE_E164 = "+924235788886";
 
 /* A real phone call. Kept for the emergency line, where a chat app is the
    wrong thing to hand someone. */
 export const PHONE_TEL_HREF = `tel:${PHONE_E164}`;
 
+/* The chatbot's WhatsApp number. For the demo it is Twilio's WhatsApp
+   sandbox, which is why it is a US number; a clinic going live registers
+   its own. wa.me takes the digits alone: no +, spaces or brackets. */
+export const WHATSAPP_DISPLAY = "+1 (415) 523-8886";
+export const WHATSAPP_NUMBER = "14155238886";
+
 export const EMAIL = "care@marigold.health";
 export const EMAIL_HREF = "mailto:care@marigold.health";
 
-export const ADDRESS_STREET = "14 Alder Grove Road";
-export const ADDRESS_CITY = "Fairmont, CA 94112";
+export const ADDRESS_STREET = "14-B Main Boulevard, Gulberg III";
+export const ADDRESS_CITY = "Lahore 54660, Pakistan";
 
 /* WhatsApp deep link.
 
@@ -41,17 +47,15 @@ export const ADDRESS_CITY = "Fairmont, CA 94112";
    ?text= prefills the message box. It is only ever a draft — the visitor
    still has to press send, and can edit or clear it first. It must be
    percent-encoded, which is what encodeURIComponent does. */
-export const WHATSAPP_NUMBER = PHONE_DIGITS;
 export const WHATSAPP_MESSAGE =
   "Hi Marigold Health — I'd like to book an appointment.";
 export const WHATSAPP_HREF = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(
   WHATSAPP_MESSAGE,
 )}`;
 
-/* There is deliberately no generic PHONE_HREF: every place the number is
+/* There is deliberately no generic PHONE_HREF: every place a number is
    linked has to say whether it dials (PHONE_TEL_HREF) or opens a chat
-   (WHATSAPP_HREF). Publishing the number as a WhatsApp link is the default
-   on this site, but the emergency line still dials. */
+   (WHATSAPP_HREF), and show the number that matches. */
 
 export const ROUTES = {
   home: "/",

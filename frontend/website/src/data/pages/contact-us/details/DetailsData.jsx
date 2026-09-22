@@ -4,15 +4,17 @@ import {
   EMAIL,
   EMAIL_HREF,
   PHONE_DISPLAY,
-  WHATSAPP_HREF,
+  PHONE_TEL_HREF,
 } from "../../../../utils/global/Constants";
 
+/* WhatsApp has its own section on this page, so the phone card is the
+   line that dials. */
 export const detailsData = [
   {
     id: "detail-phone",
     label: "Phone",
     value: PHONE_DISPLAY,
-    href: WHATSAPP_HREF,
+    href: PHONE_TEL_HREF,
     note: "Reception · 24-hour emergency line",
   },
   {
@@ -29,12 +31,14 @@ export const detailsData = [
   },
 ];
 
+/* Matches the chatbot's hours (backend/chatbot/predefined_responses/
+   clinic.py) and the doctors' default week, which ends at 8pm on Saturday. */
 export const hoursData = {
   id: "detail-hours",
   label: "Hours",
   rows: [
-    { id: "hours-weekday", label: "OPD, Mon–Fri", value: "8am – 8pm" },
-    { id: "hours-saturday", label: "OPD, Saturday", value: "8am – 4pm" },
+    { id: "hours-weekday", label: "OPD, Mon–Sat", value: "8am – 8pm" },
+    { id: "hours-sunday", label: "OPD, Sunday", value: "Closed" },
     {
       id: "hours-emergency",
       label: "Emergency",
@@ -51,6 +55,6 @@ export const hoursData = {
 export const mapData = {
   src: "/images/pages/contact-us/map.svg",
   caption: "[ map embed ]",
-  captionDetail: "14 Alder Grove Road · parking behind Gate 2",
-  label: "Map of 14 Alder Grove Road, Fairmont — parking behind Gate 2",
+  captionDetail: "14-B Main Boulevard · parking behind Gate 2",
+  label: "Map of 14-B Main Boulevard, Gulberg III, Lahore — parking behind Gate 2",
 };

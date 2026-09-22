@@ -13,7 +13,7 @@ def booking_request_document(collected: dict[str, str], from_number: str) -> dic
         # Twilio sends "whatsapp:+923001234567"; patients are matched on the
         # bare number, and one number can belong to a whole family
         "whatsapp_number": from_number.removeprefix(WHATSAPP_PREFIX),
-        # only first-time patients are asked their name
+        # new and returning patients are both asked for it
         "patient_name": collected.get("name"),
         "returning_patient": collected.get("returning_patient"),
         "reason": collected.get("reason"),

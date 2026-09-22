@@ -1,6 +1,6 @@
 import {
-  PHONE_DISPLAY,
   ROUTES,
+  WHATSAPP_DISPLAY,
   WHATSAPP_HREF,
 } from "../../../../utils/global/Constants";
 
@@ -13,9 +13,10 @@ export const closingCtaData = {
     label: "Book an appointment",
     path: ROUTES.contact,
   },
+  // opens WhatsApp, so it shows the WhatsApp number
   secondaryCta: {
     id: "closing-secondary",
-    label: PHONE_DISPLAY,
+    label: WHATSAPP_DISPLAY,
     href: WHATSAPP_HREF,
   },
 };

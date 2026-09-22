@@ -6,6 +6,16 @@ export async function login({ email, password }) {
   return data;
 }
 
+// POST /auth/change-password -> envelope with data.access_token. The old
+// token stops working, so the caller swaps in the new one.
+export async function changePassword({ current_password, new_password }) {
+  const { data } = await api.post("/auth/change-password", {
+    current_password,
+    new_password,
+  });
+  return data;
+}
+
 export function saveToken(token) {
   localStorage.setItem(TOKEN_KEY, token);
 }

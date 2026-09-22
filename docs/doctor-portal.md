@@ -91,7 +91,9 @@ Portal (`frontend/portal/src/`):
 - `pages/doctor/Doctor.jsx` → `components/pages/doctor/DoctorMain.jsx`
   (tabs, toast, and the schedule, loaded once for both tabs; after a save the
   saved copy is used, so nothing is fetched again).
-- `AppointmentsView.jsx` → `AppointmentCard.jsx`, `StatusBadge.jsx`.
+- `AppointmentsView.jsx` → `AppointmentCard.jsx`, and the shared
+  `components/ui/StatusBadge.jsx`. The list reloads every 30 seconds while
+  on screen (`hooks/useAutoRefresh.js`); the tabs are `components/ui/TabNav.jsx`.
 - `ConsultationModal.jsx` (state, saving, status buttons) →
   `PatientPanel.jsx` (medical editor), `VisitHistory.jsx`,
   `ConsultationForm.jsx` (fields and prescription rows).

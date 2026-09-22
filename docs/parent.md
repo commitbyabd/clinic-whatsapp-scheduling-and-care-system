@@ -11,7 +11,10 @@ touching, then only the code it points to.
 (group S26CS082, University of Central Punjab). Patients talk to a clinic on
 WhatsApp: they ask questions, describe symptoms and request appointments,
 without installing anything. Staff work in a web portal. The demo clinic is
-called "Marigold Health".
+called "Marigold Health", in Lahore. Its details live in
+`backend/chatbot/predefined_responses/clinic.py` and
+`frontend/website/src/utils/global/Constants.jsx`; change both together. The
+WhatsApp number is Twilio's sandbox (+1), and the clinic's phone line is +92.
 
 Product rules that the code enforces:
 
@@ -82,7 +85,9 @@ general wellness questions → a canned reply. The webhook in
 
 Pages go in `pages/<area>/`, their pieces in `components/pages/<area>/`, and
 shared UI in `components/ui/`. API calls live in `api/<area>.js` and return
-the response envelope; `hooks/useApiResource.js` loads one of them by key.
+the response envelope; `hooks/useApiResource.js` loads one of them by key,
+and `hooks/useAutoRefresh.js` reloads a list every 30 seconds while it is on
+screen. `Modal` and `Toast` render into `document.body`.
 `ProtectedRoutes roles={[...]}` guards pages, and
 `utils/roleHome.js` decides where each role lands after signing in. Design
 tokens are in `variables.css`.
@@ -110,11 +115,13 @@ Built: the WhatsApp chatbot end to end, the webhook on the office server,
 admin portal (staff management), public website, saving booking requests,
 receptionist inbox, receptionist scheduling (a request becomes an
 appointment, or is declined), doctor portal (visits, consultation write-up,
-medical details, working hours), chat state in Mongo (survives restarts).
+medical details, working hours), chat state in Mongo (survives restarts),
+reception appointments (move, cancel), staff passwords (change, reset).
 
 Next: telling the patient on WhatsApp when they are booked (needs the Twilio
-credentials), contact form email via Google SMTP, deploying both frontends,
-SDS test plan, demo. Phase 3 was due Sep 21, Phase 4 is due Sep 28.
+credentials), deploying both frontends, SDS test plan, demo. Phase 3 was due
+Sep 21, Phase 4 is due Sep 28. Dropped by choice: emailing the website's
+contact form (it validates and confirms, and sends nothing).
 
 ## Feature docs
 
@@ -127,6 +134,8 @@ SDS test plan, demo. Phase 3 was due Sep 21, Phase 4 is due Sep 28.
 | [receptionist-scheduling.md](receptionist-scheduling.md) | free slots, matching patients, booking a request, declining |
 | [doctor-portal.md](doctor-portal.md) | the doctor's visits, consultation write-up, medical details, working hours |
 | [conversation-state.md](conversation-state.md) | where the booking chat keeps each patient's place, in Mongo |
+| [reception-appointments.md](reception-appointments.md) | booked visits by day at the front desk: move, cancel; decline reasons |
+| [staff-passwords.md](staff-passwords.md) | changing your own password, admin resets, sessions ending |
 
 ## Template for a feature doc
 

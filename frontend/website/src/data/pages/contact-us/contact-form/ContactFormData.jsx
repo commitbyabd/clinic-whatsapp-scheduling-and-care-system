@@ -1,9 +1,11 @@
+import { PHONE_DISPLAY } from "../../../../utils/global/Constants";
+
 export const contactFormData = {
   heading: "Or send us a note",
   helper: "For non-urgent questions. If it's urgent, please call.",
   fields: {
-    name: { id: "name", label: "Your name", placeholder: "Priya Menon" },
-    phone: { id: "phone", label: "Phone", placeholder: "+1 415 000 0000" },
+    name: { id: "name", label: "Your name", placeholder: "Ayesha Khan" },
+    phone: { id: "phone", label: "Phone", placeholder: "+92 300 1234567" },
     department: { id: "department", label: "Department" },
     message: {
       id: "message",
@@ -30,7 +32,6 @@ export const contactFormData = {
     "We never share your details. Medical records are only discussed over the phone or in person.",
   success: {
     heading: "Thank you — that's with us.",
-    description:
-      "Someone from the front desk will reply within one working day. If it can't wait, please call +1 (415) 523-8886.",
+    description: `Someone from the front desk will reply within one working day. If it can't wait, please call ${PHONE_DISPLAY}.`,
   },
 };

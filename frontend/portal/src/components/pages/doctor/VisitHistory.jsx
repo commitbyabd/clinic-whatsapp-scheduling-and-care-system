@@ -1,4 +1,4 @@
-import StatusBadge from "./StatusBadge.jsx";
+import StatusBadge from "../../ui/StatusBadge.jsx";
 import { formatAppointment } from "../../../utils/scheduling.js";
 
 // The patient's earlier visits that happened (completed or missed), with

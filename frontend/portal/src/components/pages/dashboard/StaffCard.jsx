@@ -21,6 +21,7 @@ function StaffCard({
   selected = false,
   onSelect,
   onEdit,
+  onResetPassword,
   onDeactivate,
   onReactivate,
 }) {
@@ -63,6 +64,7 @@ function StaffCard({
         <StaffActions
           name={name}
           onEdit={onEdit}
+          onResetPassword={onResetPassword}
           onDeactivate={onDeactivate}
           onReactivate={onReactivate}
         />

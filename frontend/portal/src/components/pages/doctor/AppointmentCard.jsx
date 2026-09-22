@@ -2,7 +2,7 @@ import { FileText, MessageSquareText, TriangleAlert } from "lucide-react";
 import Card from "../../ui/Card.jsx";
 import Badge from "../../ui/Badge.jsx";
 import Button from "../../ui/Button.jsx";
-import StatusBadge from "./StatusBadge.jsx";
+import StatusBadge from "../../ui/StatusBadge.jsx";
 
 /*
   One visit in the doctor's list.

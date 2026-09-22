@@ -4,7 +4,8 @@ import Alert from "./Alert.jsx";
 
 // Yes/no prompt. The parent owns the request, so it owns busy and error
 // too: the dialog stays open while the call is in flight and reports a
-// failure in place rather than closing and losing the context.
+// failure in place rather than closing and losing the context. children,
+// when given, go under the message, e.g. a field for the reason.
 function ConfirmDialog({
   title,
   message,
@@ -15,10 +16,13 @@ function ConfirmDialog({
   error = "",
   onConfirm,
   onClose,
+  children,
 }) {
   return (
     <Modal title={title} onClose={onClose} width="max-w-[460px]">
       <p className="font-primary text-md leading-body text-ink">{message}</p>
+
+      {children && <div className="mt-5">{children}</div>}
 
       {error && <Alert className="mt-4">{error}</Alert>}
 

@@ -144,11 +144,20 @@ APPOINTMENT_FLOW: dict[str, Step] = {
         question="Happy to help you book an appointment. Have you visited us before?",
         options=YES_NO,
         field="returning_patient",
-        next=lambda answer: "ask_name" if answer == "no" else "ask_reason",
+        # Both are asked for a name: a first-timer's creates the record, and a
+        # returning patient's lets reception find theirs among the family
+        # members who share the phone.
+        next=lambda answer: "ask_name" if answer == "no" else "ask_returning_name",
     ),
     "ask_name": Step(
         id="ask_name",
         question="Please share your full name so we can create your record.",
+        field="name",
+        next="ask_reason",
+    ),
+    "ask_returning_name": Step(
+        id="ask_returning_name",
+        question="Welcome back. Please share the patient's full name so we can find the record.",
         field="name",
         next="ask_reason",
     ),

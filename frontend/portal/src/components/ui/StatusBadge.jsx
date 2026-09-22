@@ -1,4 +1,4 @@
-import { statusLabel } from "../../../utils/appointments.js";
+import { statusLabel } from "../../utils/appointments.js";
 
 const TONES = {
   booked: "bg-lavender text-plum",

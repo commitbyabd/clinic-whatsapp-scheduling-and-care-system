@@ -245,8 +245,9 @@ def _chat(number, *messages):
     return response
 
 
-# returning patient, general check-up, then a time: a whole booking chat
-BOOKING = ("book an appointment", "1", "1", "Tuesday 3pm")
+# returning patient, their name, general check-up, then a time: a whole
+# booking chat
+BOOKING = ("book an appointment", "1", "Ayesha Khan", "1", "Tuesday 3pm")
 
 
 def test_finished_booking_is_saved_for_the_front_desk():
@@ -257,6 +258,7 @@ def test_finished_booking_is_saved_for_the_front_desk():
     document = saved.documents[0]
     assert document["whatsapp_number"] == "+923001110001"
     assert document["returning_patient"] == "yes"
+    assert document["patient_name"] == "Ayesha Khan"
     assert document["reason"] == "general"
     assert document["preferred_time_text"] == "Tuesday 3pm"
     assert document["status"] == "new"

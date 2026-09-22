@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 import { Check } from "lucide-react";
 
 /*
@@ -23,7 +24,8 @@ function Toast({ message, duration = 2000, onDone }) {
     return () => clearTimeout(timer);
   }, [duration]);
 
-  return (
+  // into body for the same reason as Modal: a blurred ancestor would trap it
+  return createPortal(
     <div
       role="status"
       className="fixed inset-x-0 bottom-6 z-60 flex justify-center px-4"
@@ -34,7 +36,8 @@ function Toast({ message, duration = 2000, onDone }) {
         </span>
         {message}
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }
 

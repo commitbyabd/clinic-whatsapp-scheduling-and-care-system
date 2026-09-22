@@ -28,7 +28,8 @@ export function patientFacts(patient) {
   return parts.join(" · ");
 }
 
-function shiftDay(day, days) {
+// "2026-09-21" moved by a number of days, either way
+export function shiftDay(day, days) {
   const date = new Date(`${day}T00:00:00Z`);
   date.setUTCDate(date.getUTCDate() + days);
   return date.toISOString().slice(0, 10);

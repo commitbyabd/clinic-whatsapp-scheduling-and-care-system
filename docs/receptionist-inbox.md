@@ -10,12 +10,20 @@ in [receptionist-scheduling.md](receptionist-scheduling.md).
 
 ## What it does
 
-A receptionist signs in to the portal and lands on `/reception`, which lists
-every `booking_requests` document with `status: "new"`. Each card shows the
-patient's name (or their number, for returning patients who were not asked),
-new or returning, phone, reason, the suggested department, their symptoms in
-their own words, the time they asked for, and when the request came in (clinic
-time). A Refresh button reloads the list.
+A receptionist signs in to the portal and lands on `/reception`, on the
+Requests tab (Appointments is the other; see
+[reception-appointments.md](reception-appointments.md)). It lists every
+`booking_requests` document with `status: "new"`. Each card shows:
+
+- the patient's name (or their number, for an old request with no name);
+- new or returning, and the phone number;
+- the reason and the suggested department;
+- their symptoms in their own words;
+- the time they asked for, and when the request came in (clinic time).
+
+The list reloads every 30 seconds while the page is on screen
+(`hooks/useAutoRefresh.js`), whenever you come back to the tab, and when
+Refresh is pressed.
 
 ## How it works
 
@@ -68,6 +76,7 @@ request in the database (finish a booking on WhatsApp).
 
 ## Next / known gaps
 
-The list does not refresh on its own. It reloads when Refresh is pressed and
-whenever a schedule or decline dialog closes. There is no tab yet for
-scheduled or declined requests, though the endpoint already takes `status`.
+There is no tab yet for scheduled or declined requests, though the endpoint
+already takes `status`. The inbox now lives in
+`components/pages/reception/InboxView.jsx`; `ReceptionMain.jsx` is the page
+around both tabs.

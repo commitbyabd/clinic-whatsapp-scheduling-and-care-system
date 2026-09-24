@@ -77,46 +77,66 @@
      Colors — brand
      →  bg-plum, text-violet, border-coral, ring-violet …
      Opacity modifiers come free:  bg-plum/17, bg-violet/24
+
+     These are the public website's colours
+     (frontend/website/src/variables.css), so staff and patients see one
+     clinic rather than two products. The website's rule holds here too:
+     sage is the institution, terracotta is the Marigold Fund, gold is the
+     ask — so gold sits on the primary button and nowhere else.
+
+     The names are the portal's own and did not change: repainting is one
+     file, and no component knows which colour it is wearing.
   ========================= */
-  --color-plum: #2b193d;
-  /* headings, badges, branding panel */
-  --color-plum-deep: #21122f;
+  --color-plum: #2e2a26;
+  /* website --ink: headings, badges, dark panels */
+  --color-plum-deep: #211e1b;
   /* medical cross in the logo */
-  --color-violet: #7867f2;
-  /* focus, email icon, button gradient */
-  --color-violet-hover: #6857de;
-  --color-violet-bright: #8a70f5;
-  --color-coral: #ff7a70;
-  /* logo, password icon, button gradient */
-  --color-seafoam: #b8f2e5;
-  /* badges, success states */
-  --color-butter: #ffe8a8;
+  --color-violet: #6e8672;
+  /* website --sage: focus, icons, links, accents */
+  --color-violet-hover: #5c7360;
+  /* website --sage-deep */
+  --color-violet-bright: #83997f;
+  --color-coral: #c4837a;
+  /* website --terracotta: logo, password icon, selected row */
+  --color-seafoam: #dce6d9;
+  /* website --sage-pale, a shade down so avatars read on cream */
+  --color-butter: #f0e3c8;
+  --color-gold: #c08a3e;
+  /* website --gold: the primary button, and nothing else */
+  --color-gold-light: #d69c4a;
+  --color-gold-hover: #a9762f;
 
   /* Colors — surfaces */
-  --color-porcelain: #fffcf8;
-  --color-lavender: #f1ecff;
-  --color-warm-blush: #fff8f2;
-  --color-pale-lavender: #f7f2ff;
-  --color-mint-white: #f5fffc;
-  --color-input-surface: #fbf8fc;
-  --color-password-icon-bg: #fff0ed;
-  --color-password-toggle-hover: #faf5ff;
+  --color-porcelain: #fffcf6;
+  /* website --cream-card */
+  --color-lavender: #eaefe6;
+  --color-warm-blush: #f7ece8;
+  --color-pale-lavender: #f1f4ee;
+  --color-mint-white: #f6f1e9;
+  /* website --cream-base */
+  --color-input-surface: #fbf7f0;
+  --color-password-icon-bg: #f7ebe7;
+  --color-password-toggle-hover: #f3efe6;
 
   /* Colors — branding panel */
-  --color-aubergine: #3a2450;
-  --color-indigo-plum: #32235b;
+  --color-aubergine: #3b3630;
+  --color-indigo-plum: #332e27;
 
   /* Colors — text */
-  --color-ink: #2a2330;
-  --color-muted: #766d7c;
+  --color-ink: #5b5349;
+  /* website --ink-body */
+  --color-muted: #6c6459;
+  /* website --ink-muted */
   --color-white: #ffffff;
 
   /* Colors — border */
-  --color-border: #e9e0ef;
+  --color-border: #ede1cf;
+  /* website --border-soft */
 
   /* Colors — feedback */
-  --color-error: #c94f64;
-  --color-error-bg: #fcecef;
+  --color-error: #a2564c;
+  /* website --terracotta-deep: warm, but still clearly a warning */
+  --color-error-bg: #f7e9e5;
 
   /*
     Field guidance shown on blur, before anything is submitted. Violet
@@ -143,7 +163,7 @@
                  shadow-input-focus, shadow-button-focus
   ========================= */
   --shadow-card: 0 28px 80px var(--plum-17);
-  --shadow-button: 0 12px 26px var(--violet-28);
+  --shadow-button: 0 12px 26px var(--gold-28);
   --shadow-input-focus: 0 0 0 4px var(--violet-16);
   --shadow-button-focus: 0 0 0 4px var(--violet-22);
 
@@ -221,7 +241,7 @@
      Kept because the gradients and shadows above consume them.
      For a flat fill prefer the Tailwind modifier instead:  bg-violet/24
   ========================= */
-  --porcelain-90: rgba(255, 252, 248, 0.9);
+  --porcelain-90: rgba(255, 252, 246, 0.9);
   --white-82: rgba(255, 255, 255, 0.82);
   --white-65: rgba(255, 255, 255, 0.65);
   --white-60: rgba(255, 255, 255, 0.6);
@@ -229,24 +249,25 @@
   --white-14: rgba(255, 255, 255, 0.14);
   --white-13: rgba(255, 255, 255, 0.13);
   --white-08: rgba(255, 255, 255, 0.08);
-  --plum-17: rgba(43, 25, 61, 0.17);
-  --violet-28: rgba(120, 103, 242, 0.28);
-  --violet-24: rgba(120, 103, 242, 0.24);
-  --violet-22: rgba(120, 103, 242, 0.22);
-  --violet-16: rgba(120, 103, 242, 0.16);
-  --coral-60: rgba(255, 122, 112, 0.6);
-  --coral-34: rgba(255, 122, 112, 0.34);
-  --coral-15: rgba(255, 122, 112, 0.15);
-  --seafoam-65: rgba(184, 242, 229, 0.65);
-  --seafoam-11: rgba(184, 242, 229, 0.11);
-  --butter-12: rgba(255, 232, 168, 0.12);
+  --plum-17: rgba(46, 42, 38, 0.17);
+  --violet-28: rgba(110, 134, 114, 0.28);
+  --violet-24: rgba(110, 134, 114, 0.24);
+  --violet-22: rgba(110, 134, 114, 0.22);
+  --violet-16: rgba(110, 134, 114, 0.16);
+  --coral-60: rgba(196, 131, 122, 0.6);
+  --coral-34: rgba(196, 131, 122, 0.34);
+  --coral-15: rgba(196, 131, 122, 0.15);
+  --seafoam-65: rgba(220, 230, 217, 0.65);
+  --seafoam-11: rgba(220, 230, 217, 0.11);
+  --butter-12: rgba(192, 138, 62, 0.12);
+  --gold-28: rgba(192, 138, 62, 0.28);
 
   /* =========================
      Gradients
      Use as:  bg-[image:var(--gradient-page)]
   ========================= */
   --gradient-page:
-    radial-gradient(circle at 4% 8%, var(--coral-34), transparent 27%),
+    radial-gradient(circle at 4% 8%, var(--coral-15), transparent 27%),
     radial-gradient(circle at 94% 12%, var(--seafoam-65), transparent 30%),
     radial-gradient(circle at 82% 94%, var(--violet-24), transparent 30%),
     linear-gradient(
@@ -265,11 +286,13 @@
       var(--color-indigo-plum) 100%
     );
 
+  /* Gold, like the website's "Book an Appointment": the one colour that
+     means "this is the action". */
   --gradient-primary-button: linear-gradient(
     110deg,
-    var(--color-violet),
-    var(--color-violet-bright) 55%,
-    var(--color-coral)
+    var(--color-gold),
+    var(--color-gold-light) 55%,
+    var(--color-gold-hover)
   );
 
   /* =========================

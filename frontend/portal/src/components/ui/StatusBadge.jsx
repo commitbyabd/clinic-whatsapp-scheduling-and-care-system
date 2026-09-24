@@ -1,7 +1,9 @@
 import { statusLabel } from "../../utils/appointments.js";
 
 const TONES = {
-  booked: "bg-lavender text-plum",
+  // gold for a visit still to happen, sage once it has, rose for a no-show:
+  // the website's own colour language
+  booked: "bg-butter text-plum",
   confirmed: "bg-seafoam/60 text-plum",
   completed: "bg-seafoam text-plum",
   no_show: "bg-error-bg text-error",

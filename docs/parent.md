@@ -92,7 +92,11 @@ and `hooks/useAutoRefresh.js` reloads a list every 30 seconds while it is on
 screen. `Modal` and `Toast` render into `document.body`.
 `ProtectedRoutes roles={[...]}` guards pages, and
 `utils/roleHome.js` decides where each role lands after signing in. Design
-tokens are in `variables.css`.
+tokens are in `variables.css`, and they hold the public website's colours
+(`frontend/website/src/variables.css`): cream surfaces, sage for accents,
+terracotta for warnings, gold for the primary button, and the same two
+fonts. Both sides read as one clinic, and repainting is that one file
+because no component names a colour of its own.
 
 ## Deployment
 

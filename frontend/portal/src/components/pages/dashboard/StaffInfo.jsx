@@ -23,7 +23,7 @@ function StaffInfo({ name, specialty, walkIn = false, role, email }) {
         {walkIn && (
           <Badge
             dot={false}
-            className="border border-border bg-seafoam/50 text-plum"
+            className="border border-border bg-warm-blush text-plum"
           >
             Walk-in
           </Badge>

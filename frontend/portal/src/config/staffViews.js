@@ -1,6 +1,7 @@
-import { Stethoscope, ConciergeBell, UserX } from "lucide-react";
+import { Stethoscope, ConciergeBell, UserX, KeyRound } from "lucide-react";
 import {
   listDoctors,
+  listPasswordRequests,
   listReceptionists,
   listDeactivatedStaff,
   deactivateDoctor,
@@ -40,6 +41,19 @@ export const STAFF_VIEWS = [
     empty: "No receptionists yet. Add one to get started.",
     fetchList: listReceptionists,
     deactivate: deactivateReceptionist,
+  },
+  {
+    slug: "requests",
+    title: "Password requests",
+    subtitle: "Staff who cannot sign in",
+    icon: KeyRound,
+    noun: "password request",
+    // Not staff rows: each is someone asking for a reset, so the list
+    // draws PasswordRequestCard and offers no Add button.
+    rows: "password-request",
+    empty:
+      "No password requests. Staff who forget theirs ask from the sign-in page.",
+    fetchList: listPasswordRequests,
   },
   {
     slug: "deactivated",

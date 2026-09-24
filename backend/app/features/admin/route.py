@@ -17,6 +17,8 @@ from .v1.admin_dashboard import (
     edit_receptionist_api,
     get_deactivated_users_api,
     reset_staff_password_api,
+    password_requests_api,
+    close_password_request_api,
 )
 from app.schemas.doctor_create import DoctorCreate
 from app.schemas.password_update import PasswordReset
@@ -126,8 +128,23 @@ async def deactivated_users(_: dict = Depends(require_role("admin"))):
 async def reset_staff_password(
     user_id: str,
     reset: PasswordReset,
-    _: dict = Depends(require_role("admin")),
+    user: dict = Depends(require_role("admin")),
 ):
     return await reset_staff_password_api(
-        user_id, reset.new_password.get_secret_value()
+        user_id, reset.new_password.get_secret_value(), str(user["_id"])
     )
+
+
+# Staff who asked for a reset from the sign-in page. Nobody's password
+# changes here: the admin reads the list and does the reset.
+@router.get("/password-requests")
+async def password_requests(_: dict = Depends(require_role("admin"))):
+    return await password_requests_api()
+
+
+@router.patch("/password-requests/{request_id}/done")
+async def close_password_request(
+    request_id: str,
+    user: dict = Depends(require_role("admin")),
+):
+    return await close_password_request_api(request_id, str(user["_id"]))

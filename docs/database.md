@@ -71,6 +71,13 @@ booking chat. `whatsapp_number (unique, bare number), flow, step, data,
 reprompts, question, choices (the menu a worked-out step showed them),
 updated_at`, deleted 24 hours after `updated_at`.
 
+**password_requests** (built, see
+[password-help-requests.md](password-help-requests.md)): a staff member who
+cannot sign in, waiting for an admin to reset their password. `user_id,
+email, full_name, role (all a snapshot of the account), status (new |
+handled), times_asked, asked_at, created_at, handled_by, handled_at`. No
+password or token is ever stored here: the note is the whole feature.
+
 **chat_messages** (planned): `whatsapp_number, patient_id, direction (in |
 out), text, source, created_at`, deleted after 90 days.
 
@@ -93,7 +100,10 @@ out), text, source, created_at`, deleted after 90 days.
 ## Indexes
 
 Built (`app/core/indexes.py`): `booking_requests (status, created_at desc)`;
-`patients (whatsapp_number)`; `conversation_states`: unique
+`patients (whatsapp_number)`; `password_requests (status, asked_at desc)`
+and a unique `user_id` where the status is `new`
+(`one_open_password_request_per_user`), so asking again bumps a count
+instead of adding a row; `conversation_states`: unique
 `whatsapp_number`, and a TTL on `updated_at` (24h); unique `appointments
 (doctor_id, scheduled_for)` for status booked or confirmed only
 (`one_active_appointment_per_slot`), which stops double booking. That last

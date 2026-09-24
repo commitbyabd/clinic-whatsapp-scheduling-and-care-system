@@ -21,7 +21,7 @@ const fullName = z
 // Trim in a separate step piped into the format check. Zod runs checks in
 // order, so z.email().trim() would reject a pasted " name@clinic.com "
 // before the spaces were removed.
-const email = z
+export const email = z
   .string()
   .trim()
   .pipe(

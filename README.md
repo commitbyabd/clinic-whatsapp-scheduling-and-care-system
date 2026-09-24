@@ -66,6 +66,7 @@ cd backend
 .\.venv\Scripts\python.exe tests\app\test_clinic_directory.py
 .\.venv\Scripts\python.exe tests\app\test_staff_schemas.py
 .\.venv\Scripts\python.exe tests\app\test_passwords.py
+.\.venv\Scripts\python.exe tests\app\test_password_requests.py
 .\.venv\Scripts\python.exe tests\app\test_reception_appointments.py
 ```
 
@@ -130,9 +131,12 @@ Built and tested:
   question asked mid-chat without losing the patient's place
 - staff passwords: change your own, admins reset them, and either signs out
   old sessions; deactivated accounts are shut out at once
+- "forgot your password" on the sign-in page: it sends the email address to
+  the admin's Password requests tab and resets nothing by itself, so no link
+  or token is ever sent and nobody can reset anyone else's password
 - the public website, for a clinic in Lahore
 
-228 backend tests, 83 portal tests.
+246 backend tests, 85 portal tests.
 
 Waiting on other people: the Twilio Account SID and Auth Token, which sending
 patients their booked time needs.

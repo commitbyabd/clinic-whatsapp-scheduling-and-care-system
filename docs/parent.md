@@ -111,15 +111,16 @@ uvicorn, `git pull`, install requirements if they changed, start again.
 - **Every new feature gets `docs/<feature>.md`** (template below) and a row in
   the index. Update the status list when something ships.
 
-## Status (updated 2026-09-23)
+## Status (updated 2026-09-24)
 
 Built: the WhatsApp chatbot end to end, the webhook on the office server,
 admin portal (staff management), public website, saving booking requests,
 receptionist inbox, receptionist scheduling (a request becomes an
 appointment, or is declined), doctor portal (visits, consultation write-up,
 medical details, working hours), chat state in Mongo (survives restarts),
-reception appointments (move, cancel), staff passwords (change, reset),
-doctors and their open times offered on WhatsApp.
+reception appointments (move, cancel), staff passwords (change, reset,
+and "forgot your password" as a request to the admin), doctors and their
+open times offered on WhatsApp.
 
 Next: telling the patient on WhatsApp when they are booked (needs the Twilio
 credentials), deploying both frontends, demo. Phase 3 was due Sep 21, Phase 4
@@ -140,6 +141,7 @@ validates and confirms, and sends nothing), and updating the SDS.
 | [whatsapp-doctor-times.md](whatsapp-doctor-times.md) | the chat offers doctors, their hours and open times; walk-in doctors |
 | [reception-appointments.md](reception-appointments.md) | booked visits by day at the front desk: move, cancel; decline reasons |
 | [staff-passwords.md](staff-passwords.md) | changing your own password, admin resets, sessions ending |
+| [password-help-requests.md](password-help-requests.md) | "forgot your password": the note it leaves and the admin's Requests tab |
 
 ## Template for a feature doc
 

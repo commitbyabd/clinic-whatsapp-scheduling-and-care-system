@@ -21,6 +21,18 @@ async def ensure_indexes() -> None:
     # patients are matched by the number a booking came from
     await db.patients.create_index("whatsapp_number")
 
+    # the admin's password requests: the ones still waiting, newest first,
+    # and one open request per person however often they press Send
+    await db.password_requests.create_index(
+        [("status", ASCENDING), ("asked_at", DESCENDING)]
+    )
+    await db.password_requests.create_index(
+        "user_id",
+        unique=True,
+        partialFilterExpression={"status": "new"},
+        name="one_open_password_request_per_user",
+    )
+
     # one chat state per patient, deleted a day after their last message
     await db.conversation_states.create_index("whatsapp_number", unique=True)
     await db.conversation_states.create_index(

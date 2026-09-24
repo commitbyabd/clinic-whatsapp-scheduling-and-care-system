@@ -16,6 +16,10 @@ A sidebar picks one of three lists, kept in the URL (`?tab=doctors`,
 - **Doctors** and **Receptionists:** cards with name, email and, for doctors,
   specialization; 8 per page. There are buttons to add, edit and deactivate.
 - **Deactivated users:** both roles together, each with a Reactivate button.
+- **Password requests:** staff who could not sign in and asked for a reset
+  from the sign-in page, newest first, each with Reset password and Dismiss
+  ([password-help-requests.md](password-help-requests.md)). This list
+  reloads itself every 30 seconds.
 
 **Add** asks for name, email and password, plus the specialization and
 Bookings for a doctor. The specialization is picked from a list of the

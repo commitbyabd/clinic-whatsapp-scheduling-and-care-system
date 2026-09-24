@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { password } from "./staff.js";
+import { email, password } from "./staff.js";
 
 /*
   Client-side mirrors of PasswordChange and PasswordReset in
@@ -25,7 +25,10 @@ export const changePasswordSchema = z
   })
   .superRefine((values, ctx) => {
     mustMatch(values, ctx);
-    if (values.new_password && values.new_password === values.current_password) {
+    if (
+      values.new_password &&
+      values.new_password === values.current_password
+    ) {
       ctx.addIssue({
         code: "custom",
         path: ["new_password"],
@@ -40,3 +43,7 @@ export const resetPasswordSchema = z
     confirm_password: z.string(),
   })
   .superRefine(mustMatch);
+
+// The sign-in page's "forgot your password" box, mirroring
+// PasswordHelpRequest in app/schemas/password_help.py.
+export const passwordHelpSchema = z.object({ email });

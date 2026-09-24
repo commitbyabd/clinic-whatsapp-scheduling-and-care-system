@@ -5,6 +5,7 @@ import DashboardHeader from "./DashboardHeader.jsx";
 import ManagePanel from "./ManagePanel.jsx";
 import SectionHeader from "./SectionHeader.jsx";
 import StaffCard from "./StaffCard.jsx";
+import PasswordRequestCard from "./PasswordRequestCard.jsx";
 import StaffFormModal from "./StaffFormModal.jsx";
 import ResetPasswordModal from "./ResetPasswordModal.jsx";
 import ConfirmDialog from "../../ui/ConfirmDialog.jsx";
@@ -12,13 +13,19 @@ import Alert from "../../ui/Alert.jsx";
 import Button from "../../ui/Button.jsx";
 import Toast from "../../ui/Toast.jsx";
 import Pagination from "../../ui/Pagination.jsx";
+import { closePasswordRequest } from "../../../api/admin.js";
 import { readApiError } from "../../../api/auth.js";
 import { DEFAULT_VIEW_SLUG, findView } from "../../../config/staffViews.js";
+import { useAutoRefresh } from "../../../hooks/useAutoRefresh.js";
 import { useStaffList } from "../../../hooks/useStaffList.js";
 import { usePagination } from "../../../hooks/usePagination.js";
+import { formatReceived } from "../../../utils/bookingRequest.js";
 import { initialsFrom } from "../../../utils/initials.js";
 
 const PAGE_SIZE = 8;
+
+// password requests carry the raw role, the staff lists say it themselves
+const ROLE_LABELS = { doctor: "Doctor", receptionist: "Receptionist" };
 
 function DashboardMain() {
   // The tab lives in the URL, so a refresh keeps it and a colleague can be
@@ -46,6 +53,7 @@ function DashboardMain() {
   const [confirmBusy, setConfirmBusy] = useState(false);
   const [confirmError, setConfirmError] = useState("");
   const [selectedId, setSelectedId] = useState(null);
+  const [dismissing, setDismissing] = useState(null);
 
   // Counter rather than a timestamp: two toasts raised in the same
   // millisecond would share a key and the second would inherit the first
@@ -98,6 +106,29 @@ function DashboardMain() {
     }
   };
 
+  const isRequests = view?.rows === "password-request";
+
+  // Only this list is worth watching: an admin sitting on it should see a
+  // colleague's request arrive without pressing anything.
+  useAutoRefresh(() => {
+    if (isRequests) refresh();
+  });
+
+  // Dismiss only takes the request off the list. The password is untouched,
+  // and the person can ask again from the sign-in page.
+  const handleDismiss = async (request) => {
+    setDismissing(request.id);
+    try {
+      await closePasswordRequest(request.id);
+      showToast(`The request from ${request.full_name} was dismissed.`);
+      refresh();
+    } catch (error) {
+      showToast(readApiError(error));
+    } finally {
+      setDismissing(null);
+    }
+  };
+
   const isList = Boolean(view?.fetchList);
   // Only the role-specific lists can create: 'Add deactivated user' is not
   // a thing an admin would ask for.
@@ -105,7 +136,9 @@ function DashboardMain() {
   const count =
     status === "loading"
       ? "Loading…"
-      : `${total} record${total === 1 ? "" : "s"}`;
+      : isRequests
+        ? `${total} waiting`
+        : `${total} record${total === 1 ? "" : "s"}`;
 
   return (
     <div className="relative min-h-screen bg-porcelain">
@@ -158,41 +191,64 @@ function DashboardMain() {
                   {/* API field names are mapped here so StaffCard stays
                       presentation and never sees the backend's vocabulary */}
                   <div
-                    role="listbox"
-                    aria-label={view.title}
+                    // requests are read and acted on, not picked from
+                    role={isRequests ? undefined : "listbox"}
+                    aria-label={isRequests ? undefined : view.title}
                     className="space-y-4"
                   >
-                    {pageItems.map((member) => (
-                      <StaffCard
-                        key={member.id}
-                        initials={initialsFrom(member.full_name)}
-                        name={member.full_name}
-                        specialty={member.specialization}
-                        walkIn={member.booking_mode === "walk_in"}
-                        // The deactivated list mixes roles, so its rows
-                        // carry their own.
-                        role={member.role ?? view.role}
-                        email={member.email}
-                        selected={member.id === selectedId}
-                        onSelect={() =>
-                          setSelectedId((current) =>
-                            current === member.id ? null : member.id,
-                          )
-                        }
-                        onEdit={
-                          isRestore ? undefined : () => setEditing(member)
-                        }
-                        onResetPassword={
-                          isRestore ? undefined : () => setResetting(member)
-                        }
-                        onDeactivate={
-                          isRestore ? undefined : () => setConfirming(member)
-                        }
-                        onReactivate={
-                          isRestore ? () => setConfirming(member) : undefined
-                        }
-                      />
-                    ))}
+                    {isRequests &&
+                      pageItems.map((request) => (
+                        <PasswordRequestCard
+                          key={request.id}
+                          initials={initialsFrom(request.full_name)}
+                          name={request.full_name}
+                          role={ROLE_LABELS[request.role] ?? request.role}
+                          email={request.email}
+                          asked={formatReceived(request.asked_at)}
+                          times={request.times_asked}
+                          busy={dismissing === request.id}
+                          onReset={() =>
+                            setResetting({
+                              id: request.user_id,
+                              full_name: request.full_name,
+                            })
+                          }
+                          onDismiss={() => handleDismiss(request)}
+                        />
+                      ))}
+
+                    {!isRequests &&
+                      pageItems.map((member) => (
+                        <StaffCard
+                          key={member.id}
+                          initials={initialsFrom(member.full_name)}
+                          name={member.full_name}
+                          specialty={member.specialization}
+                          walkIn={member.booking_mode === "walk_in"}
+                          // The deactivated list mixes roles, so its rows
+                          // carry their own.
+                          role={member.role ?? view.role}
+                          email={member.email}
+                          selected={member.id === selectedId}
+                          onSelect={() =>
+                            setSelectedId((current) =>
+                              current === member.id ? null : member.id,
+                            )
+                          }
+                          onEdit={
+                            isRestore ? undefined : () => setEditing(member)
+                          }
+                          onResetPassword={
+                            isRestore ? undefined : () => setResetting(member)
+                          }
+                          onDeactivate={
+                            isRestore ? undefined : () => setConfirming(member)
+                          }
+                          onReactivate={
+                            isRestore ? () => setConfirming(member) : undefined
+                          }
+                        />
+                      ))}
                   </div>
 
                   <Pagination
@@ -243,6 +299,8 @@ function DashboardMain() {
           onDone={(text) => {
             setResetting(null);
             showToast(text);
+            // the reset closes their request, so the list has changed
+            refresh();
           }}
         />
       )}

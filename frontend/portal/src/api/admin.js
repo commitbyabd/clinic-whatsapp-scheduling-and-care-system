@@ -63,6 +63,16 @@ export const resetStaffPassword = (userId, newPassword) =>
     api.put(`/admin/staff/${userId}/password`, { new_password: newPassword }),
   );
 
+/*
+  Staff who asked for a reset from the sign-in page, still waiting. Closing
+  one only takes it off the list; resetting the password closes it too.
+*/
+export const listPasswordRequests = () =>
+  unwrap(api.get("/admin/password-requests"));
+
+export const closePasswordRequest = (requestId) =>
+  unwrap(api.patch(`/admin/password-requests/${requestId}/done`));
+
 /* ------------------------------------------------------------- deactivated */
 
 /*

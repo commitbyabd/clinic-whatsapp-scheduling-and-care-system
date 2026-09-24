@@ -16,6 +16,16 @@ export async function changePassword({ current_password, new_password }) {
   return data;
 }
 
+/*
+  POST /auth/password-help -> the envelope, with the same message whatever
+  was typed. No token: whoever needs this cannot sign in. It changes no
+  password; it leaves a note for the admin.
+*/
+export async function requestPasswordHelp(email) {
+  const { data } = await api.post("/auth/password-help", { email });
+  return data;
+}
+
 export function saveToken(token) {
   localStorage.setItem(TOKEN_KEY, token);
 }

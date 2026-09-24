@@ -2,10 +2,11 @@ from fastapi import APIRouter, Depends, HTTPException, status
 
 from app.core.security import create_access_token
 from app.dependencies.auth import get_current_user
+from app.schemas.password_help import PasswordHelpRequest
 from app.schemas.password_update import PasswordChange
 from app.schemas.user_login import UserLogin
 
-from .v1.login import change_password_api, login_api
+from .v1.login import change_password_api, login_api, request_password_help_api
 
 # tags is used to group this route in authentication in swagger ui documentation
 router = APIRouter(prefix="/auth", tags=["auth"])
@@ -50,3 +51,11 @@ async def change_password(
         passwords.current_password.get_secret_value(),
         passwords.new_password.get_secret_value(),
     )
+
+
+# The only route here with no token: whoever needs it cannot sign in. It
+# hands nothing back and changes no password — it leaves a note for the
+# admin, who does the reset. See docs/password-help-requests.md.
+@router.post("/password-help")
+async def password_help(request: PasswordHelpRequest):
+    return await request_password_help_api(request.email)

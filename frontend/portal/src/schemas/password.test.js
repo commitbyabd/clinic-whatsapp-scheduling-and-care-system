@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { changePasswordSchema, resetPasswordSchema } from "./password.js";
+import {
+  changePasswordSchema,
+  passwordHelpSchema,
+  resetPasswordSchema,
+} from "./password.js";
 import { validateWith } from "./validate.js";
 
 const change = (values) =>
@@ -53,5 +57,25 @@ describe("resetPasswordSchema", () => {
       confirm_password: "temporary 124",
     });
     expect(typo.errors.confirm_password).toMatch(/do not match/);
+  });
+});
+
+describe("passwordHelpSchema", () => {
+  it("sends the email and nothing else", () => {
+    const { valid, data } = validateWith(passwordHelpSchema, {
+      email: "  sara@clinic.com ",
+      // a password typed into the wrong box must never leave the browser
+      password: "hunter2",
+    });
+    expect(valid).toBe(true);
+    expect(data).toEqual({ email: "sara@clinic.com" });
+  });
+
+  it("catches a typo before it reaches the admin's list", () => {
+    const { valid, errors } = validateWith(passwordHelpSchema, {
+      email: "sara@clinic",
+    });
+    expect(valid).toBe(false);
+    expect(errors.email).toMatch(/valid email/);
   });
 });

@@ -1,5 +1,6 @@
 import LoginHeading from "./LoginHeading.jsx";
 import LoginForm from "./LoginForm.jsx";
+import ForgotPasswordBox from "./ForgotPasswordBox.jsx";
 import SecurityNote from "./SecurityNote.jsx";
 
 /*
@@ -20,7 +21,11 @@ function LoginMain() {
           <LoginForm />
         </div>
 
-        <div className="mt-7">
+        <div className="mt-5">
+          <ForgotPasswordBox />
+        </div>
+
+        <div className="mt-3">
           <SecurityNote />
         </div>
       </section>

@@ -13,6 +13,8 @@ from .edit_doctor import edit_doctor
 from .edit_receptionist import edit_receptionist
 from .get_deactivated_users import get_deactivated_users
 from .reset_staff_password import reset_staff_password
+from .get_password_requests import get_password_requests
+from .close_password_request import close_password_request
 
 
 async def doctor_list_api():
@@ -77,5 +79,13 @@ async def get_deactivated_users_api():
     return await get_deactivated_users()
 
 
-async def reset_staff_password_api(user_id: str, new_password: str):
-    return await reset_staff_password(user_id, new_password)
+async def reset_staff_password_api(user_id: str, new_password: str, admin_id: str = ""):
+    return await reset_staff_password(user_id, new_password, admin_id)
+
+
+async def password_requests_api():
+    return await get_password_requests()
+
+
+async def close_password_request_api(request_id: str, admin_id: str):
+    return await close_password_request(request_id, admin_id)

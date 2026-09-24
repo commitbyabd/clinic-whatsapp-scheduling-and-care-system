@@ -1,7 +1,8 @@
 """
 An in-memory stand-in for the pymongo calls the app makes, so tests need no
 database. Filters understand plain equality, $in, $ne, $gte and $lt, and
-updates understand $set, which is all the app's queries use.
+updates understand $set, $inc and $setOnInsert, which is all the app's
+queries use.
 
 Each collection records what it was asked (queries), what was inserted and
 the session every write was given.
@@ -9,6 +10,8 @@ the session every write was given.
 
 from datetime import datetime, timezone
 from types import SimpleNamespace
+
+from bson import ObjectId
 
 
 def _utc(value):
@@ -67,14 +70,30 @@ class FakeCollection:
             raise self.error
         self.queries.append(query)
 
-    def _update(self, query, update):
+    def _apply(self, doc, update):
+        doc.update(update.get("$set") or {})
+        for field, amount in (update.get("$inc") or {}).items():
+            doc[field] = (doc.get(field) or 0) + amount
+        return doc
+
+    def _update(self, query, update, upsert=False):
         if self.update_error is not None:
             raise self.update_error
         for doc in self.docs:
             if matches(doc, query):
-                doc.update(update["$set"])
-                return doc
-        return None
+                return self._apply(doc, update)
+
+        if not upsert:
+            return None
+
+        # Mongo builds the new document from the equality parts of the
+        # filter, then applies the update on top
+        doc = {"_id": ObjectId()}
+        doc.update({field: value for field, value in query.items()
+                    if not isinstance(value, dict)})
+        doc.update(update.get("$setOnInsert") or {})
+        self.docs.append(self._apply(doc, update))
+        return doc
 
     async def find_one(self, query, projection=None, session=None):
         self._check(query)
@@ -92,11 +111,19 @@ class FakeCollection:
         self.inserted.append(doc)
         return SimpleNamespace(inserted_id=doc["_id"])
 
-    async def update_one(self, query, update, session=None):
+    async def update_one(self, query, update, session=None, upsert=False):
         self._check(query)
         self.write_sessions.append(session)
-        updated = self._update(query, update)
+        updated = self._update(query, update, upsert)
         return SimpleNamespace(matched_count=0 if updated is None else 1)
+
+    async def update_many(self, query, update, session=None):
+        self._check(query)
+        self.write_sessions.append(session)
+        matched = [doc for doc in self.docs if matches(doc, query)]
+        for doc in matched:
+            self._apply(doc, update)
+        return SimpleNamespace(matched_count=len(matched))
 
     async def find_one_and_update(
         self, query, update, return_document=None, session=None

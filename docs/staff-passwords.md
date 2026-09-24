@@ -15,9 +15,11 @@ Either one signs out every session that used the old password.
   twice. The current session carries on; any other device signed in to the
   account is signed out.
 - **Reset password.** On each card in the admin's doctor and receptionist
-  lists. It sets a new password, which the admin passes on, because there
-  is no email to send a reset link. Anyone signed in as that person is
-  signed out.
+  lists, and on each row of the Password requests tab. It sets a new
+  password, which the admin passes on, because there is no email to send a
+  reset link. Anyone signed in as that person is signed out, and their
+  request leaves the admin's list
+  ([password-help-requests.md](password-help-requests.md)).
 - **Deactivating an account** now shuts it out at once. Before, a token
   already issued kept working for up to an hour.
 
@@ -64,7 +66,9 @@ Portal:
 - **Other sessions end** on a change or a reset. That is the point of a
   reset after a lost or shared password.
 - **Admins reset, rather than users resetting by email**, since the clinic
-  has no email sending.
+  has no email sending. Someone stuck at the sign-in page sends their
+  address and the admin picks it up
+  ([password-help-requests.md](password-help-requests.md)).
 
 ## Tests
 
@@ -90,6 +94,7 @@ password" on a doctor's card.
 
 ## Next / known gaps
 
-- There is no self-service reset by email.
+- There is still no reset by email: a stuck staff member asks the admin
+  ([password-help-requests.md](password-help-requests.md)).
 - An admin's own password is changed only through the header, never by
-  another admin.
+  another admin, and a forgotten one needs a script on the server.

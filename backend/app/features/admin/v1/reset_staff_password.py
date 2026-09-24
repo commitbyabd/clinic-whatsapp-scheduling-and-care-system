@@ -5,11 +5,13 @@ from app.core.response import api_response
 from app.core.security import hash_password, password_changed_now
 from logging_config import logger
 
+from .close_password_request import close_requests_for_user
+
 # the accounts an admin manages; other admins are not reset from here
 STAFF_ROLES = ["doctor", "receptionist"]
 
 
-async def reset_staff_password(user_id: str, new_password: str):
+async def reset_staff_password(user_id: str, new_password: str, admin_id: str = ""):
     if not ObjectId.is_valid(user_id):
         return api_response(
             status_code=400,
@@ -28,6 +30,14 @@ async def reset_staff_password(user_id: str, new_password: str):
                 error_code="USER_NOT_FOUND",
                 data=None,
             )
+
+        # The reset is the answer to whatever they asked for, so their
+        # request leaves the admin's list. A failure here is not worth
+        # telling the admin their reset did not work.
+        try:
+            await close_requests_for_user(user_id, admin_id)
+        except Exception:
+            logger.exception("password reset done, but its request stayed open")
 
         return api_response(
             status_code=200,

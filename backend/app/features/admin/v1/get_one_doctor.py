@@ -24,6 +24,7 @@ async def get_one_doctor(doctor_id: str):
                 "full_name": 1,
                 "email": 1,
                 "specialization": 1,
+                "booking_mode": 1,
                 "is_active": 1,
             },
         )

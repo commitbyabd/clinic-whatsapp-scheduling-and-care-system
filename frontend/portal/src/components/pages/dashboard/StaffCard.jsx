@@ -16,6 +16,7 @@ function StaffCard({
   initials,
   name,
   specialty,
+  walkIn = false,
   role,
   email,
   selected = false,
@@ -56,6 +57,7 @@ function StaffCard({
           <StaffInfo
             name={name}
             specialty={specialty}
+            walkIn={walkIn}
             role={role}
             email={email}
           />

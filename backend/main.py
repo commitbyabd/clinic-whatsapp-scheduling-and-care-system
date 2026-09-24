@@ -5,7 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
 from app.core.database import connect_to_mongo, close_mongo_connection
 from app.core.indexes import ensure_indexes
-from app.features.whatsapp.v1.conversation_store import use_mongo_store
+from app.features.whatsapp.v1.chatbot_setup import connect_chatbot_to_mongo
 from app.routers.auth import router as auth_router
 from app.routers.admin import router as admin_router
 from app.routers.doctor import router as doctor_router
@@ -27,13 +27,15 @@ async def lifespan(app: FastAPI):
         logger.exception("could not create indexes, continuing without them")
 
     # Each patient's place in the booking chat lives in Mongo, so a restart
-    # does not drop it. Failing that, the chatbot keeps its in-memory store.
+    # does not drop it, and the chat reads the doctors' hours and open times
+    # from there. Failing that, the chatbot keeps its in-memory store and
+    # asks for a time in the patient's own words.
     state_client = None
     try:
-        state_client = use_mongo_store()
-        logger.info("Conversation state: kept in MongoDB")
+        state_client = connect_chatbot_to_mongo()
+        logger.info("Conversation state and doctors' hours: read from MongoDB")
     except Exception:
-        logger.exception("conversation state stays in memory, lost on restart")
+        logger.exception("chatbot not connected to MongoDB, state stays in memory")
 
     # Say out loud which optional pieces are actually live. Without this you
     # discover a missing key when a patient message silently takes the wrong

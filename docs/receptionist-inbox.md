@@ -19,7 +19,10 @@ Requests tab (Appointments is the other; see
 - new or returning, and the phone number;
 - the reason and the suggested department;
 - their symptoms in their own words;
-- the time they asked for, and when the request came in (clinic time).
+- what they asked for: "Asked for: Wed, Sep 23, 6:00 PM, with Dr. Ali Raza"
+  when they picked an open time in the chat, otherwise "Prefers:" and their
+  own words ([whatsapp-doctor-times.md](whatsapp-doctor-times.md));
+- when the request came in (clinic time).
 
 The list reloads every 30 seconds while the page is on screen
 (`hooks/useAutoRefresh.js`), whenever you come back to the tab, and when
@@ -47,8 +50,8 @@ Portal:
   (the list) → `BookingRequestCard.jsx` (one request, presentation only).
 - `api/receptionist.js` (`listBookingRequests`), `hooks/useBookingRequests.js`.
 - `utils/bookingRequest.js`: reason wording (matches the WhatsApp menu), the
-  card title, and "Received" time in clinic time (`config/clinic.js`,
-  Asia/Karachi).
+  card title, the asked-for line (`askedForLabel`), and "Received" time in
+  clinic time (`config/clinic.js`, Asia/Karachi).
 - `utils/roleHome.js`: where each role lands after signing in. It's used by the
   login form, the `/` redirect and the guest guard. Before this, every role
   was sent to the admin page and receptionists saw Forbidden.

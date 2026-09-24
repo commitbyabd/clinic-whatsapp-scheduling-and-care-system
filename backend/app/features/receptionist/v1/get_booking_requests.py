@@ -40,6 +40,10 @@ def shape_booking_request(row: dict) -> dict:
         "reason": row.get("reason"),
         "symptom_text": row.get("symptom_text"),
         "suggested_specialization": row.get("suggested_specialization"),
+        # the doctor and open time picked in the chat, when one was
+        "requested_doctor_id": row.get("requested_doctor_id"),
+        "requested_doctor_name": row.get("requested_doctor_name"),
+        "requested_slot": row.get("requested_slot"),
         "preferred_time_text": row.get("preferred_time_text"),
         "status": row.get("status"),
         "created_at": row.get("created_at"),

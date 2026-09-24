@@ -2,6 +2,8 @@
 
 from datetime import datetime, timezone
 
+from bson import ObjectId
+
 from app.core.database import get_database
 
 WHATSAPP_PREFIX = "whatsapp:"
@@ -19,7 +21,12 @@ def booking_request_document(collected: dict[str, str], from_number: str) -> dic
         "reason": collected.get("reason"),
         "symptom_text": collected.get("symptom_text"),
         "suggested_specialization": collected.get("specialization"),
-        # free text such as "tomorrow at 9am"; the receptionist picks the slot
+        # The doctor and open time the patient picked in the chat. Asked for,
+        # not held: the receptionist confirms it, or offers another.
+        "requested_doctor_id": _doctor_id(collected.get("doctor_id")),
+        "requested_doctor_name": collected.get("doctor_name"),
+        "requested_slot": _slot(collected.get("requested_slot")),
+        # free text such as "tomorrow at 9am", when no open time was picked
         "preferred_time_text": collected.get("preferred_datetime"),
         "status": "new",
         # filled in when the receptionist handles it
@@ -29,6 +36,20 @@ def booking_request_document(collected: dict[str, str], from_number: str) -> dic
         "handled_at": None,
         "created_at": datetime.now(timezone.utc),
     }
+
+
+def _doctor_id(value: str | None) -> ObjectId | None:
+    return ObjectId(value) if value and ObjectId.is_valid(value) else None
+
+
+def _slot(value: str | None) -> datetime | None:
+    # an ISO time with its offset, or "none" when the patient chose "None of
+    # these"; stored in UTC like every other time
+    try:
+        moment = datetime.fromisoformat(value or "")
+    except ValueError:
+        return None
+    return moment.astimezone(timezone.utc) if moment.tzinfo else None
 
 
 async def save_booking_request_query(document: dict):

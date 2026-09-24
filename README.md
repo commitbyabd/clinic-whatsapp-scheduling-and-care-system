@@ -55,6 +55,7 @@ cd backend
 .\.venv\Scripts\python.exe tests\chatbot\test_orchestrator.py
 .\.venv\Scripts\python.exe tests\chatbot\test_conversation.py
 .\.venv\Scripts\python.exe tests\chatbot\test_webhook.py
+.\.venv\Scripts\python.exe tests\chatbot\test_doctor_times.py
 .\.venv\Scripts\python.exe tests\chatbot\test_ml_classifier.py
 .\.venv\Scripts\python.exe tests\chatbot\test_symptom_extraction.py
 .\.venv\Scripts\python.exe tests\chatbot\test_model_adapter.py
@@ -62,6 +63,7 @@ cd backend
 .\.venv\Scripts\python.exe tests\app\test_receptionist_scheduling.py
 .\.venv\Scripts\python.exe tests\app\test_doctor_portal.py
 .\.venv\Scripts\python.exe tests\app\test_conversation_store.py
+.\.venv\Scripts\python.exe tests\app\test_clinic_directory.py
 .\.venv\Scripts\python.exe tests\app\test_staff_schemas.py
 .\.venv\Scripts\python.exe tests\app\test_passwords.py
 .\.venv\Scripts\python.exe tests\app\test_reception_appointments.py
@@ -121,23 +123,27 @@ Built and tested:
 - reception's booked appointments by day: move a visit to another free time
   or doctor, or cancel it with a reason; declined requests keep a reason too
 - the staff portal: admin sign-in and staff management, with each doctor's
-  specialization picked from the chatbot's departments
+  specialization picked from the chatbot's departments and how they are seen
+  (by appointment, or first come, first served)
+- doctors and their times on WhatsApp: the chat names the doctor, reads out
+  their hours and offers their next open times to pick from, and answers a
+  question asked mid-chat without losing the patient's place
 - staff passwords: change your own, admins reset them, and either signs out
   old sessions; deactivated accounts are shut out at once
 - the public website, for a clinic in Lahore
 
-194 backend tests, 72 portal tests.
+228 backend tests, 83 portal tests.
 
 Waiting on other people: the Twilio Account SID and Auth Token, which sending
 patients their booked time needs.
 
-Known gaps, none blocked on anyone:
+Left out by choice:
 
-- **The website's contact form sends nothing yet.** It validates and shows a
+- **The website's contact form sends nothing.** It validates and shows a
   confirmation, but no backend endpoint receives it.
-- **Two components are missing from the Phase 2 SDS** — the ML classifier and
-  the scripted question flow. Section 3.1 still describes the orchestrator as
-  "predefined match → OpenAI".
+- **The Phase 2 SDS is not being updated**, so it still describes the
+  orchestrator as "predefined match → OpenAI" and leaves out the ML
+  classifier and the scripted question flow.
 
 ## WhatsApp webhook
 

@@ -109,6 +109,25 @@ def test_inbox_returns_the_request_fields_only():
     assert "handled_by" not in request and "channel" not in request, request
 
 
+def test_a_doctor_and_time_picked_in_the_chat_reach_the_desk():
+    doctor_id = ObjectId()
+    picked = {
+        **ROW,
+        "requested_doctor_id": doctor_id,
+        "requested_doctor_name": "Dr. Sara Khan",
+        "requested_slot": datetime(2026, 9, 23, 4, 0, tzinfo=timezone.utc),
+        "preferred_time_text": None,
+    }
+    with _FakeDatabase([picked]):
+        status, body = _call()
+    assert status == 200, body
+    request = body["data"][0]
+    assert request["requested_doctor_id"] == str(doctor_id)
+    assert request["requested_doctor_name"] == "Dr. Sara Khan"
+    # UTC, for the portal to show in clinic time
+    assert request["requested_slot"] == "2026-09-23T04:00:00+00:00", request
+
+
 def test_times_are_sent_as_utc():
     # Mongo returns datetimes without a timezone; the browser must still know
     # they are UTC, or every "Received" time shifts by the viewer's offset

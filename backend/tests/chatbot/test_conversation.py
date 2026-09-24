@@ -295,12 +295,21 @@ def test_no_ends_the_offer_politely():
     assert orchestrator.engine.is_active(phone) is False
 
 
-def test_another_question_drops_the_offer():
+def test_a_question_about_the_clinic_is_answered_and_the_offer_waits():
     phone = _phone()
     with _Symptoms():
         handle_message(FEVER, phone=phone)
         reply = handle_message("what are your timings", phone=phone)
     assert reply.source == "clinic_hours", reply.source
+    assert "open from" in reply.text and "Would you like to book" in reply.text, reply.text
+    assert orchestrator.engine.is_active(phone) is True
+
+
+def test_something_else_still_drops_the_offer():
+    phone = _phone()
+    with _Symptoms():
+        handle_message(FEVER, phone=phone)
+        handle_message("hello", phone=phone)
     assert orchestrator.engine.is_active(phone) is False
 
 

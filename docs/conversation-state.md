@@ -24,18 +24,21 @@ cancelled, and deleted by Mongo a day after the patient's last message.
   tests use. The chatbot still knows nothing about Mongo.
 - `backend/app/features/whatsapp/v1/conversation_store.py`:
   - `MongoStateStore` implements that interface on `conversation_states`.
-  - `use_mongo_store()` puts it into the chatbot's engine
-    (`orchestrator.engine.store`) at startup.
-- `backend/main.py` calls `use_mongo_store()` after connecting to Mongo, and
-  logs "Conversation state: kept in MongoDB". If that fails, the bot keeps
-  the in-memory store and says so in the log.
+  - `chatbot_setup.py: connect_chatbot_to_mongo()` puts it into the chatbot's
+    engine (`orchestrator.engine.store`) at startup, along with the doctors
+    the chat offers ([whatsapp-doctor-times.md](whatsapp-doctor-times.md)).
+- `backend/main.py` calls it after connecting to Mongo, and logs
+  "Conversation state and doctors' hours: read from MongoDB". If that fails,
+  the bot keeps the in-memory store and says so in the log.
 - `app/core/indexes.py` creates two indexes:
   - `whatsapp_number` unique: one state per number;
   - a TTL on `updated_at`, which deletes a state 24 hours after the last save
     (`STATE_TTL`).
 
 Document: `whatsapp_number` (the bare number, like `booking_requests`),
-`flow`, `step`, `data`, `reprompts`, `updated_at`.
+`flow`, `step`, `data`, `reprompts`, `updated_at`, and `question` and
+`choices` for a step whose menu is worked out per patient (the doctors, their
+open times), so a reply of "2" still means what they were shown.
 
 ## Decisions
 
@@ -65,7 +68,8 @@ Document: `whatsapp_number` (the bare number, like `booking_requests`),
   - expired, old-menu and broken states are dropped;
   - a database fault reads as "no chat";
   - an emergency is still answered with the database down;
-  - startup puts the Mongo store in place with short timeouts.
+  - startup puts the Mongo store and the doctor directory in place with
+    short timeouts.
 - Checked on 2026-09-22 against a throwaway local database, not Atlas:
   - two messages through the webhook, then a restart, then the rest of the
     chat: it carried on at the name question and saved a complete booking

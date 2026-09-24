@@ -48,6 +48,16 @@ def test_a_name_the_chatbot_does_not_use_is_refused():
 def test_an_edit_may_leave_the_specialization_out():
     update = DoctorUpdate.model_validate({"full_name": "Dr. Sara Ali"})
     assert update.specialization is None
+    assert update.booking_mode is None
+
+
+def test_a_doctor_takes_appointments_unless_told_otherwise():
+    assert DoctorCreate.model_validate(DOCTOR).booking_mode == "appointment"
+    walk_in = DoctorCreate.model_validate({**DOCTOR, "booking_mode": "walk_in"})
+    assert walk_in.booking_mode == "walk_in"
+    # only the two the chat knows how to answer for
+    assert _refuses(DoctorCreate, {**DOCTOR, "booking_mode": "whenever"})
+    assert _refuses(DoctorUpdate, {"booking_mode": "whenever"})
 
 
 if __name__ == "__main__":

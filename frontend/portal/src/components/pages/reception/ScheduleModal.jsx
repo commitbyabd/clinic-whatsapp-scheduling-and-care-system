@@ -14,10 +14,13 @@ import { readApiError } from "../../../api/auth.js";
 import { useApiResource } from "../../../hooks/useApiResource.js";
 import { newPatientSchema } from "../../../schemas/scheduling.js";
 import { validateField, validateWith } from "../../../schemas/validate.js";
-import { patientLabel } from "../../../utils/bookingRequest.js";
+import { askedForLabel, patientLabel } from "../../../utils/bookingRequest.js";
 import {
   NEW_PATIENT,
   defaultPatientChoice,
+  matchingSlot,
+  pickedDoctorId,
+  startingDay,
   suggestedDoctorId,
   todayInClinic,
 } from "../../../utils/scheduling.js";
@@ -26,7 +29,8 @@ import {
   Turns one booking request into an appointment: who it is for, which
   doctor, and which of that doctor's free times.
 
-  Patient and doctor start on a best guess (the name the patient gave, the
+  Patient, doctor and time start on a best guess (the name the patient
+  gave, the doctor and open time they picked on WhatsApp, else the
   department the model suggested) until the receptionist picks one. The
   guesses are worked out on every render rather than copied into state, so
   they fill in by themselves once the lists arrive.
@@ -41,10 +45,12 @@ function ScheduleModal({ request, onClose, onScheduled }) {
 
   const doctorList = doctors.status === "ready" ? (doctors.data ?? []) : [];
   const patientList = matches.status === "ready" ? (matches.data ?? []) : [];
-  const suggestedId = suggestedDoctorId(
-    doctorList,
-    request.suggested_specialization,
-  );
+
+  // the doctor the patient picked on WhatsApp comes first; the department
+  // the model suggested is the fallback
+  const askedId = pickedDoctorId(doctorList, request.requested_doctor_id);
+  const suggestedId =
+    askedId || suggestedDoctorId(doctorList, request.suggested_specialization);
 
   // null until the receptionist picks, so the guess shows in the meantime
   const [patientPick, setPatientPick] = useState(null);
@@ -56,14 +62,21 @@ function ScheduleModal({ request, onClose, onScheduled }) {
       : "");
   const doctorId = doctorPick ?? suggestedId;
 
-  const [date, setDate] = useState(today);
-  const [slot, setSlot] = useState("");
+  const [date, setDate] = useState(() =>
+    startingDay(request.requested_slot, today),
+  );
+  // null until the receptionist picks, so the time they asked for shows
+  // once the free ones arrive, and "" after a clash
+  const [slotPick, setSlotPick] = useState(null);
   // bumped to fetch the free times again after a clash
   const [slotsRound, setSlotsRound] = useState(0);
   const slots = useApiResource(
     doctorId && date ? `slots:${doctorId}:${date}:${slotsRound}` : null,
     () => listFreeSlots(doctorId, date),
   );
+
+  const freeSlots = slots.status === "ready" ? (slots.data?.slots ?? []) : [];
+  const slot = slotPick ?? matchingSlot(freeSlots, request.requested_slot);
 
   const [values, setValues] = useState({
     full_name: request.patient_name ?? "",
@@ -90,17 +103,17 @@ function ScheduleModal({ request, onClose, onScheduled }) {
   // a time belongs to one doctor on one day, so changing either drops it
   const chooseDoctor = (id) => {
     setDoctorPick(id);
-    setSlot("");
+    setSlotPick("");
     clearError("doctor");
   };
 
   const chooseDate = (value) => {
     setDate(value);
-    setSlot("");
+    setSlotPick("");
   };
 
   const chooseSlot = (iso) => {
-    setSlot(iso);
+    setSlotPick(iso);
     clearError("slot");
   };
 
@@ -166,7 +179,7 @@ function ScheduleModal({ request, onClose, onScheduled }) {
 
       // someone else took the time meanwhile, so show what is free now
       if (error?.response?.data?.error_code === "SLOT_NOT_FREE") {
-        setSlot("");
+        setSlotPick("");
         setSlotsRound((round) => round + 1);
       }
     }
@@ -175,7 +188,7 @@ function ScheduleModal({ request, onClose, onScheduled }) {
   return (
     <Modal
       title={`Schedule ${patientLabel(request)}`}
-      subtitle={`Prefers: ${request.preferred_time_text || "no time given"}`}
+      subtitle={askedForLabel(request)}
       onClose={onClose}
       width="max-w-[640px]"
     >
@@ -200,6 +213,7 @@ function ScheduleModal({ request, onClose, onScheduled }) {
             doctors={doctors}
             doctorId={doctorId}
             suggestedId={suggestedId}
+            suggestedLabel={askedId ? "(asked for)" : "(suggested)"}
             onDoctor={chooseDoctor}
             date={date}
             minDate={today}
@@ -213,8 +227,8 @@ function ScheduleModal({ request, onClose, onScheduled }) {
         </fieldset>
 
         <p className="mt-6 font-primary text-sm leading-body text-muted">
-          WhatsApp does not tell the patient yet, so let them know the time
-          once it is booked.
+          WhatsApp does not tell the patient yet, so let them know the time once
+          it is booked.
         </p>
 
         <div className="mt-5 flex justify-end gap-2">

@@ -8,7 +8,13 @@ async def get_doctor_list():
     try:
         cursor = get_database().users.find(
             {"role": "doctor", "is_active": True},
-            {"_id": 1, "full_name": 1, "email": 1, "specialization": 1},
+            {
+                "_id": 1,
+                "full_name": 1,
+                "email": 1,
+                "specialization": 1,
+                "booking_mode": 1,
+            },
         )
         doctors = await cursor.to_list(length=None)
         doctors = serialize_data(doctors)

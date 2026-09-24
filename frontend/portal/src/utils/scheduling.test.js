@@ -5,6 +5,9 @@ import {
   formatAppointment,
   formatBirthDate,
   formatSlotTime,
+  matchingSlot,
+  pickedDoctorId,
+  startingDay,
   suggestedDoctorId,
   todayInClinic,
 } from "./scheduling.js";
@@ -83,5 +86,47 @@ describe("suggestedDoctorId", () => {
   it("suggests nobody when nothing matches or nothing was suggested", () => {
     expect(suggestedDoctorId(doctors, "Neurologist")).toBe("");
     expect(suggestedDoctorId(doctors, null)).toBe("");
+  });
+});
+
+describe("pickedDoctorId", () => {
+  const doctors = [{ id: "d1" }, { id: "d2" }];
+
+  it("keeps the doctor the patient picked on WhatsApp", () => {
+    expect(pickedDoctorId(doctors, "d2")).toBe("d2");
+  });
+
+  it("drops one the desk cannot book, such as a walk-in doctor", () => {
+    expect(pickedDoctorId(doctors, "d9")).toBe("");
+    expect(pickedDoctorId(doctors, undefined)).toBe("");
+  });
+});
+
+describe("startingDay", () => {
+  it("opens on the day the patient asked for", () => {
+    expect(startingDay("2026-09-25T04:00:00+00:00", "2026-09-22")).toBe(
+      "2026-09-25",
+    );
+  });
+
+  it("opens on today when the time has passed or none was picked", () => {
+    expect(startingDay("2026-09-01T04:00:00+00:00", "2026-09-22")).toBe(
+      "2026-09-22",
+    );
+    expect(startingDay(null, "2026-09-22")).toBe("2026-09-22");
+  });
+});
+
+describe("matchingSlot", () => {
+  const free = ["2026-09-23T04:00:00+00:00", "2026-09-23T04:30:00+00:00"];
+
+  it("finds the time the patient asked for, however it is written", () => {
+    // the same moment, sent by a different endpoint
+    expect(matchingSlot(free, "2026-09-23T09:00:00+05:00")).toBe(free[0]);
+  });
+
+  it("finds nothing when the time has gone or none was picked", () => {
+    expect(matchingSlot(free, "2026-09-23T06:00:00+00:00")).toBe("");
+    expect(matchingSlot(free, null)).toBe("");
   });
 });

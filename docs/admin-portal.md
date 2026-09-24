@@ -17,11 +17,15 @@ A sidebar picks one of three lists, kept in the URL (`?tab=doctors`,
   specialization; 8 per page. There are buttons to add, edit and deactivate.
 - **Deactivated users:** both roles together, each with a Reactivate button.
 
-**Add** asks for name, email and password, plus the specialization for a
-doctor. The specialization is picked from a list of the chatbot's 12
-departments (Dermatologist, Cardiologist, Pediatrician and so on). The new
-account can sign in straight away. **Edit** changes the name, email and
-specialization, but not the password. An old free-text specialization that
+**Add** asks for name, email and password, plus the specialization and
+Bookings for a doctor. The specialization is picked from a list of the
+chatbot's 12 departments (Dermatologist, Cardiologist, Pediatrician and so
+on). Bookings is "By appointment" or "First come, first served", which
+decides what the WhatsApp chat offers for that doctor and whether reception
+can book them ([whatsapp-doctor-times.md](whatsapp-doctor-times.md));
+walk-in doctors carry a "Walk-in" badge in the list. The new account can
+sign in straight away. **Edit** changes the name, email, specialization and
+Bookings, but not the password. An old free-text specialization that
 matches no department starts empty, showing "Choose a department (was
 “Dermatology”)", so it has to be replaced. **Deactivate** and **Reactivate**
 ask first. A deactivated account cannot sign in, but its record is kept.
@@ -75,9 +79,10 @@ Portal (`frontend/portal/src/`):
 
 ## Tests
 
-- `backend/tests/app/test_staff_schemas.py` (3): every department accepted,
-  a name the chatbot does not use refused on create and edit, and an edit
-  may leave the specialization out.
+- `backend/tests/app/test_staff_schemas.py` (4): every department accepted,
+  a name the chatbot does not use refused on create and edit, an edit may
+  leave the specialization out, and only the two booking modes are taken
+  (appointment is the default).
 - `frontend/portal/src/schemas/staff.test.js`: the form rules, including
   departments only from the list.
 - Checked on 2026-09-22 against a throwaway local database, not Atlas:

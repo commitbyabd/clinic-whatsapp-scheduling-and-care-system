@@ -1,7 +1,7 @@
 import { Mail } from "lucide-react";
 import Badge from "../../ui/Badge.jsx";
 
-function StaffInfo({ name, specialty, role, email }) {
+function StaffInfo({ name, specialty, walkIn = false, role, email }) {
   return (
     <div className="min-w-0">
       <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
@@ -16,6 +16,16 @@ function StaffInfo({ name, specialty, role, email }) {
             className="border border-border bg-pale-lavender text-violet"
           >
             {specialty}
+          </Badge>
+        )}
+
+        {/* the chat tells patients to just come in during their hours */}
+        {walkIn && (
+          <Badge
+            dot={false}
+            className="border border-border bg-seafoam/50 text-plum"
+          >
+            Walk-in
           </Badge>
         )}
       </div>

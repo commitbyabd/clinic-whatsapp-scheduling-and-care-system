@@ -16,11 +16,12 @@ hand-rolled, so these tests fail if the library changes what it expects.
 import logging
 import sys
 from dataclasses import replace
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
 
+from bson import ObjectId  # noqa: E402
 from fastapi.testclient import TestClient  # noqa: E402
 from twilio.request_validator import RequestValidator  # noqa: E402
 
@@ -307,6 +308,38 @@ def test_a_symptom_booking_keeps_what_the_patient_said():
     assert document["suggested_specialization"] == "Dermatologist"
     assert document["preferred_time_text"] == "tomorrow at 9am"
     assert document["patient_id"] is None and document["appointment_id"] is None
+    # no doctor or open time was picked in this chat
+    assert document["requested_doctor_id"] is None
+    assert document["requested_slot"] is None
+
+
+def test_a_picked_doctor_and_time_reach_the_front_desk():
+    doctor_id = ObjectId()
+    collected = {
+        "name": "Ahmed Khan",
+        "reason": "general",
+        "doctor_id": str(doctor_id),
+        "doctor_name": "Dr. Sara Khan",
+        # what the patient tapped, with the clinic's offset
+        "requested_slot": "2026-09-23T09:00:00+05:00",
+    }
+    document = booking_request_document(collected, "whatsapp:+923001110006")
+
+    assert document["requested_doctor_id"] == doctor_id
+    assert document["requested_doctor_name"] == "Dr. Sara Khan"
+    # stored in UTC like every other time
+    assert document["requested_slot"] == datetime(2026, 9, 23, 4, 0, tzinfo=timezone.utc)
+    assert document["preferred_time_text"] is None
+
+
+def test_none_of_these_leaves_the_slot_empty():
+    collected = {"name": "Ahmed Khan", "doctor_id": "not-an-id",
+                 "requested_slot": "none", "preferred_datetime": "Friday evening"}
+    document = booking_request_document(collected, "whatsapp:+923001110007")
+
+    assert document["requested_slot"] is None
+    assert document["requested_doctor_id"] is None
+    assert document["preferred_time_text"] == "Friday evening"
 
 
 if __name__ == "__main__":

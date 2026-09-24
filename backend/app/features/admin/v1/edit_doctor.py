@@ -31,6 +31,9 @@ async def edit_doctor(payload: dict):
         if specialization is not None:
             fields["specialization"] = specialization
 
+        if payload.get("booking_mode") is not None:
+            fields["booking_mode"] = payload["booking_mode"]
+
         if email is not None:
             existing = await get_user_by_email(email)
 

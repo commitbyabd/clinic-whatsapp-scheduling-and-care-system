@@ -88,6 +88,30 @@ export function defaultPatientChoice(request, patients) {
   return patients.length === 1 ? patients[0].id : "";
 }
 
+/*
+  The doctor the patient picked on WhatsApp, when the desk can still book
+  them. A doctor who has since been deactivated, or who only sees walk-ins,
+  is not in the list, so the form falls back to the suggestion.
+*/
+export function pickedDoctorId(doctors, doctorId) {
+  return doctors.some((doctor) => doctor.id === doctorId) ? doctorId : "";
+}
+
+// The day the form opens on: the one the patient asked for, unless it has
+// already passed.
+export function startingDay(requestedSlot, today) {
+  const day = clinicDay(requestedSlot);
+  return day && day >= today ? day : today;
+}
+
+// The free time matching the one the patient asked for, if it is still
+// free. Compared as moments: the two come from different endpoints.
+export function matchingSlot(freeSlots, requested) {
+  if (!requested) return "";
+  const wanted = new Date(requested).getTime();
+  return freeSlots.find((iso) => new Date(iso).getTime() === wanted) ?? "";
+}
+
 // The doctor whose specialization is the department the model suggested.
 // Admins pick specializations from the same list (config/specializations.js),
 // so they match; case is ignored for anything saved before that.

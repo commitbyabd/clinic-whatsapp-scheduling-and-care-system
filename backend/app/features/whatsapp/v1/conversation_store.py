@@ -3,20 +3,13 @@ no longer drops the conversations people are halfway through."""
 
 from datetime import datetime, timezone
 
-from pymongo import MongoClient
 from pymongo.errors import PyMongoError
 
 from app.core.clinic_time import as_utc
-from app.core.config import settings
-from chatbot import orchestrator
 from chatbot.conversation import FLOWS, ConversationState
 from logging_config import logger
 
 from .save_booking_request import WHATSAPP_PREFIX
-
-# The webhook has 15 seconds before Twilio gives up, and a message can touch
-# the state a few times, so a database that is down has to fail fast.
-TIMEOUT_MS = 2000
 
 
 class MongoStateStore:
@@ -48,6 +41,9 @@ class MongoStateStore:
                 step=row["step"],
                 data=dict(row.get("data") or {}),
                 reprompts=row.get("reprompts", 0),
+                # the menu a prepared step showed, so "2" still means the same
+                question=row.get("question", ""),
+                choices=[list(choice) for choice in row.get("choices") or []],
                 updated_at=as_utc(row["updated_at"]),
             )
         except (KeyError, TypeError):
@@ -81,6 +77,8 @@ class MongoStateStore:
                         "step": state.step,
                         "data": state.data,
                         "reprompts": state.reprompts,
+                        "question": state.question,
+                        "choices": state.choices,
                         "updated_at": state.updated_at,
                     }
                 },
@@ -104,17 +102,3 @@ def _number(phone: str) -> str:
 def _log_failure(action: str, exc: Exception) -> None:
     # the type only: a database error can quote the document
     logger.error("Could not %s conversation state (%s)", action, type(exc).__name__)
-
-
-def use_mongo_store() -> MongoClient:
-    """Point the chatbot at MongoDB. Called once at startup; the caller
-    closes the returned client at shutdown."""
-    client = MongoClient(
-        settings.mongodb_uri,
-        serverSelectionTimeoutMS=TIMEOUT_MS,
-        connectTimeoutMS=TIMEOUT_MS,
-        socketTimeoutMS=TIMEOUT_MS,
-    )
-    collection = client[settings.mongodb_db_name].conversation_states
-    orchestrator.engine.store = MongoStateStore(collection)
-    return client

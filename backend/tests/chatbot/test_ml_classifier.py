@@ -51,8 +51,9 @@ def _phone():
 
 
 def _book(phone, symptom_text):
-    # 1 = returning patient, 2 = feeling unwell, which lands on the symptom step
-    for message in ("I want to book an appointment", "1", "2"):
+    # 2 = first visit, then the name, then 2 = feeling unwell, which lands
+    # on the symptom step
+    for message in ("I want to book an appointment", "2", "Ahmed Khan", "2"):
         handle_message(message, phone=phone)
     return handle_message(symptom_text, phone=phone)
 

@@ -8,9 +8,11 @@ from __future__ import annotations
 
 import logging
 import re
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from datetime import datetime, timedelta, timezone
 from typing import Callable, Protocol
+
+from chatbot import directory
 
 logger = logging.getLogger(__name__)
 
@@ -46,6 +48,11 @@ class Step:
     options: tuple[Option, ...] = ()  # empty means a free-text answer
     field: str = ""  # where the answer goes in state.data
     next: str | Callable[[str], str | None] | None = None
+    # Worked out when the flow reaches the step, from what the patient has
+    # said so far: the doctors in their department, a doctor's open times.
+    # The question and choices it comes up with are kept in the state, so a
+    # reply of "2" still means what the patient saw. See Prepared.
+    prepare: Callable[[ConversationState], Prepared] | None = None
 
     def render(self) -> str:
         if not self.options:
@@ -88,6 +95,9 @@ class ConversationState:
     data: dict[str, str] = field(default_factory=dict)
     reprompts: int = 0
     updated_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
+    # for a prepared step: what was asked, and the [key, label] choices shown
+    question: str = ""
+    choices: list[list[str]] = field(default_factory=list)
 
     def is_expired(self, now: datetime | None = None) -> bool:
         now = now or datetime.now(timezone.utc)
@@ -138,6 +148,117 @@ YES_NO = (
     Option("no", "No", ("n", "nope", "nahi", "nahin")),
 )
 
+DOCTOR_STEP = "choose_doctor"
+TIME_STEP = "choose_time"
+# the old free-text question, for when there is no doctor or time to offer
+FREE_TIME_STEP = "ask_datetime"
+
+NONE_OF_THESE = "none"
+OPEN_TIMES_SHOWN = 6
+
+
+@dataclass(frozen=True)
+class Prepared:
+    """What a step's prepare() decided, one of:
+
+    question, choices   ask this, with these numbered (key, label) choices
+    goto                skip the question and carry on at this step
+    finish              end the chat with this text, sending no request
+
+    answers are recorded whichever it is (the doctor picked, say), and note
+    is put in front of whatever is said next.
+    """
+
+    question: str = ""
+    choices: tuple[tuple[str, str], ...] = ()
+    goto: str | None = None
+    finish: str | None = None
+    answers: dict[str, str] = field(default_factory=dict)
+    note: str = ""
+
+
+def _doctor_label(doctor: directory.Doctor) -> str:
+    label = f"{doctor.name}, {doctor.specialization}"
+    return f"{label} (walk-in)" if doctor.walk_in else label
+
+
+def _doctor_menu(doctors: list[directory.Doctor], question: str, note: str) -> Prepared:
+    # only one to choose from: take it rather than ask
+    if len(doctors) == 1:
+        return Prepared(answers={"doctor_id": doctors[0].id}, goto=TIME_STEP, note=note)
+    return Prepared(
+        question=question,
+        choices=tuple((doctor.id, _doctor_label(doctor)) for doctor in doctors),
+        note=note,
+    )
+
+
+def prepare_doctor(state: ConversationState) -> Prepared:
+    """The doctors in the department the model suggested, or every doctor
+    when there is no suggestion or nobody works in that department."""
+    department = state.data.get("specialization")
+    note = ""
+
+    if department:
+        doctors = directory.find_doctors(department)
+        if doctors is None:
+            return Prepared(goto=FREE_TIME_STEP)
+        if doctors:
+            return _doctor_menu(doctors, f"Which {department} would you like to see?", note)
+        note = f"We don't have a {department} at the moment."
+
+    doctors = directory.find_doctors()
+    if not doctors:
+        # no directory, it failed, or no doctor has working hours yet
+        return Prepared(goto=FREE_TIME_STEP, note=note)
+    return _doctor_menu(doctors, "Which doctor would you like to see?", note)
+
+
+def prepare_time(state: ConversationState) -> Prepared:
+    """A walk-in doctor's hours end the chat; an appointment doctor's next
+    open times become the choices."""
+    doctor = directory.find_doctor(state.data.get("doctor_id", ""))
+    if doctor is None:
+        return Prepared(goto=FREE_TIME_STEP)
+
+    answers = {"doctor_name": doctor.name}
+    hours = directory.describe_hours(doctor.hours)
+
+    # first come, first served: nothing to book, so nothing goes to reception
+    if doctor.walk_in:
+        return Prepared(
+            answers=answers,
+            finish=(
+                f"{doctor.name} ({doctor.specialization}) sees patients on a "
+                f"first-come, first-served basis: {hours}. No appointment is "
+                "needed, just come in during these hours."
+            ),
+        )
+
+    times = directory.find_open_times(doctor.id, OPEN_TIMES_SHOWN)
+    if not times:
+        note = (
+            f"{doctor.name} has no open times in the next two weeks."
+            if times == []
+            else ""
+        )
+        return Prepared(answers=answers, goto=FREE_TIME_STEP, note=note)
+
+    # The patient asks for a time; nothing is held. A receptionist still
+    # confirms it, and may offer another if it has gone in the meantime.
+    return Prepared(
+        answers=answers,
+        question=(
+            f"{doctor.name} ({doctor.specialization}) sees patients {hours}.\n\n"
+            "Reply with a number to ask for one of these times:"
+        ),
+        choices=tuple(
+            (moment.isoformat(), directory.slot_label(moment)) for moment in times
+        )
+        + ((NONE_OF_THESE, "None of these"),),
+    )
+
+
 APPOINTMENT_FLOW: dict[str, Step] = {
     "ask_returning": Step(
         id="ask_returning",
@@ -170,17 +291,31 @@ APPOINTMENT_FLOW: dict[str, Step] = {
             Option("followup", "Follow-up visit"),
         ),
         field="reason",
-        next=lambda answer: "ask_symptoms" if answer == "symptoms" else "ask_datetime",
+        next=lambda answer: "ask_symptoms" if answer == "symptoms" else DOCTOR_STEP,
     ),
     "ask_symptoms": Step(
         id="ask_symptoms",
         # free text here feeds the OpenAI extraction step, then the classifier
         question="Please describe what you're feeling, in your own words.",
         field="symptom_text",
-        next="ask_datetime",
+        next=DOCTOR_STEP,
     ),
-    "ask_datetime": Step(
-        id="ask_datetime",
+    DOCTOR_STEP: Step(
+        id=DOCTOR_STEP,
+        question="Which doctor would you like to see?",
+        field="doctor_id",
+        next=TIME_STEP,
+        prepare=prepare_doctor,
+    ),
+    TIME_STEP: Step(
+        id=TIME_STEP,
+        question="Which time would suit you?",
+        field="requested_slot",
+        next=lambda answer: FREE_TIME_STEP if answer == NONE_OF_THESE else None,
+        prepare=prepare_time,
+    ),
+    FREE_TIME_STEP: Step(
+        id=FREE_TIME_STEP,
         question="What date and time would suit you best?",
         field="preferred_datetime",
         next=None,
@@ -223,6 +358,24 @@ COMPLETION_MESSAGE = (
     "Thank you. We've passed your request to our staff, and they'll message "
     "you shortly to confirm your appointment."
 )
+
+
+def completion_message(data: dict[str, str]) -> str:
+    """Names the time and doctor asked for, when there are some. Still a
+    request: a receptionist confirms it."""
+    slot = data.get("requested_slot", "")
+    doctor = data.get("doctor_name")
+    if not doctor or not slot or slot == NONE_OF_THESE:
+        return COMPLETION_MESSAGE
+    try:
+        when = directory.slot_label(datetime.fromisoformat(slot))
+    except ValueError:
+        return COMPLETION_MESSAGE
+    return (
+        f"Thank you. We've passed your request for {when} with {doctor} to our "
+        "staff, and they'll message you shortly to confirm your appointment."
+    )
+
 
 CANCELLED_MESSAGE = (
     "No problem, I've stopped that. Message us anytime if you'd like to start "
@@ -267,7 +420,13 @@ class ConversationEngine:
             return False
         if _normalize(reply) in CANCEL_WORDS:
             return True
-        return FLOWS[state.flow][state.step].match(reply) is not None
+        return self._step(state).match(reply) is not None
+
+    def current_prompt(self, phone: str) -> str | None:
+        """The question the patient is on, asked again: after answering
+        something they asked in between, say."""
+        state = self.store.get(phone)
+        return None if state is None else self._step(state).render()
 
     def fill(self, phone: str, answers: dict[str, str]) -> FlowResult | None:
         """Record answers given early, then ask the next question still open."""
@@ -292,7 +451,7 @@ class ConversationEngine:
             self.store.clear(phone)
             return FlowResult(text=CANCELLED_MESSAGE, step=None, finished=True)
 
-        step = FLOWS[state.flow][state.step]
+        step = self._step(state)
         answer = step.match(reply)
 
         if answer is None:
@@ -312,22 +471,73 @@ class ConversationEngine:
         state.reprompts = 0
         return self._move_to(state, step.resolve_next(answer))
 
+    def _step(self, state: ConversationState) -> Step:
+        """The current step as the patient saw it. A prepared step carries the
+        question and choices worked out for them, kept in the state."""
+        step = FLOWS[state.flow][state.step]
+        if step.prepare is None:
+            return step
+        return replace(
+            step,
+            question=state.question,
+            options=tuple(Option(key, label) for key, label in state.choices),
+        )
+
     def _move_to(self, state: ConversationState, step_id: str | None) -> FlowResult:
         steps = FLOWS[state.flow]
-        # skip questions already answered, e.g. symptoms described before the
-        # flow asked for them. Bounded so a looping flow cannot hang here.
-        for _ in range(len(steps)):
-            if step_id is None or steps[step_id].field not in state.data:
+        notes: list[str] = []
+
+        # Bounded, so a flow that loops cannot hang here: each pass asks,
+        # finishes, or moves on to another step.
+        for _ in range(2 * len(steps)):
+            if step_id is None:
                 break
-            step_id = steps[step_id].resolve_next(state.data[steps[step_id].field])
+            step = steps[step_id]
+
+            # skip questions already answered, e.g. symptoms described before
+            # the flow asked for them
+            if step.field in state.data:
+                step_id = step.resolve_next(state.data[step.field])
+                continue
+
+            if step.prepare is None:
+                state.question, state.choices = "", []
+                break
+
+            prepared = step.prepare(state)
+            state.data.update(prepared.answers)
+            if prepared.note:
+                notes.append(prepared.note)
+
+            if prepared.finish is not None:
+                # nothing to request, so the flow ends without data
+                self.store.clear(state.phone)
+                return FlowResult(
+                    text=_joined(notes, prepared.finish), step=None, finished=True
+                )
+
+            if prepared.goto is not None:
+                step_id = prepared.goto
+                continue
+
+            state.question = prepared.question
+            state.choices = [[key, label] for key, label in prepared.choices]
+            break
 
         if step_id is None:
             data = dict(state.data)
             self.store.clear(state.phone)
             return FlowResult(
-                text=COMPLETION_MESSAGE, step=None, finished=True, data=data
+                text=_joined(notes, completion_message(data)),
+                step=None,
+                finished=True,
+                data=data,
             )
 
         state.step = step_id
         self.store.save(state)
-        return FlowResult(text=steps[step_id].render(), step=step_id)
+        return FlowResult(text=_joined(notes, self._step(state).render()), step=step_id)
+
+
+def _joined(notes: list[str], text: str) -> str:
+    return "\n\n".join([*notes, text])

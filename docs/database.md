@@ -24,7 +24,9 @@ doctor records the visit: consultation (diagnosis, vitals, prescriptions)
 
 **users** (built): `full_name, email, password_hash, password_changed_at,
 role (admin | doctor | receptionist), specialization (doctors, one of the
-chatbot's departments), is_active`. A token issued before
+chatbot's departments), booking_mode (doctors: appointment | walk_in, see
+[whatsapp-doctor-times.md](whatsapp-doctor-times.md); missing means
+appointment), is_active`. A token issued before
 `password_changed_at`, or for an inactive account, is refused
 ([staff-passwords.md](staff-passwords.md)).
 
@@ -56,7 +58,9 @@ desk changes add `cancel_reason, cancelled_by, cancelled_at` and
 
 **booking_requests** (built, see [booking-requests.md](booking-requests.md)):
 `channel, whatsapp_number, patient_name, returning_patient, reason,
-symptom_text, suggested_specialization, preferred_time_text, status (new |
+symptom_text, suggested_specialization, requested_doctor_id,
+requested_doctor_name, requested_slot (UTC, the open time picked in the chat),
+preferred_time_text (their own words, when no open time suited), status (new |
 scheduled | declined | cancelled), patient_id, appointment_id, handled_by,
 handled_at, created_at`. Scheduling sets `scheduled` and the ids; declining
 sets `declined` and an optional `decline_reason`.
@@ -64,7 +68,8 @@ sets `declined` and an optional `decline_reason`.
 **conversation_states** (built, see
 [conversation-state.md](conversation-state.md)): each patient's place in the
 booking chat. `whatsapp_number (unique, bare number), flow, step, data,
-reprompts, updated_at`, deleted 24 hours after `updated_at`.
+reprompts, question, choices (the menu a worked-out step showed them),
+updated_at`, deleted 24 hours after `updated_at`.
 
 **chat_messages** (planned): `whatsapp_number, patient_id, direction (in |
 out), text, source, created_at`, deleted after 90 days.

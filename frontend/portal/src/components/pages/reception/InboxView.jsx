@@ -13,6 +13,7 @@ import { useAutoRefresh } from "../../../hooks/useAutoRefresh.js";
 import { useBookingRequests } from "../../../hooks/useBookingRequests.js";
 import { initialsFrom } from "../../../utils/initials.js";
 import {
+  askedForLabel,
   formatReceived,
   patientLabel,
   reasonLabel,
@@ -118,7 +119,7 @@ function InboxView({ showToast }) {
               reason={reasonLabel(request.reason)}
               symptoms={request.symptom_text}
               department={request.suggested_specialization}
-              preferredTime={request.preferred_time_text}
+              asked={askedForLabel(request)}
               received={formatReceived(request.created_at)}
               onSchedule={() => setScheduling(request)}
               onDecline={() => setDeclining(request)}

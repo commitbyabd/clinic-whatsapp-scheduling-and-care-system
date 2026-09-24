@@ -20,10 +20,12 @@ Schedule opens a dialog in two parts:
    that was given; else the only patient on a returning patient's number;
    else a new record for a first-timer. With several family members and no
    name, the receptionist has to pick.
-2. **Doctor and time.** Active doctors, with the one whose specialization
-   matches the model's suggestion pre-selected and marked "(suggested)". Then
-   a date (today by default) and that doctor's free times that day, in
-   clinic time.
+2. **Doctor and time.** Active doctors who take appointments. The dialog
+   starts on the doctor, day and time the patient picked on WhatsApp, marked
+   "(asked for)"; with none, on the doctor whose specialization matches the
+   model's suggestion, marked "(suggested)", and today
+   ([whatsapp-doctor-times.md](whatsapp-doctor-times.md)). Then that
+   doctor's free times for the day, in clinic time.
 
 Book appointment saves, in one go: the patient (if new), the appointment
 (`status: "booked"`), and the request as `scheduled` with `patient_id`,
@@ -39,7 +41,7 @@ Endpoints, all receptionist only, in `app/features/receptionist/route.py`:
 | `GET /receptionist/booking-requests/{id}/patients` | `get_matching_patients.py` | patients on the request's number: id, full_name, date_of_birth (day only), gender |
 | `POST /receptionist/booking-requests/{id}/schedule` | `schedule_booking_request.py` | 201 and the appointment |
 | `PATCH /receptionist/booking-requests/{id}/decline` | `decline_booking_request.py` | the request, now declined |
-| `GET /receptionist/doctors` | `get_doctors.py` | active doctors: id, full_name, specialization |
+| `GET /receptionist/doctors` | `get_doctors.py` | active doctors who take appointments (walk-in doctors are left out): id, full_name, specialization |
 | `GET /receptionist/doctors/{id}/slots?date=YYYY-MM-DD` | `get_free_slots.py` | `{date, slot_minutes, slots: [UTC ISO]}`; the message says why there are none |
 
 The schedule body (`app/schemas/booking_schedule.py`) is `{doctor_id,
@@ -47,8 +49,9 @@ starts_at, patient_id}` or `{doctor_id, starts_at, new_patient: {full_name,
 date_of_birth?, gender?}}`, exactly one of the two. `starts_at` is a time the
 slots endpoint returned, sent back unchanged; it must carry its UTC offset.
 
-**Free slots** (`get_free_slots.py`), worked out on every call and never
-stored. `working_slots(schedule, day)` takes the doctor's blocks for that
+**Free slots** (`get_free_slots.py`, on the shared maths in
+`app/core/slots.py`, which the WhatsApp chat uses too), worked out on every
+call and never stored. `working_slots(schedule, day)` takes the doctor's blocks for that
 weekday in clinic time and makes a slot every `slot_minutes` that ends by the
 block's end. No schedule or a blackout day gives none, with the reason.
 `free_slots()` then drops past slots and any that overlap a `booked` or
@@ -110,6 +113,8 @@ Error codes: `INVALID_ID` 400; `REQUEST_NOT_FOUND`, `DOCTOR_NOT_FOUND`,
 - **The appointment copies what the doctor needs:** `reason`, `symptom_text`
   as `symptom_summary`, the doctor's name (`doctor_snapshot`) and
   specialization, plus `request_id` and `booked_by`.
+- **The doctor the patient asked for wins over the suggestion.** They chose
+  a name and a time on WhatsApp; the model only guessed a department.
 - **The suggested doctor is an exact match, ignoring case.** Admins pick
   specializations from the chatbot's own list of departments, so the names
   match (see [admin-portal.md](admin-portal.md)).

@@ -79,7 +79,9 @@ booking conversation (numbered menus, state per phone) → rule replies (hours,
 location, fees) → symptoms, read by OpenAI into the model's symptom names,
 then an ML model that suggests a department and offers a booking → OpenAI for
 general wellness questions → a canned reply. The webhook in
-`app/features/whatsapp/` is the only part that knows about Twilio or Mongo.
+`app/features/whatsapp/` is the only part that knows about Twilio or Mongo:
+it registers the chat's state store and its view of the doctors at startup
+(`chatbot_setup.py`), and the chatbot itself imports neither.
 
 ## Portal conventions (frontend/portal/src/)
 
@@ -109,19 +111,20 @@ uvicorn, `git pull`, install requirements if they changed, start again.
 - **Every new feature gets `docs/<feature>.md`** (template below) and a row in
   the index. Update the status list when something ships.
 
-## Status (updated 2026-09-22)
+## Status (updated 2026-09-23)
 
 Built: the WhatsApp chatbot end to end, the webhook on the office server,
 admin portal (staff management), public website, saving booking requests,
 receptionist inbox, receptionist scheduling (a request becomes an
 appointment, or is declined), doctor portal (visits, consultation write-up,
 medical details, working hours), chat state in Mongo (survives restarts),
-reception appointments (move, cancel), staff passwords (change, reset).
+reception appointments (move, cancel), staff passwords (change, reset),
+doctors and their open times offered on WhatsApp.
 
 Next: telling the patient on WhatsApp when they are booked (needs the Twilio
-credentials), deploying both frontends, SDS test plan, demo. Phase 3 was due
-Sep 21, Phase 4 is due Sep 28. Dropped by choice: emailing the website's
-contact form (it validates and confirms, and sends nothing).
+credentials), deploying both frontends, demo. Phase 3 was due Sep 21, Phase 4
+is due Sep 28. Dropped by choice: emailing the website's contact form (it
+validates and confirms, and sends nothing), and updating the SDS.
 
 ## Feature docs
 
@@ -134,6 +137,7 @@ contact form (it validates and confirms, and sends nothing).
 | [receptionist-scheduling.md](receptionist-scheduling.md) | free slots, matching patients, booking a request, declining |
 | [doctor-portal.md](doctor-portal.md) | the doctor's visits, consultation write-up, medical details, working hours |
 | [conversation-state.md](conversation-state.md) | where the booking chat keeps each patient's place, in Mongo |
+| [whatsapp-doctor-times.md](whatsapp-doctor-times.md) | the chat offers doctors, their hours and open times; walk-in doctors |
 | [reception-appointments.md](reception-appointments.md) | booked visits by day at the front desk: move, cancel; decline reasons |
 | [staff-passwords.md](staff-passwords.md) | changing your own password, admin resets, sessions ending |
 

@@ -168,6 +168,7 @@ function DashboardMain() {
                         initials={initialsFrom(member.full_name)}
                         name={member.full_name}
                         specialty={member.specialization}
+                        walkIn={member.booking_mode === "walk_in"}
                         // The deactivated list mixes roles, so its rows
                         // carry their own.
                         role={member.role ?? view.role}

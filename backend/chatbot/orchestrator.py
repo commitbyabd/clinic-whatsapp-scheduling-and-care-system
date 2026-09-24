@@ -3,10 +3,12 @@
 from __future__ import annotations
 
 import logging
+import re
 from dataclasses import dataclass
 from typing import Sequence
 
 from chatbot import classifier
+from chatbot import directory
 from chatbot import llm_fallback
 from chatbot.classifier import Classification
 from chatbot.conversation import (
@@ -18,6 +20,7 @@ from chatbot.conversation import (
 )
 from chatbot.predefined_responses.response import (
     EMERGENCY_RESPONSE,
+    RULES,
     is_emergency,
     match_rule,
 )
@@ -77,6 +80,117 @@ class Reply:
     classification: Classification | None = None
     # populated when a booking flow finishes, for the Appointment Engine
     collected: dict[str, str] | None = None
+
+
+# Rules that answer a question about the clinic. Asked in the middle of a
+# booking chat, they are answered and the chat waits where it was, rather
+# than the question being taken as the answer.
+INFO_RULES = frozenset(
+    {"fees", "doctor_info", "clinic_hours", "location", "insurance", "contact", "services"}
+)
+
+# English and Roman Urdu openers that make a message a question even
+# without a question mark
+_QUESTION_START = re.compile(
+    r"^\s*(what|when|where|which|who|how|is|are|do|does|did|can|could|will|"
+    r"would|should|kya|kab|kahan|kaun|kitna|kitni|kitne)\b",
+    re.IGNORECASE,
+)
+
+
+def _is_question(message: str) -> bool:
+    return "?" in message or bool(_QUESTION_START.match(message))
+
+
+_SCHEDULE_WORDS = re.compile(
+    r"\b(schedule|schedules|timing|timings|hours|days|available|availability|"
+    r"slot|slots|sit|sits|come|comes)\b",
+    re.IGNORECASE,
+)
+_DOCTOR_WORDS = re.compile(
+    r"\b(doctor|doctors|dr|physician|specialist|consultant)\b", re.IGNORECASE
+)
+# "can I schedule an appointment with the dermatologist?" is a booking
+_BOOKING_WORDS = re.compile(r"\b(book|booking|appointment|appointments)\b", re.IGNORECASE)
+
+
+def _asks_doctor_schedule(message: str) -> bool:
+    """ "What is the schedule of your general physician?" The appointment
+    rule would take it for a booking because it says "schedule", so it is
+    recognised here first: a question naming a doctor or department and
+    asking when."""
+    return (
+        _is_question(message)
+        and bool(_SCHEDULE_WORDS.search(message))
+        and bool(directory.department_in(message) or _DOCTOR_WORDS.search(message))
+        and not _BOOKING_WORDS.search(message)
+    )
+
+
+def _named_department(message: str) -> dict[str, str]:
+    # "book me with the dermatologist": the doctor menu starts there
+    department = directory.department_in(message)
+    return {"specialization": department} if department else {}
+
+
+def _doctors_reply(message: str, in_chat: bool) -> str | None:
+    """The doctors, how each sees patients, and their hours; only the ones
+    in a department the message names, when it names one. None when the
+    directory is missing or failed, so the fixed rule text is used."""
+    department = directory.department_in(message)
+    doctors = directory.find_doctors(department)
+    if doctors is None:
+        return None
+
+    lead = ""
+    if department and not doctors:
+        lead = f"We don't have a {department} at the moment. "
+        doctors = directory.find_doctors() or []
+    if not doctors:
+        return None
+
+    lines = [
+        f"\u2022 {doctor.name}, {doctor.specialization}: "
+        f"{'first come, first served' if doctor.walk_in else 'by appointment'}, "
+        f"{directory.describe_hours(doctor.hours)}"
+        for doctor in doctors
+    ]
+    reply = f"{lead}Our doctors:\n" + "\n".join(lines)
+    if not in_chat:
+        reply += '\n\nTo book, reply "book an appointment".'
+    return reply
+
+
+# said instead when there is no directory to read the doctors from
+DOCTOR_INFO_REPLY = RULES["doctor_info"]["response"]
+
+
+def _schedule_reply(message: str, in_chat: bool) -> Reply:
+    return Reply(
+        text=_doctors_reply(message, in_chat) or DOCTOR_INFO_REPLY,
+        source="doctor_info",
+        matched=True,
+    )
+
+
+def _rule_text(name: str, text: str, message: str, in_chat: bool = False) -> str:
+    if name == "doctor_info":
+        return _doctors_reply(message, in_chat) or text
+    return text
+
+
+def _answer_aside(message: str) -> Reply | None:
+    """A question about the clinic asked in the middle of a chat, answered
+    without moving the chat on, or None when the message is not one."""
+    if not _is_question(message):
+        return None
+    if _asks_doctor_schedule(message):
+        return _schedule_reply(message, in_chat=True)
+    rule = match_rule(message)
+    if rule is None or rule[0] not in INFO_RULES:
+        return None
+    name, text = rule
+    return Reply(text=_rule_text(name, text, message, in_chat=True), source=name, matched=True)
 
 
 def _emergency_reply(routed: Classification | None = None) -> Reply:
@@ -179,6 +293,18 @@ def handle_message(
         routed = None
         state = engine.store.get(phone)
 
+        # "what are the doctor's timings?" at "what time suits you?" is a
+        # question to answer, not the time to save
+        if state is not None:
+            aside = _answer_aside(message)
+            if aside is not None:
+                prompt = engine.current_prompt(phone)
+                return Reply(
+                    text=f"{aside.text}\n\n{prompt}" if prompt else aside.text,
+                    source=aside.source,
+                    matched=True,
+                )
+
         if state is not None and state.flow == OFFER_FLOW:
             reply = _answer_offer(phone, message)
             if reply is not None:
@@ -217,6 +343,11 @@ def handle_message(
         if result is not None:
             return _flow_reply(result, routed)
 
+    # answered with the doctors' own hours, rather than taken for a booking
+    # because the question says "schedule"
+    if _asks_doctor_schedule(message):
+        return _schedule_reply(message, in_chat=False)
+
     rule = match_rule(message)
     if rule is not None:
         name, text = rule
@@ -226,8 +357,8 @@ def handle_message(
         flow = FLOW_TRIGGERS.get(name)
         if flow and phone:
             logger.info("starting %s flow", flow)
-            return _flow_reply(engine.start(phone, flow))
-        return Reply(text=text, source=name, matched=True)
+            return _flow_reply(engine.start(phone, flow, _named_department(message)))
+        return Reply(text=_rule_text(name, text, message), source=name, matched=True)
 
     # every one of these is a keyword missing from rules.py
     logger.info("no rule matched")

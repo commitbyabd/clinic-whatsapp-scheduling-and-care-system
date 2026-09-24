@@ -36,6 +36,13 @@ const specialization = z.enum(
   "Choose a specialization from the list.",
 );
 
+// how the WhatsApp chat offers this doctor: open times to ask for, or
+// their hours and "just come in"
+const bookingMode = z.enum(
+  ["appointment", "walk_in"],
+  "Choose how this doctor sees patients.",
+);
+
 // Never trimmed: spaces are legitimate password characters and the hash
 // has to match what was typed. The 64 ceiling is the server's, because
 // bcrypt ignores anything past 72 bytes.
@@ -49,6 +56,7 @@ export const doctorCreateSchema = z.object({
   email,
   password,
   specialization,
+  booking_mode: bookingMode,
 });
 
 export const receptionistCreateSchema = z.object({
@@ -67,6 +75,7 @@ export const doctorUpdateSchema = z.object({
   full_name: fullName,
   email,
   specialization,
+  booking_mode: bookingMode,
 });
 
 export const receptionistUpdateSchema = z.object({

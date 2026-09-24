@@ -25,7 +25,7 @@ function BookingRequestCard({
   reason,
   symptoms,
   department,
-  preferredTime,
+  asked,
   received,
   onSchedule,
   onDecline,
@@ -94,7 +94,7 @@ function BookingRequestCard({
             className="size-4 shrink-0 text-violet"
             strokeWidth={2}
           />
-          <span>Prefers: {preferredTime || "no time given"}</span>
+          <span>{asked}</span>
         </p>
 
         <div className="flex shrink-0 items-center gap-2">

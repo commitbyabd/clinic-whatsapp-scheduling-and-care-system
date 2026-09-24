@@ -16,6 +16,7 @@ function SlotPicker({
   doctors,
   doctorId,
   suggestedId,
+  suggestedLabel = "(suggested)",
   onDoctor,
   date,
   minDate,
@@ -67,7 +68,7 @@ function SlotPicker({
             <option key={doctor.id} value={doctor.id}>
               {doctor.full_name}
               {doctor.specialization ? ` · ${doctor.specialization}` : ""}
-              {doctor.id === suggestedId ? " (suggested)" : ""}
+              {doctor.id === suggestedId ? ` ${suggestedLabel}` : ""}
             </option>
           ))}
         </SelectField>

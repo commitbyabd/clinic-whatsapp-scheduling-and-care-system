@@ -10,22 +10,29 @@ collection for a receptionist to act on.
 
 ## What it does
 
-The booking chat asks four things:
+The booking chat asks:
 
 - **Visited before?** Then the patient's name: a first-timer's creates the
   record, and a returning patient's lets reception find theirs among a
   family sharing one phone.
 - **What for?** Symptoms are read by OpenAI and the model.
-- **When?**
+- **Which doctor**, and **which of their open times** — or, when there are
+  none to offer, "When?" in the patient's own words
+  ([whatsapp-doctor-times.md](whatsapp-doctor-times.md)).
 
 When the chat finishes, one document is saved with `status: "new"`:
 
 ```
 channel "whatsapp", whatsapp_number "+923001234567", patient_name,
 returning_patient "yes"|"no", reason "general"|"symptoms"|"followup",
-symptom_text, suggested_specialization, preferred_time_text "tomorrow at 9am",
-status "new", patient_id/appointment_id/handled_by/handled_at null, created_at
+symptom_text, suggested_specialization, requested_doctor_id,
+requested_doctor_name, requested_slot (UTC), preferred_time_text
+"tomorrow at 9am", status "new",
+patient_id/appointment_id/handled_by/handled_at null, created_at
 ```
+
+A chat that ends with a walk-in doctor's hours saves nothing: there is no
+appointment to confirm.
 
 ## How it works
 
@@ -50,7 +57,9 @@ status "new", patient_id/appointment_id/handled_by/handled_at null, created_at
 - **The number is stored without Twilio's `whatsapp:` prefix**, so it matches
   `patients.whatsapp_number`.
 - **`preferred_time_text` stays free text.** The receptionist turns it into a
-  real slot.
+  real slot. A patient who picked one of the offered times has
+  `requested_slot` instead, stored in UTC; either way the receptionist
+  confirms it.
 
 ## Tests
 

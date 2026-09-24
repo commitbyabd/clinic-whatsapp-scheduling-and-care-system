@@ -28,11 +28,13 @@ async def get_doctors():
 
 
 async def get_doctors_query() -> list[dict]:
-    # name and department only: the receptionist is choosing who to book with
+    # Name and department only: the receptionist is choosing who to book
+    # with. A walk-in doctor sees patients first come, first served, so
+    # there is nothing to book with them.
     cursor = (
         get_database()
         .users.find(
-            {"role": "doctor", "is_active": True},
+            {"role": "doctor", "is_active": True, "booking_mode": {"$ne": "walk_in"}},
             {"full_name": 1, "specialization": 1},
         )
         .sort("full_name", 1)

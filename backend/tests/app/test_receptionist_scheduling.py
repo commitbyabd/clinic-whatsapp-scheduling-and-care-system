@@ -260,11 +260,18 @@ def test_slots_for_an_unknown_or_inactive_doctor_are_404():
 
 def test_the_doctor_list_is_active_doctors_without_their_email():
     retired = {**DOCTOR, "_id": ObjectId(), "full_name": "Dr. Old", "is_active": False}
-    with _FakeDatabase(users=[DOCTOR, retired]) as db:
+    # a walk-in doctor takes no appointments, so there is nothing to book
+    walk_in = {**DOCTOR, "_id": ObjectId(), "full_name": "Dr. Walk In",
+               "booking_mode": "walk_in"}
+    with _FakeDatabase(users=[DOCTOR, retired, walk_in]) as db:
         status, body = _reply(doctors.get_doctors())
     assert status == 200, body
     assert [row["full_name"] for row in body["data"]] == ["Dr. Sara Khan"], body
-    assert db.users.queries[0] == {"role": "doctor", "is_active": True}
+    assert db.users.queries[0] == {
+        "role": "doctor",
+        "is_active": True,
+        "booking_mode": {"$ne": "walk_in"},
+    }
 
 
 def test_matching_patients_share_the_requests_number():

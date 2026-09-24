@@ -259,6 +259,21 @@ RAW_RULES: dict[str, RawRule] = {
             "surgeon",
             "dentist",
             "which doctor",
+            # asked about by department; the orchestrator lists the clinic's
+            # own doctors and hours when it can
+            "general physician",
+            "dermatologist",
+            "pulmonologist",
+            "neurologist",
+            "orthopedist",
+            "gynecologist",
+            "gynaecologist",
+            "pediatrician",
+            "paediatrician",
+            "child specialist",
+            "urologist",
+            "cardiologist",
+            "endocrinologist",
         ],
         "response": (
             "We have a team of experienced doctors. Please specify the "

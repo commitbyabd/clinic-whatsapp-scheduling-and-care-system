@@ -1,7 +1,7 @@
 """
 An in-memory stand-in for the pymongo calls the app makes, so tests need no
-database. Filters understand plain equality, $in, $gte and $lt, and updates
-understand $set, which is all the app's queries use.
+database. Filters understand plain equality, $in, $ne, $gte and $lt, and
+updates understand $set, which is all the app's queries use.
 
 Each collection records what it was asked (queries), what was inserted and
 the session every write was given.
@@ -24,6 +24,8 @@ def matches(doc, query):
         if isinstance(wanted, dict):
             for op, operand in wanted.items():
                 if op == "$in" and value not in operand:
+                    return False
+                if op == "$ne" and value == operand:
                     return False
                 if op == "$gte" and (value is None or value < operand):
                     return False

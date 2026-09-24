@@ -18,9 +18,10 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
 
 from pymongo.errors import ServerSelectionTimeoutError  # noqa: E402
 
-from app.features.whatsapp.v1 import conversation_store  # noqa: E402
+from app.features.whatsapp.v1 import chatbot_setup  # noqa: E402
+from app.features.whatsapp.v1.clinic_directory import MongoDirectory  # noqa: E402
 from app.features.whatsapp.v1.conversation_store import MongoStateStore  # noqa: E402
-from chatbot import orchestrator  # noqa: E402
+from chatbot import directory, orchestrator  # noqa: E402
 from chatbot.conversation import (  # noqa: E402
     COMPLETION_MESSAGE,
     ConversationEngine,
@@ -170,18 +171,22 @@ def test_startup_points_the_chatbot_at_mongo():
         def close(self):
             pass
 
-    original_client = conversation_store.MongoClient
+    original_client = chatbot_setup.MongoClient
     original_store = orchestrator.engine.store
-    conversation_store.MongoClient = _FakeClient
+    chatbot_setup.MongoClient = _FakeClient
     try:
-        client = conversation_store.use_mongo_store()
+        client = chatbot_setup.connect_chatbot_to_mongo()
         store = orchestrator.engine.store
+        provider = directory._provider
     finally:
-        conversation_store.MongoClient = original_client
+        chatbot_setup.MongoClient = original_client
         orchestrator.engine.store = original_store
+        directory.register(None)
 
     assert isinstance(store, MongoStateStore)
     assert store.collection.endswith(".conversation_states"), store.collection
+    # the doctors and their hours come from the same database
+    assert isinstance(provider, MongoDirectory), provider
     # fails fast rather than outlasting Twilio's 15 second limit
     assert client.options["serverSelectionTimeoutMS"] <= 5000
     assert isinstance(orchestrator.engine.store, InMemoryStore)

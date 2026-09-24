@@ -12,6 +12,7 @@ const doctor = {
   email: "sara@clinic.com",
   password: "correct horse",
   specialization: "Dermatologist",
+  booking_mode: "appointment",
 };
 
 describe("validateWith", () => {
@@ -68,6 +69,7 @@ describe("validateWith", () => {
       email: "nope",
       password: "short",
       specialization: "",
+      booking_mode: "appointment",
     });
 
     expect(valid).toBe(false);
@@ -94,6 +96,21 @@ describe("validateWith", () => {
       specialization: "ENT Specialist",
     });
     expect(valid).toBe(true);
+  });
+
+  it("takes only the two booking modes the chat can answer for", () => {
+    const { errors } = validateWith(doctorCreateSchema, {
+      ...doctor,
+      booking_mode: "whenever",
+    });
+    expect(errors.booking_mode).toMatch(/how this doctor sees patients/);
+
+    const { valid, data } = validateWith(doctorUpdateSchema, {
+      ...doctor,
+      booking_mode: "walk_in",
+    });
+    expect(valid).toBe(true);
+    expect(data.booking_mode).toBe("walk_in");
   });
 
   it("enforces the server's length ceilings", () => {

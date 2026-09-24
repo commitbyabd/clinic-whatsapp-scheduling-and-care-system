@@ -40,6 +40,8 @@ async def add_doctor(payload: dict):
             "email": email.lower(),
             "password_hash": hash_password(password.get_secret_value()),
             "specialization": specialization,
+            # appointment, or walk_in for first come, first served
+            "booking_mode": payload.get("booking_mode") or "appointment",
             "role": "doctor",
             "is_active": True,
         }

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Mail, User, Stethoscope } from "lucide-react";
+import { Mail, User, Stethoscope, CalendarClock } from "lucide-react";
 import Modal from "../../ui/Modal.jsx";
 import Button from "../../ui/Button.jsx";
 import Alert from "../../ui/Alert.jsx";
@@ -62,6 +62,8 @@ function StaffFormModal({ staff = null, kind, onClose, onSaved }) {
     full_name: staff?.full_name ?? "",
     email: staff?.email ?? "",
     specialization: legacySpecialization ? "" : (staff?.specialization ?? ""),
+    // doctors added before this existed take appointments
+    booking_mode: staff?.booking_mode ?? "appointment",
     password: "",
   });
   const [fieldErrors, setFieldErrors] = useState({});
@@ -203,6 +205,37 @@ function StaffFormModal({ staff = null, kind, onClose, onSaved }) {
                   {name}
                 </option>
               ))}
+            </SelectField>
+          )}
+
+          {/* decides what the WhatsApp chat offers: open times to ask for,
+              or the doctor's hours and "just come in" */}
+          {isDoctor && (
+            <SelectField
+              id={`${mode}-booking-mode`}
+              name="booking_mode"
+              label="Bookings"
+              value={values.booking_mode}
+              onChange={handleChange}
+              onBlur={handleBlur}
+              error={fieldErrors.booking_mode}
+              tone={tone}
+              disabled={saving}
+              icon={
+                <IconBox className="bg-lavender">
+                  <CalendarClock
+                    className="size-4 text-violet"
+                    strokeWidth={2}
+                  />
+                </IconBox>
+              }
+            >
+              <option value="appointment">
+                By appointment — patients ask for a time
+              </option>
+              <option value="walk_in">
+                First come, first served — no appointment
+              </option>
             </SelectField>
           )}
 

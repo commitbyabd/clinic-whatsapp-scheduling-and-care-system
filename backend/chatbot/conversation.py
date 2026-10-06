@@ -19,7 +19,9 @@ logger = logging.getLogger(__name__)
 # after this many unrecognised replies, hand off rather than loop forever
 MAX_REPROMPTS = 2
 
-STATE_TTL = timedelta(hours=24)
+# How long a chat can sit idle before it is forgotten. Short on purpose: a
+# booking left half-finished yesterday must not swallow today's "hi".
+STATE_TTL = timedelta(hours=2)
 
 CANCEL_WORDS = frozenset(
     {"cancel", "stop", "exit", "quit", "menu", "start over", "restart", "back"}
@@ -377,6 +379,9 @@ def completion_message(data: dict[str, str]) -> str:
     )
 
 
+# added under a menu the patient did not answer, so they know the way out
+RETRY_HINT = 'Reply with a number from the list, or type "cancel" to stop.'
+
 CANCELLED_MESSAGE = (
     "No problem, I've stopped that. Message us anytime if you'd like to start "
     "again."
@@ -461,10 +466,10 @@ class ConversationEngine:
                 self.store.clear(phone)
                 return FlowResult(text=HANDOFF_MESSAGE, step=None, finished=True)
             self.store.save(state)
-            return FlowResult(
-                text="Sorry, I didn't catch that.\n\n" + step.render(),
-                step=state.step,
-            )
+            text = "Sorry, I didn't catch that.\n\n" + step.render()
+            if step.options:
+                text += "\n\n" + RETRY_HINT
+            return FlowResult(text=text, step=state.step)
 
         if step.field:
             state.data[step.field] = answer

@@ -114,10 +114,18 @@ def test_the_state_is_stored_under_the_bare_number():
 
 
 def test_an_expired_state_is_dropped():
-    old = datetime.now(timezone.utc).replace(tzinfo=None) - timedelta(hours=25)
+    # idle for longer than STATE_TTL, which is hours and not a day
+    old = datetime.now(timezone.utc).replace(tzinfo=None) - timedelta(hours=3)
     collection = _FakeCollection({NUMBER: _row(updated_at=old)})
     assert MongoStateStore(collection).get(PHONE) is None
     assert collection.rows == {}
+
+
+def test_a_state_from_an_hour_ago_is_kept():
+    recent = datetime.now(timezone.utc).replace(tzinfo=None) - timedelta(hours=1)
+    collection = _FakeCollection({NUMBER: _row(updated_at=recent)})
+    assert MongoStateStore(collection).get(PHONE) is not None
+    assert NUMBER in collection.rows
 
 
 def test_a_state_from_an_older_menu_is_dropped():

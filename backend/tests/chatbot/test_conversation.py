@@ -113,6 +113,25 @@ def test_free_text_step_accepts_anything():
     assert "seen for" in reply.text
 
 
+def test_a_missed_menu_answer_says_how_to_get_out():
+    """Without this a patient stuck on a yes/no has no way to leave it."""
+    phone = _phone()
+    _say(phone, "appointment")
+    reply = handle_message("hi i am not feeling well", phone=phone)
+    assert "didn't catch that" in reply.text
+    assert "1. Yes" in reply.text, "the question is asked again"
+    assert 'type "cancel"' in reply.text, reply.text
+    # and cancel does leave it
+    assert "stopped that" in handle_message("cancel", phone=phone).text
+
+
+def test_a_free_text_question_is_not_told_to_pick_a_number():
+    phone = _phone()
+    _say(phone, "appointment", "2")  # at "your full name"
+    reply = handle_message("   ", phone=phone)
+    assert 'type "cancel"' not in reply.text, reply.text
+
+
 def test_unrecognised_reply_reasks_then_hands_off():
     phone = _phone()
     _say(phone, "appointment")
@@ -411,6 +430,35 @@ def test_expired_state_is_discarded():
 
     assert engine.is_active(phone) is False
     assert engine.advance(phone, "1") is None, "a stale flow was resumed"
+
+
+def test_a_chat_idle_for_hours_is_forgotten_but_a_recent_one_is_not():
+    """Yesterday's half-finished booking must not swallow today's "hi"."""
+    store = InMemoryStore()
+    engine = ConversationEngine(store)
+
+    def idle(phone, hours):
+        engine.start(phone, "appointment")
+        state = store.get(phone)
+        state.updated_at = datetime.now(timezone.utc) - timedelta(hours=hours)
+        store._states[phone] = state
+
+    recent, old = _phone(), _phone()
+    idle(recent, 1)
+    idle(old, 3)
+
+    assert engine.is_active(recent) is True, "a chat from an hour ago was lost"
+    assert engine.is_active(old) is False, "a chat idle for 3 hours was kept"
+
+
+def test_a_greeting_after_a_forgotten_chat_gets_the_greeting():
+    phone = _phone()
+    _say(phone, "appointment")
+    state = orchestrator.engine.store.get(phone)
+    state.updated_at = datetime.now(timezone.utc) - timedelta(hours=5)
+    orchestrator.engine.store._states[phone] = state
+
+    assert handle_message("hi", phone=phone).source == "greeting"
 
 
 def test_advance_returns_none_when_not_in_a_flow():

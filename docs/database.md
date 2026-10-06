@@ -69,7 +69,8 @@ sets `declined` and an optional `decline_reason`.
 [conversation-state.md](conversation-state.md)): each patient's place in the
 booking chat. `whatsapp_number (unique, bare number), flow, step, data,
 reprompts, question, choices (the menu a worked-out step showed them),
-updated_at`, deleted 24 hours after `updated_at`.
+updated_at`, deleted two hours after `updated_at` (the last
+message).
 
 **password_requests** (built, see
 [password-help-requests.md](password-help-requests.md)): a staff member who
@@ -104,7 +105,7 @@ Built (`app/core/indexes.py`): `booking_requests (status, created_at desc)`;
 and a unique `user_id` where the status is `new`
 (`one_open_password_request_per_user`), so asking again bumps a count
 instead of adding a row; `conversation_states`: unique
-`whatsapp_number`, and a TTL on `updated_at` (24h); unique `appointments
+`whatsapp_number`, and a TTL on `updated_at` (2h); unique `appointments
 (doctor_id, scheduled_for)` for status booked or confirmed only
 (`one_active_appointment_per_slot`), which stops double booking. That last
 one is created last, because duplicates already in the data make it fail.

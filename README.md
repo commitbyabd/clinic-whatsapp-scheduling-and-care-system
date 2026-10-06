@@ -67,6 +67,7 @@ cd backend
 .\.venv\Scripts\python.exe tests\app\test_staff_schemas.py
 .\.venv\Scripts\python.exe tests\app\test_passwords.py
 .\.venv\Scripts\python.exe tests\app\test_password_requests.py
+.\.venv\Scripts\python.exe tests\app\test_indexes.py
 .\.venv\Scripts\python.exe tests\app\test_reception_appointments.py
 ```
 
@@ -136,7 +137,7 @@ Built and tested:
   or token is ever sent and nobody can reset anyone else's password
 - the public website, for a clinic in Lahore
 
-246 backend tests, 85 portal tests.
+256 backend tests, 85 portal tests.
 
 Waiting on other people: the Twilio Account SID and Auth Token, which sending
 patients their booked time needs.

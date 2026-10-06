@@ -5,9 +5,33 @@ run on every boot and adding one is a new line here.
 """
 
 from pymongo import ASCENDING, DESCENDING
+from pymongo.errors import OperationFailure
 
 from app.core.database import get_database
 from chatbot.conversation import STATE_TTL
+
+# "an index with these keys already exists, with different options"
+_INDEX_CONFLICT_CODES = (85, 86)
+
+
+async def ensure_ttl_index(collection, field: str, seconds: int) -> None:
+    """Create a TTL index, or change how long the existing one keeps things.
+
+    create_index refuses the second case, so a changed lifetime (STATE_TTL
+    was cut from a day to two hours) would fail on every boot, and take the
+    indexes after it down too. collMod changes it in place instead.
+    """
+    try:
+        await collection.create_index(field, expireAfterSeconds=seconds)
+    except OperationFailure as exc:
+        if exc.code not in _INDEX_CONFLICT_CODES:
+            raise
+        await get_database().command(
+            {
+                "collMod": collection.name,
+                "index": {"keyPattern": {field: ASCENDING}, "expireAfterSeconds": seconds},
+            }
+        )
 
 
 async def ensure_indexes() -> None:
@@ -33,10 +57,11 @@ async def ensure_indexes() -> None:
         name="one_open_password_request_per_user",
     )
 
-    # one chat state per patient, deleted a day after their last message
+    # one chat state per patient, deleted once they have been idle for
+    # STATE_TTL
     await db.conversation_states.create_index("whatsapp_number", unique=True)
-    await db.conversation_states.create_index(
-        "updated_at", expireAfterSeconds=int(STATE_TTL.total_seconds())
+    await ensure_ttl_index(
+        db.conversation_states, "updated_at", int(STATE_TTL.total_seconds())
     )
 
     # One active appointment per doctor per start time. The slot check stops

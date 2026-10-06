@@ -15,6 +15,7 @@ from chatbot.conversation import (
     OFFER_FLOW,
     REASON_STEP,
     SYMPTOM_STEP,
+    TRIAGE_FLOW,
     ConversationEngine,
     FlowResult,
 )
@@ -37,6 +38,9 @@ FLOW_TRIGGERS = {"appointment": "appointment"}
 # the symptom keywords. A match is read for symptoms and a booking is offered,
 # the same as symptoms described without any keyword
 SYMPTOM_RULE = "feeling_unwell"
+
+# "I'm not feeling well", with no symptom named: ask what it is first
+VAGUE_UNWELL_RULE = "feeling_unwell_vague"
 
 CANNED_REPLY = (
     "Sorry, I didn't quite understand that. A member of our staff will get "
@@ -228,10 +232,45 @@ def _symptom_answers(message: str, routed: Classification | None) -> dict[str, s
     return answers
 
 
-def _offer_booking(phone: str, message: str, found: Sequence[str]) -> Reply:
+def _ask_for_symptoms(phone: str) -> Reply:
+    logger.info("asking an unwell patient for their symptoms")
+    return _flow_reply(engine.start(phone, TRIAGE_FLOW))
+
+
+def _answer_triage(
+    phone: str, message: str, symptoms: Sequence[str] | None
+) -> Reply:
+    """The patient said they were unwell and was asked how. What they send
+    back is the symptoms: read them, and offer a booking for the department
+    they point to. Asked once, so an answer that still names nothing gets
+    the plain offer rather than the question again."""
+    rule = match_rule(message)
+    if rule is not None and rule[0] in FLOW_TRIGGERS:
+        # "never mind, just book me in"
+        engine.store.clear(phone)
+        return _flow_reply(engine.start(phone, FLOW_TRIGGERS[rule[0]]))
+
+    result = engine.advance(phone, message)
+    if not result.data.get("symptom_text"):
+        return _flow_reply(result)  # cancelled, or an empty reply
+
+    # nothing is saved for reception: this was only the question's answer
+    return _offer_booking(
+        phone, message, symptoms or classifier.extract_symptoms(message)
+    )
+
+
+def _offer_booking(
+    phone: str, message: str, found: Sequence[str], ask_first: bool = False
+) -> Reply:
     routed = classifier.classify(found)
     if routed is not None and routed.emergency:
         return _emergency_reply(routed)
+
+    # Nothing here points to a department, and the patient has not really
+    # said what is wrong: ask, rather than offer a booking blind.
+    if routed is None and ask_first:
+        return _ask_for_symptoms(phone)
 
     logger.info("offering a booking from symptoms")
     result = engine.start(phone, OFFER_FLOW, _symptom_answers(message, routed))
@@ -311,6 +350,10 @@ def handle_message(
                 return reply
             state = None
 
+        # asked what the symptoms are: the message is the answer
+        if state is not None and state.flow == TRIAGE_FLOW:
+            return _answer_triage(phone, message, symptoms)
+
         if state is not None and state.step == SYMPTOM_STEP:
             routed = classifier.classify(symptoms or classifier.extract_symptoms(message))
             if routed is not None and routed.emergency:
@@ -351,9 +394,11 @@ def handle_message(
     rule = match_rule(message)
     if rule is not None:
         name, text = rule
-        if phone and name == SYMPTOM_RULE:
+        if phone and name in (SYMPTOM_RULE, VAGUE_UNWELL_RULE):
             found = symptoms or classifier.extract_symptoms(message)
-            return _offer_booking(phone, message, found)
+            return _offer_booking(
+                phone, message, found, ask_first=name == VAGUE_UNWELL_RULE
+            )
         flow = FLOW_TRIGGERS.get(name)
         if flow and phone:
             logger.info("starting %s flow", flow)

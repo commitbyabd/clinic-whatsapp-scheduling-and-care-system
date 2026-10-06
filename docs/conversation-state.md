@@ -12,10 +12,13 @@ it lives in MongoDB, in `conversation_states`.
 ## What it does
 
 A reply like "2" only means something if the bot remembers what it asked.
-Each WhatsApp number has at most one state: the flow (`appointment` or
-`offer`), the step, the answers so far and how many times it re-asked. The
-state is saved after every step, removed when the chat finishes or is
-cancelled, and forgotten once the patient has been silent for two hours.
+Each WhatsApp number has at most one state: the flow, the step, the answers
+so far and how many times it re-asked. The flows are `appointment`, `offer`
+(the booking offer) and `triage` (the one question asked of a patient who
+says they are unwell without saying how, see
+[unwell-patients.md](unwell-patients.md)). The state is saved after every
+step, removed when the chat finishes or is cancelled, and forgotten once the
+patient has been silent for two hours.
 
 When a patient answers a menu with something it does not understand, the
 bot says so, asks the question again and adds "Reply with a number from the

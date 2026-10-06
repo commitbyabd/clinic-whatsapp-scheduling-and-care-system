@@ -80,7 +80,17 @@ CASES: list[tuple[str, str | None]] = [
     ("help", "help"),
     ("what can you do", "help"),
     ("I have a fever and cough", "feeling_unwell"),
-    ("not feeling well", "feeling_unwell"),
+    # unwell with no symptom named: the bot asks what it is
+    ("not feeling well", "feeling_unwell_vague"),
+    ("im not feeling quite well", "feeling_unwell_vague"),
+    ("Hi i am not feeling well", "feeling_unwell_vague"),
+    ("I don't feel well", "feeling_unwell_vague"),
+    ("I don’t feel well", "feeling_unwell_vague"),  # a phone's curly apostrophe
+    ("feeling under the weather", "feeling_unwell_vague"),
+    ("i feel sick", "feeling_unwell_vague"),
+    # a symptom is named, so the symptom rule wins whatever else is said
+    ("I'm not feeling well, I have a fever", "feeling_unwell"),
+    ("I feel sick and have a headache", "feeling_unwell"),
     # --- empty / junk ---
     ("", None),
     ("   ", None),

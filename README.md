@@ -127,6 +127,8 @@ Built and tested:
 - the staff portal: admin sign-in and staff management, with each doctor's
   specialization picked from the chatbot's departments and how they are seen
   (by appointment, or first come, first served)
+- a patient who only says they are unwell ("I'm not feeling well") is asked
+  for their symptoms first, then pointed to a department and offered a booking
 - doctors and their times on WhatsApp: the chat names the doctor, reads out
   their hours and offers their next open times to pick from, and answers a
   question asked mid-chat without losing the patient's place
@@ -137,7 +139,7 @@ Built and tested:
   or token is ever sent and nobody can reset anyone else's password
 - the public website, for a clinic in Lahore
 
-256 backend tests, 85 portal tests.
+269 backend tests, 85 portal tests.
 
 Waiting on other people: the Twilio Account SID and Auth Token, which sending
 patients their booked time needs.

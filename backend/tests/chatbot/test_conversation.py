@@ -332,6 +332,128 @@ def test_something_else_still_drops_the_offer():
     assert orchestrator.engine.is_active(phone) is False
 
 
+# --- "I'm not feeling well", with no symptom named -----------------------
+
+VAGUE = "Hi i am not feeling well"
+
+
+def _asked_for_symptoms(reply):
+    return "tell us your symptoms" in reply.text and "Would you like" not in reply.text
+
+
+def test_an_unwell_patient_is_asked_what_the_symptoms_are():
+    phone = _phone()
+    with _Symptoms(found=()):
+        reply = handle_message(VAGUE, phone=phone)
+    assert reply.source == "flow", reply.source
+    assert "sorry to hear that" in reply.text, reply.text
+    assert _asked_for_symptoms(reply), reply.text
+    assert reply.collected is None
+
+
+def test_the_symptoms_they_give_point_to_a_department_and_a_booking_offer():
+    phone = _phone()
+    _say(phone, VAGUE)
+    with _Symptoms():
+        reply = handle_message(FEVER, phone=phone)
+    assert "General Physician can help" in reply.text, reply.text
+    assert "Would you like to book an appointment?" in reply.text, reply.text
+    # the answer to the question is not a booking request
+    assert reply.collected is None, reply.collected
+
+
+def test_yes_then_books_with_the_symptoms_they_gave():
+    phone = _phone()
+    _say(phone, VAGUE)
+    with _Symptoms():
+        handle_message(FEVER, phone=phone)
+    reply = _say(phone, "1", "2", "Zainab Bibi")  # yes, first visit, name
+
+    # the reason and symptom questions are skipped: both are already known
+    assert "date and time" in reply.text, reply.text
+    done = handle_message("Tuesday 3pm", phone=phone)
+    # reception gets what they described, not the "not feeling well" that
+    # started it
+    assert done.collected["symptom_text"] == FEVER, done.collected
+    assert done.collected["reason"] == "symptoms", done.collected
+    assert done.collected["specialization"] == "General Physician", done.collected
+
+
+def test_a_second_vague_answer_gets_the_plain_offer_not_the_question_again():
+    phone = _phone()
+    with _Symptoms(found=()):
+        _say(phone, VAGUE)
+        reply = handle_message("just not well really", phone=phone)
+    assert "Would you like to book an appointment?" in reply.text, reply.text
+    assert "tell us your symptoms" not in reply.text, "asked twice"
+
+
+def test_the_longer_ways_of_saying_it_are_asked_too():
+    for message in ("im not feeling quite well", "I don't feel well", "i feel sick"):
+        with _Symptoms(found=()):
+            reply = handle_message(message, phone=_phone())
+        assert _asked_for_symptoms(reply), f"{message!r}: {reply.text}"
+
+
+def test_a_named_symptom_is_offered_a_booking_without_the_question():
+    with _Symptoms():
+        reply = handle_message("I'm not feeling well, I have a fever", phone=_phone())
+    assert "Would you like to book an appointment?" in reply.text, reply.text
+    assert "tell us your symptoms" not in reply.text, reply.text
+
+
+def test_unwell_with_a_symptom_the_model_can_place_is_offered_straight_away():
+    dermatology = Classification("Dermatologist", 0.9)
+    with _Symptoms(found=("itching",), result=dermatology):
+        reply = handle_message("i feel sick, my skin is itchy", phone=_phone())
+    assert "Dermatologist can help" in reply.text, reply.text
+    assert "tell us your symptoms" not in reply.text, reply.text
+
+
+def test_cancel_leaves_the_symptom_question():
+    phone = _phone()
+    _say(phone, VAGUE)
+    assert "stopped that" in handle_message("cancel", phone=phone).text
+    assert orchestrator.engine.is_active(phone) is False
+
+
+def test_a_question_mid_way_is_answered_and_the_symptom_question_stays():
+    phone = _phone()
+    _say(phone, VAGUE)
+    reply = handle_message("what are your clinic hours?", phone=phone)
+    assert "open from" in reply.text, reply.text
+    assert "tell us your symptoms" in reply.text, "the question was dropped"
+
+
+def test_asking_to_book_instead_starts_the_booking():
+    phone = _phone()
+    _say(phone, VAGUE)
+    reply = handle_message("book an appointment", phone=phone)
+    assert "visited us before" in reply.text, reply.text
+
+
+def test_emergency_symptoms_in_the_answer_stop_the_booking():
+    phone = _phone()
+    _say(phone, VAGUE)
+    with _Symptoms(found=("sweating", "vomiting"), result=HEART_ATTACK):
+        reply = handle_message("sweating a lot and throwing up", phone=phone)
+    assert reply.source == "emergency", reply.source
+    assert orchestrator.engine.is_active(phone) is False
+
+
+def test_an_emergency_word_gets_through_the_symptom_question():
+    phone = _phone()
+    _say(phone, VAGUE)
+    reply = handle_message("I have severe chest pain", phone=phone)
+    assert reply.source == "emergency", reply.source
+
+
+def test_without_a_phone_the_vague_rule_keeps_its_plain_reply():
+    reply = handle_message(VAGUE)
+    assert reply.source == "feeling_unwell_vague", reply.source
+    assert "preferred date and time" in reply.text
+
+
 def test_the_offer_still_works_without_the_model():
     # nothing registered, as when the model fails to load: no department, but
     # booking is still offered and the symptoms still reach the receptionist

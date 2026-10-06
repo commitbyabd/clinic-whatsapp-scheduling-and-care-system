@@ -348,12 +348,36 @@ OFFER_STEPS: dict[str, Step] = {
     ),
 }
 
+# --- asking an unwell patient what is wrong, when they only said they are ---
+
+TRIAGE_FLOW = "triage"
+
+TRIAGE_STEPS: dict[str, Step] = {
+    "ask_triage": Step(
+        id="ask_triage",
+        question=(
+            "We're sorry to hear that. Could you tell us your symptoms, in "
+            "your own words? That helps us point you to the right doctor so "
+            "you get the best care."
+        ),
+        # The answer is read for symptoms by the orchestrator, which then
+        # offers a booking. Nothing here is saved as a booking request.
+        field="symptom_text",
+        next=None,
+    ),
+}
+
 FLOWS: dict[str, dict[str, Step]] = {
     "appointment": APPOINTMENT_FLOW,
     OFFER_FLOW: OFFER_STEPS,
+    TRIAGE_FLOW: TRIAGE_STEPS,
 }
 
-FLOW_ENTRY_STEP = {"appointment": "ask_returning", OFFER_FLOW: "ask_book"}
+FLOW_ENTRY_STEP = {
+    "appointment": "ask_returning",
+    OFFER_FLOW: "ask_book",
+    TRIAGE_FLOW: "ask_triage",
+}
 
 # says a request was submitted, never that an appointment is booked
 COMPLETION_MESSAGE = (

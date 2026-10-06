@@ -184,24 +184,9 @@ RAW_RULES: dict[str, RawRule] = {
     },
     # Symptom messages are an implicit booking request, so they are checked
     # before the generic appointment rule.
+    # A symptom is named. The orchestrator reads it and offers a booking.
     "feeling_unwell": {
         "keywords": [
-            "not feeling well",
-            "not feeling good",
-            "feeling unwell",
-            "feeling sick",
-            "feel sick",
-            "sick",
-            # not a bare "ill": WhatsApp users type "I'll" as "ill", so
-            # "ok ill book an appointment" read as a symptom
-            "am ill",
-            "i'm ill",
-            "im ill",
-            "is ill",
-            "feel ill",
-            "feeling ill",
-            "fell ill",
-            "unwell",
             "fever",
             "cough",
             "coughing",
@@ -215,6 +200,54 @@ RAW_RULES: dict[str, RawRule] = {
             "diarrhea",
             "diarrhoea",
             "infection",
+        ],
+        "response": (
+            "We understand you're not feeling well and are very sad to hear "
+            "that. To book an appointment, please provide your preferred date "
+            "and time."
+        ),
+    },
+    # Unwell, but no symptom named ("I'm not feeling well"). Listed after
+    # the rule above, so "I'm sick with a fever" is read as the fever. The
+    # orchestrator asks what the symptoms are before offering anything.
+    "feeling_unwell_vague": {
+        "keywords": [
+            "not feeling well",
+            "not feeling good",
+            "not feeling quite well",
+            "not feeling so well",
+            "not feeling very well",
+            "not feeling great",
+            "not feeling myself",
+            # a phone's curly apostrophe is flattened to a space, so each of
+            # these is spelled the ways it arrives
+            "don't feel well",
+            "dont feel well",
+            "don t feel well",
+            "do not feel well",
+            "feeling unwell",
+            "feel unwell",
+            "feeling sick",
+            "feel sick",
+            "feeling terrible",
+            "feeling awful",
+            "feeling bad",
+            "under the weather",
+            "sick",
+            "am not well",
+            "i'm not well",
+            "im not well",
+            "i m not well",
+            # not a bare "ill": WhatsApp users type "I'll" as "ill", so
+            # "ok ill book an appointment" read as a symptom
+            "am ill",
+            "i'm ill",
+            "im ill",
+            "is ill",
+            "feel ill",
+            "feeling ill",
+            "fell ill",
+            "unwell",
         ],
         "response": (
             "We understand you're not feeling well and are very sad to hear "

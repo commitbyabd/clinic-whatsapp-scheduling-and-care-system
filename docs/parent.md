@@ -115,7 +115,7 @@ uvicorn, `git pull`, install requirements if they changed, start again.
 - **Every new feature gets `docs/<feature>.md`** (template below) and a row in
   the index. Update the status list when something ships.
 
-## Status (updated 2026-09-24)
+## Status (updated 2026-10-06)
 
 Built: the WhatsApp chatbot end to end, the webhook on the office server,
 admin portal (staff management), public website, saving booking requests,
@@ -143,6 +143,7 @@ validates and confirms, and sends nothing), and updating the SDS.
 | [doctor-portal.md](doctor-portal.md) | the doctor's visits, consultation write-up, medical details, working hours |
 | [conversation-state.md](conversation-state.md) | where the booking chat keeps each patient's place, in Mongo |
 | [whatsapp-doctor-times.md](whatsapp-doctor-times.md) | the chat offers doctors, their hours and open times; walk-in doctors |
+| [unwell-patients.md](unwell-patients.md) | "I'm not feeling well": the bot asks for the symptoms, then offers a booking |
 | [reception-appointments.md](reception-appointments.md) | booked visits by day at the front desk: move, cancel; decline reasons |
 | [staff-passwords.md](staff-passwords.md) | changing your own password, admin resets, sessions ending |
 | [password-help-requests.md](password-help-requests.md) | "forgot your password": the note it leaves and the admin's Requests tab |

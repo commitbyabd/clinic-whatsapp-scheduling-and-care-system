@@ -100,11 +100,24 @@ because no component names a colour of its own.
 
 ## Deployment
 
-The backend runs on an office Windows server from a git clone, started with
-`--workers 1` (each worker would load its own copy of the ML model; the chat
-state is in Mongo, so restarts are safe). `backend/.env` and `.venv` never
-come from git: they are created by hand on each machine. To update: stop
-uvicorn, `git pull`, install requirements if they changed, start again.
+The backend runs on **Render** as a free web service in Singapore, at
+https://clinic-whatsapp-scheduling-and-care.onrender.com (health check:
+`/health`). It builds from `backend/` with `pip install -r requirements.txt`
+and starts with `uvicorn main:app --host 0.0.0.0 --port $PORT --workers 1`
+(each worker would load its own copy of the ML model; the chat state is in
+Mongo, so restarts are safe). Secrets are set in the Render dashboard, never in
+git. Pushing to `main` redeploys it when something under `backend/` changed.
+
+**The free plan sleeps after 15 minutes without traffic**, and waking it takes
+over a minute (73 s measured), longer than the 15 s Twilio waits for a reply.
+So the first WhatsApp message after a quiet spell gets no reply. Before testing
+or a demo, open `/health` and wait for `{"status":"ok"}`. To keep it awake,
+ping `/health` every 10 minutes with a free uptime monitor, or use a paid plan.
+The Twilio sandbox is a separate limit: a join lasts 3 days, then the phone
+sends the join message again.
+
+On a new machine, `backend/.env` and `.venv` never come from git: create them
+by hand.
 
 ## Working here
 
@@ -117,7 +130,7 @@ uvicorn, `git pull`, install requirements if they changed, start again.
 
 ## Status (updated 2026-10-06)
 
-Built: the WhatsApp chatbot end to end, the webhook on the office server,
+Built: the WhatsApp chatbot end to end, the webhook on Render,
 admin portal (staff management), public website, saving booking requests,
 receptionist inbox, receptionist scheduling (a request becomes an
 appointment, or is declined), doctor portal (visits, consultation write-up,
